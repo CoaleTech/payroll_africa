@@ -1,0 +1,167 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "pension_section",
+  "pension_employee_rate",
+  "column_break_pension",
+  "pension_employer_rate",
+  "nhf_section",
+  "nhf_rate",
+  "nhis_section",
+  "nhis_employee_rate",
+  "column_break_nhis",
+  "nhis_employer_rate",
+  "nsitf_section",
+  "nsitf_rate",
+  "itf_section",
+  "itf_rate",
+  "paye_section",
+  "paye_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "pension_section",
+   "fieldtype": "Section Break",
+   "label": "Pension (Contributory Pension Scheme)"
+  },
+  {
+   "fieldname": "pension_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "8",
+   "description": "Pension employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_pension",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pension_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "10",
+   "description": "Pension employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "nhf_section",
+   "fieldtype": "Section Break",
+   "label": "NHF (National Housing Fund)"
+  },
+  {
+   "fieldname": "nhf_rate",
+   "fieldtype": "Percent",
+   "label": "NHF Rate",
+   "default": "2.5",
+   "description": "National Housing Fund employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "nhis_section",
+   "fieldtype": "Section Break",
+   "label": "NHIS (National Health Insurance Scheme)"
+  },
+  {
+   "fieldname": "nhis_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "5",
+   "description": "NHIS employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_nhis",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nhis_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "10",
+   "description": "NHIS employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "nsitf_section",
+   "fieldtype": "Section Break",
+   "label": "NSITF (Nigeria Social Insurance Trust Fund)"
+  },
+  {
+   "fieldname": "nsitf_rate",
+   "fieldtype": "Percent",
+   "label": "NSITF Rate",
+   "default": "1",
+   "description": "NSITF employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "itf_section",
+   "fieldtype": "Section Break",
+   "label": "ITF (Industrial Training Fund)"
+  },
+  {
+   "fieldname": "itf_rate",
+   "fieldtype": "Percent",
+   "label": "ITF Rate",
+   "default": "1",
+   "description": "ITF employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "PAYE Bands",
+   "options": "Nigeria PAYE Band",
+   "description": "Progressive PAYE tax bands (monthly amounts in NGN)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Nigeria Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

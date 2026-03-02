@@ -1,0 +1,166 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "inss_section",
+  "inss_employee_rate",
+  "column_break_inss",
+  "inss_employer_rate",
+  "work_injury_section",
+  "work_injury_rate",
+  "health_section",
+  "health_employee_rate",
+  "column_break_health",
+  "health_employer_rate",
+  "training_section",
+  "training_employee_rate",
+  "column_break_training",
+  "training_employer_rate",
+  "paye_section",
+  "paye_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "inss_section",
+   "fieldtype": "Section Break",
+   "label": "INSS"
+  },
+  {
+   "fieldname": "inss_employee_rate",
+   "fieldtype": "Percent",
+   "label": "INSS Employee Rate",
+   "default": "4",
+   "description": "INSS employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_inss",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inss_employer_rate",
+   "fieldtype": "Percent",
+   "label": "INSS Employer Rate",
+   "default": "6",
+   "description": "INSS employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "work_injury_section",
+   "fieldtype": "Section Break",
+   "label": "Work Injury"
+  },
+  {
+   "fieldname": "work_injury_rate",
+   "fieldtype": "Percent",
+   "label": "Work Injury Rate",
+   "default": "3",
+   "description": "Work injury insurance rate (% of gross, employer only)"
+  },
+  {
+   "fieldname": "health_section",
+   "fieldtype": "Section Break",
+   "label": "Health Insurance"
+  },
+  {
+   "fieldname": "health_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Health Insurance Employee Rate",
+   "default": "3",
+   "description": "Health insurance employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_health",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "health_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Health Insurance Employer Rate",
+   "default": "3",
+   "description": "Health insurance employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "training_section",
+   "fieldtype": "Section Break",
+   "label": "Training Fund"
+  },
+  {
+   "fieldname": "training_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Training Fund Employee Rate",
+   "default": "1",
+   "description": "Training fund employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_training",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "training_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Training Fund Employer Rate",
+   "default": "1",
+   "description": "Training fund employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "PAYE Bands",
+   "options": "Burundi PAYE Band",
+   "description": "Progressive PAYE tax bands (monthly amounts in BIF)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Burundi Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

@@ -1,0 +1,22 @@
+{
+ "app": "hrms",
+ "creation": "2026-03-02 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon": "globe",
+ "icon_type": "Link",
+ "idx": 0,
+ "label": "Payroll Africa",
+ "link_to": "Payroll Africa",
+ "link_type": "Workspace Sidebar",
+ "logo_url": "/assets/payroll_africa/icons/desktop_icons/solid/payroll_africa.svg",
+ "modified": "2026-03-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Payroll Africa",
+ "owner": "Administrator",
+ "parent_icon": "Frappe HR",
+ "restrict_removal": 0,
+ "roles": [],
+ "standard": 1
+}

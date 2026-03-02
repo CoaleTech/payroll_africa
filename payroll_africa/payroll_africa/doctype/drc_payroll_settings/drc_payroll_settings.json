@@ -1,0 +1,153 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "inss_pension_section",
+  "inss_pension_employee_rate",
+  "column_break_inss_pension",
+  "inss_pension_employer_rate",
+  "inss_other_section",
+  "inss_occupational_risks_rate",
+  "column_break_inss_other",
+  "inss_family_benefits_rate",
+  "inpp_section",
+  "inpp_rate",
+  "onem_section",
+  "onem_rate",
+  "paye_section",
+  "paye_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "inss_pension_section",
+   "fieldtype": "Section Break",
+   "label": "INSS Pension"
+  },
+  {
+   "fieldname": "inss_pension_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "5",
+   "description": "INSS pension employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_inss_pension",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inss_pension_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "5",
+   "description": "INSS pension employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "inss_other_section",
+   "fieldtype": "Section Break",
+   "label": "INSS Other Contributions"
+  },
+  {
+   "fieldname": "inss_occupational_risks_rate",
+   "fieldtype": "Percent",
+   "label": "Occupational Risks Rate",
+   "default": "1.5",
+   "description": "INSS occupational risks employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_inss_other",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inss_family_benefits_rate",
+   "fieldtype": "Percent",
+   "label": "Family Benefits Rate",
+   "default": "6.5",
+   "description": "INSS family benefits employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "inpp_section",
+   "fieldtype": "Section Break",
+   "label": "INPP (Professional Training)"
+  },
+  {
+   "fieldname": "inpp_rate",
+   "fieldtype": "Percent",
+   "label": "INPP Rate",
+   "default": "3",
+   "description": "INPP professional training employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "onem_section",
+   "fieldtype": "Section Break",
+   "label": "ONEM (Employment Office)"
+  },
+  {
+   "fieldname": "onem_rate",
+   "fieldtype": "Percent",
+   "label": "ONEM Rate",
+   "default": "0.2",
+   "description": "ONEM employment office employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE/IPR"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "PAYE Bands",
+   "options": "DRC PAYE Band",
+   "description": "Progressive IPR/PAYE tax bands (monthly amounts in CDF)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "DRC Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

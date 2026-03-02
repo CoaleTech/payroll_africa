@@ -1,0 +1,17 @@
+/* Custom Africa icon for Payroll Africa sidebar */
+.sidebar-item-container[data-sidebar-name="Payroll Africa"] .sidebar-icon .icon,
+[data-sidebar-name="Payroll Africa"] .header-icon {
+	display: none;
+}
+
+.sidebar-item-container[data-sidebar-name="Payroll Africa"] .sidebar-icon::before,
+[data-sidebar-name="Payroll Africa"] .header-area::before {
+	content: "";
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	background-image: url("/assets/payroll_africa/icons/africa.svg");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}

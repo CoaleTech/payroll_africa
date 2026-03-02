@@ -1,0 +1,544 @@
+[
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "MZN",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 22:14:43.135191",
+  "name": "Mozambique PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 10.0,
+    "to_amount": 3500.0
+   },
+   {
+    "condition": null,
+    "from_amount": 3501.0,
+    "percent_deduction": 15.0,
+    "to_amount": 14000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 14001.0,
+    "percent_deduction": 20.0,
+    "to_amount": 42000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 42001.0,
+    "percent_deduction": 25.0,
+    "to_amount": 126000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 126001.0,
+    "percent_deduction": 32.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "KES",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 17:00:34.087278",
+  "name": "Kenya PAYE 2025",
+  "other_taxes_and_charges": [
+   {
+    "description": "Personal Relief",
+    "max_taxable_income": 0.0,
+    "min_taxable_income": 0.0,
+    "percent": 0.0
+   }
+  ],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 10.0,
+    "to_amount": 24000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 24001.0,
+    "percent_deduction": 25.0,
+    "to_amount": 32333.0
+   },
+   {
+    "condition": null,
+    "from_amount": 32334.0,
+    "percent_deduction": 30.0,
+    "to_amount": 500000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 500001.0,
+    "percent_deduction": 32.5,
+    "to_amount": 800000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 800001.0,
+    "percent_deduction": 35.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "UGX",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 21:22:28.316641",
+  "name": "Uganda PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 0.0,
+    "to_amount": 235000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 235001.0,
+    "percent_deduction": 10.0,
+    "to_amount": 335000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 335001.0,
+    "percent_deduction": 20.0,
+    "to_amount": 410000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 410001.0,
+    "percent_deduction": 30.0,
+    "to_amount": 10000000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 10000001.0,
+    "percent_deduction": 40.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "TZS",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 21:22:30.120589",
+  "name": "Tanzania PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 0.0,
+    "to_amount": 270000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 270001.0,
+    "percent_deduction": 8.0,
+    "to_amount": 520000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 520001.0,
+    "percent_deduction": 20.0,
+    "to_amount": 760000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 760001.0,
+    "percent_deduction": 25.0,
+    "to_amount": 1000000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 1000001.0,
+    "percent_deduction": 30.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "RWF",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 21:40:25.988412",
+  "name": "Rwanda PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 0.0,
+    "to_amount": 60000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 60001.0,
+    "percent_deduction": 10.0,
+    "to_amount": 100000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 100001.0,
+    "percent_deduction": 20.0,
+    "to_amount": 200000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 200001.0,
+    "percent_deduction": 30.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "BIF",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 21:40:26.086707",
+  "name": "Burundi PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 0.0,
+    "to_amount": 150000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 150001.0,
+    "percent_deduction": 20.0,
+    "to_amount": 300000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 300001.0,
+    "percent_deduction": 25.0,
+    "to_amount": 600000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 600001.0,
+    "percent_deduction": 30.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "MWK",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 21:50:50.420176",
+  "name": "Malawi PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 0.0,
+    "to_amount": 150000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 150001.0,
+    "percent_deduction": 25.0,
+    "to_amount": 500000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 500001.0,
+    "percent_deduction": 30.0,
+    "to_amount": 2550000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 2550001.0,
+    "percent_deduction": 35.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "ZMW",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 21:50:52.173881",
+  "name": "Zambia PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 0.0,
+    "to_amount": 5100.0
+   },
+   {
+    "condition": null,
+    "from_amount": 5101.0,
+    "percent_deduction": 20.0,
+    "to_amount": 7100.0
+   },
+   {
+    "condition": null,
+    "from_amount": 7101.0,
+    "percent_deduction": 30.0,
+    "to_amount": 9200.0
+   },
+   {
+    "condition": null,
+    "from_amount": 9201.0,
+    "percent_deduction": 37.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "CDF",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 22:00:21.722735",
+  "name": "DRC PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 3.0,
+    "to_amount": 162000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 162001.0,
+    "percent_deduction": 15.0,
+    "to_amount": 1800000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 1800001.0,
+    "percent_deduction": 30.0,
+    "to_amount": 3600000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 3600001.0,
+    "percent_deduction": 40.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "NGN",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-01 22:00:23.470663",
+  "name": "Nigeria PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 7.0,
+    "to_amount": 25000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 25001.0,
+    "percent_deduction": 11.0,
+    "to_amount": 50000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 50001.0,
+    "percent_deduction": 15.0,
+    "to_amount": 91667.0
+   },
+   {
+    "condition": null,
+    "from_amount": 91668.0,
+    "percent_deduction": 19.0,
+    "to_amount": 133333.0
+   },
+   {
+    "condition": null,
+    "from_amount": 133334.0,
+    "percent_deduction": 21.0,
+    "to_amount": 266667.0
+   },
+   {
+    "condition": null,
+    "from_amount": 266668.0,
+    "percent_deduction": 24.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ },
+ {
+  "allow_tax_exemption": 1,
+  "amended_from": null,
+  "company": "",
+  "currency": "AOA",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Income Tax Slab",
+  "effective_from": "2025-01-01",
+  "modified": "2026-03-02 06:09:21.048329",
+  "name": "Angola PAYE 2025",
+  "other_taxes_and_charges": [],
+  "slabs": [
+   {
+    "condition": null,
+    "from_amount": 0.0,
+    "percent_deduction": 0.0,
+    "to_amount": 100000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 100001.0,
+    "percent_deduction": 13.0,
+    "to_amount": 150000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 150001.0,
+    "percent_deduction": 16.0,
+    "to_amount": 200000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 200001.0,
+    "percent_deduction": 18.0,
+    "to_amount": 300000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 300001.0,
+    "percent_deduction": 19.0,
+    "to_amount": 500000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 500001.0,
+    "percent_deduction": 20.0,
+    "to_amount": 1000000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 1000001.0,
+    "percent_deduction": 21.0,
+    "to_amount": 1500000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 1500001.0,
+    "percent_deduction": 22.0,
+    "to_amount": 2000000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 2000001.0,
+    "percent_deduction": 23.0,
+    "to_amount": 2500000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 2500001.0,
+    "percent_deduction": 24.0,
+    "to_amount": 5000000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 5000001.0,
+    "percent_deduction": 24.5,
+    "to_amount": 10000000.0
+   },
+   {
+    "condition": null,
+    "from_amount": 10000001.0,
+    "percent_deduction": 25.0,
+    "to_amount": 0.0
+   }
+  ],
+  "standard_tax_exemption_amount": 0.0,
+  "tax_relief_limit": 0.0
+ }
+]

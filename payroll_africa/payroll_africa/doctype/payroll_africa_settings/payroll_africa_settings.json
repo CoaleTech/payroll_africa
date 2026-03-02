@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "enabled",
+  "section_break_countries",
+  "kenya_enabled",
+  "column_break_countries"
+ ],
+ "fields": [
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable Payroll Africa",
+   "default": "1"
+  },
+  {
+   "fieldname": "section_break_countries",
+   "fieldtype": "Section Break",
+   "label": "Enabled Countries"
+  },
+  {
+   "fieldname": "kenya_enabled",
+   "fieldtype": "Check",
+   "label": "Kenya",
+   "default": "1"
+  },
+  {
+   "fieldname": "column_break_countries",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Payroll Africa Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

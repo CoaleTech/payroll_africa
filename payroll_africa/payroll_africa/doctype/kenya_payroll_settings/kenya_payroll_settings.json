@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "paye_section",
+  "personal_relief",
+  "column_break_paye",
+  "insurance_relief_rate",
+  "insurance_relief_cap",
+  "paye_bands_section",
+  "paye_bands",
+  "nssf_section",
+  "nssf_tier1_rate",
+  "nssf_tier1_cap",
+  "nssf_tier1_upper_limit",
+  "column_break_nssf",
+  "nssf_tier2_rate",
+  "nssf_tier2_cap",
+  "shif_section",
+  "shif_rate",
+  "column_break_shif",
+  "shif_minimum",
+  "housing_levy_section",
+  "ahl_employee_rate",
+  "column_break_ahl",
+  "ahl_employer_rate",
+  "nita_section",
+  "nita_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "personal_relief",
+   "fieldtype": "Currency",
+   "label": "Monthly Personal Relief",
+   "default": "2400",
+   "description": "Monthly personal tax relief (KES)"
+  },
+  {
+   "fieldname": "column_break_paye",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "insurance_relief_rate",
+   "fieldtype": "Percent",
+   "label": "Insurance Relief Rate",
+   "default": "15",
+   "description": "Percentage of insurance premiums eligible for relief"
+  },
+  {
+   "fieldname": "insurance_relief_cap",
+   "fieldtype": "Currency",
+   "label": "Insurance Relief Cap",
+   "default": "5000",
+   "description": "Maximum monthly insurance relief (KES)"
+  },
+  {
+   "fieldname": "paye_bands_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE Bands"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "PAYE Bands",
+   "options": "Kenya PAYE Band",
+   "description": "Progressive PAYE tax bands (monthly amounts in KES)"
+  },
+  {
+   "fieldname": "nssf_section",
+   "fieldtype": "Section Break",
+   "label": "NSSF"
+  },
+  {
+   "fieldname": "nssf_tier1_rate",
+   "fieldtype": "Percent",
+   "label": "Tier I Rate",
+   "default": "6",
+   "description": "NSSF Tier I contribution rate"
+  },
+  {
+   "fieldname": "nssf_tier1_cap",
+   "fieldtype": "Currency",
+   "label": "Tier I Cap",
+   "default": "1080",
+   "description": "Maximum Tier I contribution per month (KES)"
+  },
+  {
+   "fieldname": "nssf_tier1_upper_limit",
+   "fieldtype": "Currency",
+   "label": "Tier I Upper Limit",
+   "default": "18000",
+   "description": "Lower Earnings Limit for Tier I (KES)"
+  },
+  {
+   "fieldname": "column_break_nssf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nssf_tier2_rate",
+   "fieldtype": "Percent",
+   "label": "Tier II Rate",
+   "default": "6",
+   "description": "NSSF Tier II contribution rate"
+  },
+  {
+   "fieldname": "nssf_tier2_cap",
+   "fieldtype": "Currency",
+   "label": "Tier II Cap",
+   "default": "1080",
+   "description": "Maximum Tier II contribution per month (KES)"
+  },
+  {
+   "fieldname": "shif_section",
+   "fieldtype": "Section Break",
+   "label": "SHIF"
+  },
+  {
+   "fieldname": "shif_rate",
+   "fieldtype": "Percent",
+   "label": "SHIF Rate",
+   "default": "2.75",
+   "description": "Social Health Insurance Fund rate on gross pay"
+  },
+  {
+   "fieldname": "column_break_shif",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shif_minimum",
+   "fieldtype": "Currency",
+   "label": "SHIF Minimum",
+   "default": "300",
+   "description": "Minimum monthly SHIF contribution (KES)"
+  },
+  {
+   "fieldname": "housing_levy_section",
+   "fieldtype": "Section Break",
+   "label": "Affordable Housing Levy"
+  },
+  {
+   "fieldname": "ahl_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "1.5",
+   "description": "Employee housing levy rate on gross pay"
+  },
+  {
+   "fieldname": "column_break_ahl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ahl_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "1.5",
+   "description": "Employer housing levy rate on gross pay"
+  },
+  {
+   "fieldname": "nita_section",
+   "fieldtype": "Section Break",
+   "label": "NITA"
+  },
+  {
+   "fieldname": "nita_amount",
+   "fieldtype": "Currency",
+   "label": "NITA Amount",
+   "default": "50",
+   "description": "Monthly NITA levy per employee (KES)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Kenya Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

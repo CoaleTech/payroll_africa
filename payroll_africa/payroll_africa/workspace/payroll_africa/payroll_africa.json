@@ -1,0 +1,634 @@
+{
+ "app": "payroll_africa",
+ "charts": [],
+ "content": "[{\"id\": \"pa-hdr-1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Settings</b></span>\", \"col\": 12}}, {\"id\": \"pa-card-1\", \"type\": \"card\", \"data\": {\"card_name\": \"Global Settings\", \"col\": 4}}, {\"id\": \"pa-card-ea\", \"type\": \"card\", \"data\": {\"card_name\": \"East Africa\", \"col\": 4}}, {\"id\": \"pa-card-sa\", \"type\": \"card\", \"data\": {\"card_name\": \"Southern Africa\", \"col\": 4}}, {\"id\": \"pa-card-wa\", \"type\": \"card\", \"data\": {\"card_name\": \"West & Central Africa\", \"col\": 4}}, {\"id\": \"pa-spacer-1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"pa-hdr-2\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Statutory Reports</b></span>\", \"col\": 12}}, {\"id\": \"pa-card-2\", \"type\": \"card\", \"data\": {\"card_name\": \"Deduction Reports\", \"col\": 4}}, {\"id\": \"pa-card-3\", \"type\": \"card\", \"data\": {\"card_name\": \"KRA Filing Reports\", \"col\": 4}}, {\"id\": \"pa-card-4\", \"type\": \"card\", \"data\": {\"card_name\": \"Remittance Reports\", \"col\": 4}}, {\"id\": \"pa-card-5\", \"type\": \"card\", \"data\": {\"card_name\": \"Cross-Country Reports\", \"col\": 4}}, {\"id\": \"pa-card-ug\", \"type\": \"card\", \"data\": {\"card_name\": \"Uganda Reports\", \"col\": 4}}, {\"id\": \"pa-card-tz\", \"type\": \"card\", \"data\": {\"card_name\": \"Tanzania Reports\", \"col\": 4}}, {\"id\": \"pa-card-rw\", \"type\": \"card\", \"data\": {\"card_name\": \"Rwanda Reports\", \"col\": 4}}, {\"id\": \"pa-card-bi\", \"type\": \"card\", \"data\": {\"card_name\": \"Burundi Reports\", \"col\": 4}}, {\"id\": \"pa-card-mw\", \"type\": \"card\", \"data\": {\"card_name\": \"Malawi Reports\", \"col\": 4}}, {\"id\": \"pa-card-zm\", \"type\": \"card\", \"data\": {\"card_name\": \"Zambia Reports\", \"col\": 4}}, {\"id\": \"pa-card-ng\", \"type\": \"card\", \"data\": {\"card_name\": \"Nigeria Reports\", \"col\": 4}}, {\"id\": \"pa-card-cd\", \"type\": \"card\", \"data\": {\"card_name\": \"DRC Reports\", \"col\": 4}}, {\"id\": \"pa-card-mz\", \"type\": \"card\", \"data\": {\"card_name\": \"Mozambique Reports\", \"col\": 4}}, {\"id\": \"pa-card-ao\", \"type\": \"card\", \"data\": {\"card_name\": \"Angola Reports\", \"col\": 4}}]",
+ "creation": "2026-03-01 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "globe",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Payroll Africa",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Global Settings",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Payroll Africa Settings",
+   "link_count": 0,
+   "link_to": "Payroll Africa Settings",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "East Africa",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Kenya Payroll Settings",
+   "link_count": 0,
+   "link_to": "Kenya Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Uganda Payroll Settings",
+   "link_count": 0,
+   "link_to": "Uganda Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Tanzania Payroll Settings",
+   "link_count": 0,
+   "link_to": "Tanzania Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Rwanda Payroll Settings",
+   "link_count": 0,
+   "link_to": "Rwanda Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Burundi Payroll Settings",
+   "link_count": 0,
+   "link_to": "Burundi Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Southern Africa",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Malawi Payroll Settings",
+   "link_count": 0,
+   "link_to": "Malawi Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Zambia Payroll Settings",
+   "link_count": 0,
+   "link_to": "Zambia Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Mozambique Payroll Settings",
+   "link_count": 0,
+   "link_to": "Mozambique Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Angola Payroll Settings",
+   "link_count": 0,
+   "link_to": "Angola Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "West & Central Africa",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Nigeria Payroll Settings",
+   "link_count": 0,
+   "link_to": "Nigeria Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "DRC Payroll Settings",
+   "link_count": 0,
+   "link_to": "DRC Payroll Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Deduction Reports",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Statutory Deductions Summary",
+   "link_count": 0,
+   "link_to": "Statutory Deductions Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Employer Contributions",
+   "link_count": 0,
+   "link_to": "Employer Contributions",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Cost to Company",
+   "link_count": 0,
+   "link_to": "Cost to Company",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "KRA Filing Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "P9A Tax Deduction Card",
+   "link_count": 0,
+   "link_to": "P9A Tax Deduction Card",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "P10 Monthly Tax Return",
+   "link_count": 0,
+   "link_to": "P10 Monthly Tax Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Remittance Reports",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "NSSF Remittance",
+   "link_count": 0,
+   "link_to": "NSSF Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "SHIF Remittance",
+   "link_count": 0,
+   "link_to": "SHIF Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Housing Levy Return",
+   "link_count": 0,
+   "link_to": "Housing Levy Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Cross-Country Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Multi-Country Payroll Summary",
+   "link_count": 0,
+   "link_to": "Multi-Country Payroll Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Rate Change Audit Trail",
+   "link_count": 0,
+   "link_to": "Rate Change Audit Trail",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Uganda Reports",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "URA PAYE Return",
+   "link_count": 0,
+   "link_to": "URA PAYE Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "NSSF Uganda Remittance",
+   "link_count": 0,
+   "link_to": "NSSF Uganda Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "LST Return",
+   "link_count": 0,
+   "link_to": "LST Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Tanzania Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "TRA Employment Taxes",
+   "link_count": 0,
+   "link_to": "TRA Employment Taxes",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "NSSF Tanzania Remittance",
+   "link_count": 0,
+   "link_to": "NSSF Tanzania Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Rwanda Reports",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "RRA Unified Declaration",
+   "link_count": 0,
+   "link_to": "RRA Unified Declaration",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Burundi Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "OBR PAYE Return",
+   "link_count": 0,
+   "link_to": "OBR PAYE Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "INSS Burundi Remittance",
+   "link_count": 0,
+   "link_to": "INSS Burundi Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Malawi Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "MRA P12 PAYE Return",
+   "link_count": 0,
+   "link_to": "MRA P12 PAYE Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "MRA P9 Deduction Certificate",
+   "link_count": 0,
+   "link_to": "MRA P9 Deduction Certificate",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Zambia Reports",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "ZRA P11 PAYE Return",
+   "link_count": 0,
+   "link_to": "ZRA P11 PAYE Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "NAPSA Remittance",
+   "link_count": 0,
+   "link_to": "NAPSA Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "NHIMA Remittance",
+   "link_count": 0,
+   "link_to": "NHIMA Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Nigeria Reports",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Nigeria PAYE Schedule",
+   "link_count": 0,
+   "link_to": "Nigeria PAYE Schedule",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "PenCom Remittance",
+   "link_count": 0,
+   "link_to": "PenCom Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "NHF Remittance",
+   "link_count": 0,
+   "link_to": "NHF Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "NHIS Schedule",
+   "link_count": 0,
+   "link_to": "NHIS Schedule",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "DRC Reports",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "DRC Unified Declaration",
+   "link_count": 0,
+   "link_to": "DRC Unified Declaration",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Mozambique Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "AT IRPS Return",
+   "link_count": 0,
+   "link_to": "AT IRPS Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "INSS Mozambique Remittance",
+   "link_count": 0,
+   "link_to": "INSS Mozambique Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Angola Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "AGT IRT Return",
+   "link_count": 0,
+   "link_to": "AGT IRT Return",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "INSS Angola Remittance",
+   "link_count": 0,
+   "link_to": "INSS Angola Remittance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-03-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Payroll Africa",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "Payroll",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 10.0,
+ "shortcuts": [
+  {
+   "color": "Green",
+   "label": "Payroll Africa Settings",
+   "link_to": "Payroll Africa Settings",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "label": "Statutory Deductions Summary",
+   "link_to": "Statutory Deductions Summary",
+   "type": "Report"
+  },
+  {
+   "color": "Orange",
+   "label": "P9A Tax Deduction Card",
+   "link_to": "P9A Tax Deduction Card",
+   "type": "Report"
+  }
+ ],
+ "title": "Payroll Africa",
+ "type": "Workspace"
+}

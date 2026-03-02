@@ -1,0 +1,139 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "napsa_section",
+  "napsa_employee_rate",
+  "column_break_napsa",
+  "napsa_employer_rate",
+  "napsa_cap_section",
+  "napsa_cap",
+  "nhima_section",
+  "nhima_employee_rate",
+  "column_break_nhima",
+  "nhima_employer_rate",
+  "paye_section",
+  "paye_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "napsa_section",
+   "fieldtype": "Section Break",
+   "label": "NAPSA (National Pension Scheme Authority)"
+  },
+  {
+   "fieldname": "napsa_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "5",
+   "description": "NAPSA employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_napsa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "napsa_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "5",
+   "description": "NAPSA employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "napsa_cap_section",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "napsa_cap",
+   "fieldtype": "Currency",
+   "label": "NAPSA Monthly Gross Cap",
+   "default": "8541",
+   "description": "Maximum monthly gross for NAPSA calculation (ZMW)"
+  },
+  {
+   "fieldname": "nhima_section",
+   "fieldtype": "Section Break",
+   "label": "NHIMA (National Health Insurance)"
+  },
+  {
+   "fieldname": "nhima_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "1",
+   "description": "NHIMA employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_nhima",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nhima_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "1",
+   "description": "NHIMA employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "PAYE Bands",
+   "options": "Zambia PAYE Band",
+   "description": "Progressive PAYE tax bands (monthly amounts in ZMW)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Zambia Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

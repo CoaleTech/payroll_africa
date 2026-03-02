@@ -1,0 +1,98 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "pension_section",
+  "pension_employee_rate",
+  "column_break_pension",
+  "pension_employer_rate",
+  "paye_section",
+  "paye_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "pension_section",
+   "fieldtype": "Section Break",
+   "label": "Pension (National Pension Scheme)"
+  },
+  {
+   "fieldname": "pension_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "5",
+   "description": "Pension employee contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "column_break_pension",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pension_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "10",
+   "description": "Pension employer contribution rate (% of gross)"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "PAYE Bands",
+   "options": "Malawi PAYE Band",
+   "description": "Progressive PAYE tax bands (monthly amounts in MWK)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Malawi Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

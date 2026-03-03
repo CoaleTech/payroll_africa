@@ -23,6 +23,17 @@ def after_install():
 def after_migrate():
 	"""Run after bench migrate."""
 	create_custom_fields()
+	setup_kenya()
+	setup_uganda()
+	setup_tanzania()
+	setup_rwanda()
+	setup_burundi()
+	setup_zambia()
+	setup_malawi()
+	setup_nigeria()
+	setup_drc()
+	setup_angola()
+	setup_mozambique()
 	setup_workspace_sidebar()
 	setup_desktop_icon()
 
@@ -118,11 +129,17 @@ def _create_salary_structure(name, currency, deductions):
 		bs.flags.ignore_permissions = True
 		bs.insert()
 
+	company = frappe.db.get_default("company") or frappe.db.get_value("Company", {}, "name")
+	if not company:
+		# No company set up yet; salary structures can be created later via after_migrate
+		return
+
 	doc = frappe.new_doc("Salary Structure")
 	doc.__newname = name
 	doc.is_active = "Yes"
 	doc.payroll_frequency = "Monthly"
 	doc.currency = currency
+	doc.company = company
 
 	# Basic Salary earning (formula = base)
 	doc.append("earnings", {

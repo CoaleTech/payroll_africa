@@ -25,10 +25,6 @@ before_uninstall = "payroll_africa.setup.before_uninstall"
 # Fixtures
 fixtures = [
 	{
-		"doctype": "Custom Field",
-		"filters": [["module", "=", "Payroll Africa"]],
-	},
-	{
 		"doctype": "Income Tax Slab",
 		"filters": [["name", "in", ["Kenya PAYE 2025", "Uganda PAYE 2025", "Tanzania PAYE 2025", "Rwanda PAYE 2025", "Burundi PAYE 2025", "Malawi PAYE 2025", "Zambia PAYE 2025", "DRC PAYE 2025", "Nigeria PAYE 2025", "Mozambique PAYE 2025", "Angola PAYE 2025"]]],
 	},

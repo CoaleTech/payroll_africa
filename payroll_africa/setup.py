@@ -2,8 +2,51 @@ import frappe
 from frappe import _
 
 
+# ── Currency codes required by each country setup ──────────────────────
+REQUIRED_CURRENCIES = {
+	"KES": {"currency_name": "Kenyan Shilling", "symbol": "KSh", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Cent", "fraction_units": 100},
+	"UGX": {"currency_name": "Ugandan Shilling", "symbol": "USh", "number_format": "#,###", "smallest_currency_fraction_value": 1, "fraction": "Cent", "fraction_units": 100},
+	"TZS": {"currency_name": "Tanzanian Shilling", "symbol": "TSh", "number_format": "#,###", "smallest_currency_fraction_value": 1, "fraction": "Cent", "fraction_units": 100},
+	"RWF": {"currency_name": "Rwandan Franc", "symbol": "FRw", "number_format": "#,###", "smallest_currency_fraction_value": 1, "fraction": "Centime", "fraction_units": 100},
+	"BIF": {"currency_name": "Burundian Franc", "symbol": "FBu", "number_format": "#,###", "smallest_currency_fraction_value": 1, "fraction": "Centime", "fraction_units": 100},
+	"ZMW": {"currency_name": "Zambian Kwacha", "symbol": "ZK", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Ngwee", "fraction_units": 100},
+	"MWK": {"currency_name": "Malawian Kwacha", "symbol": "MK", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Tambala", "fraction_units": 100},
+	"CDF": {"currency_name": "Congolese Franc", "symbol": "FC", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Centime", "fraction_units": 100},
+	"NGN": {"currency_name": "Nigerian Naira", "symbol": "₦", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Kobo", "fraction_units": 100},
+	"MZN": {"currency_name": "Mozambican Metical", "symbol": "MT", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Centavo", "fraction_units": 100},
+	"AOA": {"currency_name": "Angolan Kwanza", "symbol": "Kz", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Cêntimo", "fraction_units": 100},
+}
+
+
+def _ensure_currencies():
+	"""Create Currency records that don't already exist.
+
+	ERPNext ships many currencies but a fresh installation may be missing some
+	African currencies (e.g. AOA, MZN, CDF).  This helper guarantees every
+	currency referenced by the country setups is present before we try to link
+	to it.
+	"""
+	for code, meta in REQUIRED_CURRENCIES.items():
+		if frappe.db.exists("Currency", code):
+			continue
+		doc = frappe.new_doc("Currency")
+		doc.name = code
+		doc.currency_name = meta["currency_name"]
+		doc.symbol = meta.get("symbol", "")
+		doc.number_format = meta.get("number_format", "#,###.##")
+		doc.smallest_currency_fraction_value = meta.get("smallest_currency_fraction_value", 0.01)
+		doc.fraction = meta.get("fraction", "")
+		doc.fraction_units = meta.get("fraction_units", 100)
+		doc.enabled = 1
+		doc.flags.ignore_permissions = True
+		doc.db_insert()
+
+	frappe.db.commit()
+
+
 def after_install():
 	"""Run after app installation."""
+	_ensure_currencies()
 	create_custom_fields()
 	setup_kenya()
 	setup_uganda()
@@ -22,6 +65,7 @@ def after_install():
 
 def after_migrate():
 	"""Run after bench migrate."""
+	_ensure_currencies()
 	create_custom_fields()
 	setup_kenya()
 	setup_uganda()

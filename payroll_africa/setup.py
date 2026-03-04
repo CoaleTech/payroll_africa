@@ -1,5 +1,4 @@
 import frappe
-from frappe import _
 
 
 # ── Currency codes required by each country setup ──────────────────────
@@ -47,7 +46,6 @@ def _ensure_currencies():
 def after_install():
 	"""Run after app installation."""
 	_ensure_currencies()
-	create_custom_fields()
 	setup_kenya()
 	setup_uganda()
 	setup_tanzania()
@@ -66,7 +64,6 @@ def after_install():
 def after_migrate():
 	"""Run after bench migrate."""
 	_ensure_currencies()
-	create_custom_fields()
 	setup_kenya()
 	setup_uganda()
 	setup_tanzania()
@@ -80,76 +77,6 @@ def after_migrate():
 	setup_mozambique()
 	setup_workspace_sidebar()
 	setup_desktop_icon()
-
-
-def create_custom_fields():
-	"""Create custom fields on standard DocTypes."""
-	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
-
-	p9a_options = (
-		"\nBasic Salary\nBenefits NonCash\nValue of Quarters\nTotal Gross Pay"
-		"\nE1 Defined Contribution Retirement Scheme"
-		"\nE2 Defined Contribution Retirement Scheme"
-		"\nE3 Defined Contribution Retirement Scheme"
-		"\nOwner Occupied Interest"
-		"\nRetirement Contribution and Owner Occupied Interest"
-		"\nChargeable Pay\nHousing Levy\nSHIF\nTax Charged"
-		"\nPersonal Relief\nInsurance Relief\nPAYE Tax"
-	)
-	p10a_options = (
-		"\nBasic Salary\nHousing Allowance\nTransport Allowance"
-		"\nLeave Pay\nOvertime\nDirectors Fee\nOther Allowance"
-		"\nTotal Cash Pay\nValue of Car Benefit\nOther Non Cash Benefits"
-		"\nTotal Non Cash Pay\nGlobal Income\nType of Housing"
-		"\nRent of House\nComputed Rent of House"
-		"\nRent Recovered from Employee\nNet Value of Housing"
-		"\nTotal Gross Pay\n30 Percent of Cash Pay"
-		"\nActual Contribution\nPermissible Limit\nMortgage Interest"
-		"\nAffordable Housing Levy\nSHIF\nAmount of Benefit"
-		"\nTaxable Pay\nTax Payable\nMonthly Personal Relief"
-		"\nAmount of Insurance\nPAYE Tax\nSelf Assessed PAYE Tax"
-	)
-
-	custom_fields = {
-		"Employee": [
-			{
-				"fieldname": "payroll_country",
-				"fieldtype": "Link",
-				"label": "Payroll Country",
-				"options": "Country",
-				"insert_after": "company",
-				"description": "Country for statutory payroll deduction rules. Falls back to Company country if not set.",
-				"module": "Payroll Africa",
-			}
-		],
-		"Salary Component": [
-			{
-				"fieldname": "payroll_africa_section",
-				"fieldtype": "Section Break",
-				"label": "Kenya Statutory Tags",
-				"insert_after": "description",
-				"collapsible": 1,
-				"module": "Payroll Africa",
-			},
-			{
-				"fieldname": "p9a_tax_deduction_card_type",
-				"fieldtype": "Select",
-				"label": "P9A Tax Deduction Card Type",
-				"options": p9a_options,
-				"insert_after": "payroll_africa_section",
-				"module": "Payroll Africa",
-			},
-			{
-				"fieldname": "p10a_tax_deduction_card_type",
-				"fieldtype": "Select",
-				"label": "P10A Tax Deduction Card Type",
-				"options": p10a_options,
-				"insert_after": "p9a_tax_deduction_card_type",
-				"module": "Payroll Africa",
-			},
-		],
-	}
-	create_custom_fields(custom_fields, update=True)
 
 
 def _create_salary_structure(name, currency, deductions):

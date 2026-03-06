@@ -1,0 +1,358 @@
+{%- set company = frappe.get_doc("Company", doc.company) -%}
+{%- set employee = frappe.get_doc("Employee", doc.employee) -%}
+{%- set currency = doc.currency or company.default_currency or "KES" -%}
+{%- set country = employee.payroll_country or company.country or "" -%}
+
+<style>
+	.payslip-container {
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 10pt;
+		color: #333;
+		line-height: 1.4;
+	}
+	.payslip-container table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	.payslip-header {
+		border-bottom: 3px solid #333;
+		padding-bottom: 10px;
+		margin-bottom: 10px;
+	}
+	.payslip-header .company-name {
+		font-size: 16pt;
+		font-weight: bold;
+		color: #222;
+	}
+	.payslip-header .company-details {
+		font-size: 8pt;
+		color: #666;
+	}
+	.payslip-header .slip-title {
+		font-size: 13pt;
+		font-weight: bold;
+		text-align: right;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+	}
+	.payslip-header .slip-id {
+		text-align: right;
+		font-size: 9pt;
+		color: #666;
+	}
+	.info-section {
+		margin: 8px 0;
+		border: 1px solid #ddd;
+		border-radius: 3px;
+	}
+	.info-section td {
+		padding: 4px 8px;
+		font-size: 9pt;
+	}
+	.info-section .label {
+		color: #666;
+		width: 140px;
+		white-space: nowrap;
+	}
+	.info-section .value {
+		font-weight: 600;
+		color: #222;
+	}
+	.info-section .section-head {
+		background-color: #f5f5f5;
+		font-weight: bold;
+		font-size: 9pt;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		padding: 5px 8px;
+		color: #444;
+		border-bottom: 1px solid #ddd;
+	}
+	.earnings-deductions {
+		margin: 8px 0;
+	}
+	.earnings-deductions table {
+		border: 1px solid #ddd;
+		border-radius: 3px;
+	}
+	.earnings-deductions th {
+		background-color: #f5f5f5;
+		font-size: 9pt;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		padding: 6px 8px;
+		text-align: left;
+		border-bottom: 1px solid #ddd;
+		color: #444;
+	}
+	.earnings-deductions th.amount-col {
+		text-align: right;
+	}
+	.earnings-deductions td {
+		padding: 4px 8px;
+		font-size: 9pt;
+		border-bottom: 1px solid #eee;
+	}
+	.earnings-deductions td.amount {
+		text-align: right;
+		font-family: 'Courier New', monospace;
+		white-space: nowrap;
+	}
+	.earnings-deductions tr.subtotal-row td {
+		font-weight: bold;
+		border-top: 2px solid #999;
+		background-color: #fafafa;
+		padding: 6px 8px;
+	}
+	.net-pay-section {
+		margin: 10px 0;
+		border: 2px solid #333;
+		border-radius: 3px;
+		background-color: #f9f9f9;
+	}
+	.net-pay-section td {
+		padding: 8px 12px;
+	}
+	.net-pay-label {
+		font-size: 12pt;
+		font-weight: bold;
+		text-transform: uppercase;
+	}
+	.net-pay-amount {
+		font-size: 14pt;
+		font-weight: bold;
+		text-align: right;
+		font-family: 'Courier New', monospace;
+		color: #111;
+	}
+	.net-pay-words {
+		font-size: 8pt;
+		color: #666;
+		font-style: italic;
+		padding: 2px 12px 8px;
+	}
+	.ytd-section {
+		margin-top: 8px;
+		border: 1px solid #ddd;
+		border-radius: 3px;
+	}
+	.ytd-section th {
+		background-color: #f5f5f5;
+		font-size: 8pt;
+		text-transform: uppercase;
+		padding: 5px 8px;
+		text-align: right;
+		border-bottom: 1px solid #ddd;
+		color: #444;
+	}
+	.ytd-section th:first-child {
+		text-align: left;
+	}
+	.ytd-section td {
+		padding: 4px 8px;
+		font-size: 9pt;
+		text-align: right;
+		font-family: 'Courier New', monospace;
+	}
+	.ytd-section td:first-child {
+		text-align: left;
+		font-family: Arial, Helvetica, sans-serif;
+	}
+	.footer-note {
+		margin-top: 15px;
+		font-size: 7pt;
+		color: #999;
+		text-align: center;
+		border-top: 1px solid #ddd;
+		padding-top: 8px;
+	}
+</style>
+
+<div class="payslip-container">
+	<!-- HEADER: Company + Slip Title -->
+	<div class="payslip-header">
+		<table>
+			<tr>
+				<td style="vertical-align: top; width: 60%;">
+					<div class="company-name">{{ company.company_name }}</div>
+					<div class="company-details">
+						{%- if company.address %}{{ company.address }}<br>{% endif -%}
+						{%- if company.tax_id %}Tax ID: {{ company.tax_id }}{% endif -%}
+						{%- if company.phone_no %} &bull; Tel: {{ company.phone_no }}{% endif -%}
+					</div>
+				</td>
+				<td style="vertical-align: top; width: 40%;">
+					<div class="slip-title">Payslip</div>
+					<div class="slip-id">
+						{{ doc.name }}<br>
+						<strong>Pay Date:</strong> {{ doc.posting_date or doc.end_date | default("") }}
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<!-- EMPLOYEE DETAILS + PAY PERIOD -->
+	<table class="info-section">
+		<tr>
+			<td colspan="4" class="section-head">Employee Details</td>
+		</tr>
+		<tr>
+			<td class="label">Employee ID</td>
+			<td class="value">{{ doc.employee }}</td>
+			<td class="label">Pay Period</td>
+			<td class="value">{{ frappe.format_date(doc.start_date) }} &ndash; {{ frappe.format_date(doc.end_date) }}</td>
+		</tr>
+		<tr>
+			<td class="label">Employee Name</td>
+			<td class="value">{{ doc.employee_name }}</td>
+			<td class="label">Working Days</td>
+			<td class="value">{{ doc.total_working_days }}</td>
+		</tr>
+		<tr>
+			<td class="label">Department</td>
+			<td class="value">{{ doc.department or "" }}</td>
+			<td class="label">Payment Days</td>
+			<td class="value">{{ doc.payment_days }}</td>
+		</tr>
+		<tr>
+			<td class="label">Designation</td>
+			<td class="value">{{ doc.designation or "" }}</td>
+			<td class="label">Leave Without Pay</td>
+			<td class="value">{{ doc.leave_without_pay or 0 }}</td>
+		</tr>
+		{%- if employee.payroll_country %}
+		<tr>
+			<td class="label">Payroll Country</td>
+			<td class="value">{{ employee.payroll_country }}</td>
+			<td class="label">Branch</td>
+			<td class="value">{{ doc.branch or "" }}</td>
+		</tr>
+		{%- else %}
+		<tr>
+			<td class="label">Branch</td>
+			<td class="value">{{ doc.branch or "" }}</td>
+			<td class="label"></td>
+			<td class="value"></td>
+		</tr>
+		{%- endif %}
+		{%- if employee.tax_id or employee.get("kra_pin") %}
+		<tr>
+			<td class="label">Tax PIN / ID</td>
+			<td class="value">{{ employee.tax_id or employee.get("kra_pin") or "" }}</td>
+			<td class="label"></td>
+			<td class="value"></td>
+		</tr>
+		{%- endif %}
+	</table>
+
+	<!-- EARNINGS & DEDUCTIONS side by side -->
+	<div class="earnings-deductions">
+		<table>
+			<tr>
+				<td style="width: 50%; vertical-align: top; padding-right: 4px;">
+					<!-- EARNINGS -->
+					<table>
+						<thead>
+							<tr>
+								<th>Earnings</th>
+								<th class="amount-col">Amount ({{ currency }})</th>
+							</tr>
+						</thead>
+						<tbody>
+							{%- for row in doc.earnings %}
+							{%- if row.amount and row.amount > 0 %}
+							<tr>
+								<td>{{ row.salary_component }}</td>
+								<td class="amount">{{ frappe.utils.fmt_money(row.amount, currency=currency) }}</td>
+							</tr>
+							{%- endif %}
+							{%- endfor %}
+							<tr class="subtotal-row">
+								<td>Gross Pay</td>
+								<td class="amount">{{ frappe.utils.fmt_money(doc.gross_pay, currency=currency) }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+				<td style="width: 50%; vertical-align: top; padding-left: 4px;">
+					<!-- DEDUCTIONS -->
+					<table>
+						<thead>
+							<tr>
+								<th>Deductions</th>
+								<th class="amount-col">Amount ({{ currency }})</th>
+							</tr>
+						</thead>
+						<tbody>
+							{%- for row in doc.deductions %}
+							{%- if row.amount and row.amount > 0 %}
+							<tr>
+								<td>{{ row.salary_component }}</td>
+								<td class="amount">{{ frappe.utils.fmt_money(row.amount, currency=currency) }}</td>
+							</tr>
+							{%- endif %}
+							{%- endfor %}
+							<tr class="subtotal-row">
+								<td>Total Deductions</td>
+								<td class="amount">{{ frappe.utils.fmt_money(doc.total_deduction, currency=currency) }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<!-- NET PAY -->
+	<table class="net-pay-section">
+		<tr>
+			<td class="net-pay-label">Net Pay</td>
+			<td class="net-pay-amount">{{ frappe.utils.fmt_money(doc.net_pay, currency=currency) }}</td>
+		</tr>
+	</table>
+	{%- if doc.total_in_words %}
+	<div class="net-pay-words">{{ doc.total_in_words }}</div>
+	{%- endif %}
+
+	<!-- YEAR TO DATE -->
+	{%- set has_ytd = doc.earnings | selectattr("year_to_date") | list | length > 0 or doc.get("year_to_date") %}
+	{%- if has_ytd %}
+	<table class="ytd-section">
+		<thead>
+			<tr>
+				<th style="text-align: left;">Year to Date Summary</th>
+				<th>Gross YTD</th>
+				<th>Deductions YTD</th>
+				<th>Net YTD</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Cumulative</td>
+				<td>
+					{%- set gross_ytd = doc.earnings | sum(attribute='year_to_date') if doc.earnings else 0 -%}
+					{{ frappe.utils.fmt_money(gross_ytd, currency=currency) }}
+				</td>
+				<td>
+					{%- set ded_ytd = doc.deductions | sum(attribute='year_to_date') if doc.deductions else 0 -%}
+					{{ frappe.utils.fmt_money(ded_ytd, currency=currency) }}
+				</td>
+				<td>
+					{%- if doc.get("year_to_date") -%}
+						{{ frappe.utils.fmt_money(doc.year_to_date, currency=currency) }}
+					{%- else -%}
+						{{ frappe.utils.fmt_money((gross_ytd or 0) - (ded_ytd or 0), currency=currency) }}
+					{%- endif -%}
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	{%- endif %}
+
+	<!-- FOOTER -->
+	<div class="footer-note">
+		This is a computer-generated payslip and does not require a signature.
+		{%- if country %} &bull; {{ country }}{% endif %}
+	</div>
+</div>

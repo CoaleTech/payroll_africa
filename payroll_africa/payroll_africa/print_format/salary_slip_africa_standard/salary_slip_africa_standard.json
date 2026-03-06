@@ -1,0 +1,17 @@
+{
+ "doctype": "Print Format",
+ "name": "Salary Slip Africa Standard",
+ "doc_type": "Salary Slip",
+ "module": "Payroll Africa",
+ "standard": "Yes",
+ "custom_format": 1,
+ "print_format_type": "Jinja",
+ "print_format_builder": 0,
+ "disabled": 0,
+ "align_labels_right": 0,
+ "show_section_headings": 0,
+ "line_breaks": 0,
+ "font": "Default",
+ "raw_printing": 0,
+ "idx": 0
+}

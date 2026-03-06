@@ -143,10 +143,9 @@ def setup_kenya():
 
 def _create_kenya_settings():
 	"""Create Kenya Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Kenya Payroll Settings"):
+	doc = frappe.get_doc("Kenya Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Kenya Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.personal_relief = 2400
@@ -355,10 +354,9 @@ def setup_uganda():
 
 def _create_uganda_settings():
 	"""Create Uganda Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Uganda Payroll Settings"):
+	doc = frappe.get_doc("Uganda Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Uganda Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.nssf_employee_rate = 5
@@ -489,10 +487,9 @@ def setup_tanzania():
 
 def _create_tanzania_settings():
 	"""Create Tanzania Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Tanzania Payroll Settings"):
+	doc = frappe.get_doc("Tanzania Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Tanzania Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.nssf_employee_rate = 10
@@ -637,10 +634,9 @@ def setup_rwanda():
 
 def _create_rwanda_settings():
 	"""Create Rwanda Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Rwanda Payroll Settings"):
+	doc = frappe.get_doc("Rwanda Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Rwanda Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.pension_employee_rate = 6
@@ -807,10 +803,9 @@ def setup_burundi():
 
 def _create_burundi_settings():
 	"""Create Burundi Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Burundi Payroll Settings"):
+	doc = frappe.get_doc("Burundi Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Burundi Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.inss_employee_rate = 4
@@ -988,10 +983,9 @@ def setup_zambia():
 
 def _create_zambia_settings():
 	"""Create Zambia Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Zambia Payroll Settings"):
+	doc = frappe.get_doc("Zambia Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Zambia Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.napsa_employee_rate = 5
@@ -1133,10 +1127,9 @@ def setup_malawi():
 
 def _create_malawi_settings():
 	"""Create Malawi Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Malawi Payroll Settings"):
+	doc = frappe.get_doc("Malawi Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Malawi Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.pension_employee_rate = 5
@@ -1255,10 +1248,9 @@ def setup_drc():
 
 def _create_drc_settings():
 	"""Create DRC Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("DRC Payroll Settings"):
+	doc = frappe.get_doc("DRC Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("DRC Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.inss_pension_employee_rate = 5
@@ -1425,10 +1417,9 @@ def setup_nigeria():
 
 def _create_nigeria_settings():
 	"""Create Nigeria Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Nigeria Payroll Settings"):
+	doc = frappe.get_doc("Nigeria Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Nigeria Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.pension_employee_rate = 8
@@ -1609,10 +1600,9 @@ def setup_mozambique():
 
 def _create_mozambique_settings():
 	"""Create Mozambique Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Mozambique Payroll Settings"):
+	doc = frappe.get_doc("Mozambique Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Mozambique Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.inss_employee_rate = 3
@@ -1731,10 +1721,9 @@ def setup_angola():
 
 def _create_angola_settings():
 	"""Create Angola Payroll Settings with 2025 default rates."""
-	if frappe.db.exists("Angola Payroll Settings"):
+	doc = frappe.get_doc("Angola Payroll Settings")
+	if doc.paye_bands:
 		return
-
-	doc = frappe.new_doc("Angola Payroll Settings")
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.inss_employee_rate = 3

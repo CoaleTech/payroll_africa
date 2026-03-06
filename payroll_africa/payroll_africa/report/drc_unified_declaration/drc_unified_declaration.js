@@ -7,6 +7,9 @@ frappe.query_reports["DRC Unified Declaration"] = {
 			options: "Company",
 			reqd: 1,
 			default: frappe.defaults.get_user_default("Company"),
+			get_query: function() {
+				return { filters: { country: "Congo, The Democratic Republic of the" } };
+			},
 		},
 		{
 			fieldname: "from_date",
@@ -23,4 +26,23 @@ frappe.query_reports["DRC Unified Declaration"] = {
 			default: frappe.datetime.get_today(),
 		},
 	],
+	onload: function(report) {
+		frappe.call({
+			method: "frappe.client.get_list",
+			args: {
+				doctype: "Company",
+				filters: { country: "Congo, The Democratic Republic of the" },
+				fields: ["name"],
+				limit_page_length: 1,
+			},
+			callback: function(r) {
+				if (r.message && r.message.length) {
+					var company_filter = report.get_filter("company");
+					if (company_filter) {
+						company_filter.set_value(r.message[0].name);
+					}
+				}
+			},
+		});
+	},
 };

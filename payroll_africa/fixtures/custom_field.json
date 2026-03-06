@@ -128,7 +128,7 @@
   "options": "\nBasic Salary\nHousing Allowance\nTransport Allowance\nLeave Pay\nOvertime\nDirectors Fee\nOther Allowance\nTotal Cash Pay\nValue of Car Benefit\nOther Non Cash Benefits\nTotal Non Cash Pay\nGlobal Income\nType of Housing\nRent of House\nComputed Rent of House\nRent Recovered from Employee\nNet Value of Housing\nTotal Gross Pay\n30 Percent of Cash Pay\nActual Contribution\nPermissible Limit\nMortgage Interest\nAffordable Housing Levy\nSHIF\nAmount of Benefit\nTaxable Pay\nTax Payable\nMonthly Personal Relief\nAmount of Insurance\nPAYE Tax\nSelf Assessed PAYE Tax",
   "insert_after": "p9a_tax_deduction_card_type",
   "module": "Payroll Africa",
-  "name": "Salary Component-custom_p10a_tax_deduction_card_type",
+  "name": "Salary Component-p10a_tax_deduction_card_type",
   "is_system_generated": 0,
   "collapsible": 0,
   "bold": 0,

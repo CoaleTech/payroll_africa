@@ -134,3 +134,58 @@ def recalculate_salary_slips(country, from_date, to_date, company=None):
 		"updated": updated,
 		"message": _("{0} salary slip(s) recalculated for {1}").format(updated, country),
 	}
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_filtered_salary_components(doctype, txt, searchfield, start, page_len, filters):
+	"""Return salary components excluding those from disabled countries.
+
+	Country suffixes: UG, TZ, RW, BI, ZM, MW, CD, NG, MZ, AO
+	Kenya components have no suffix (e.g. "PAYE", "NSSF Employee").
+	"""
+	disabled_suffixes = filters.get("disabled_suffixes", [])
+
+	# Remove empty string — Kenya filtering is handled separately below
+	non_empty_suffixes = [s for s in disabled_suffixes if s]
+
+	if not non_empty_suffixes and "" not in disabled_suffixes:
+		# All countries enabled — return all components matching txt
+		return frappe.db.sql(
+			"""
+			SELECT name
+			FROM `tabSalary Component`
+			WHERE (name LIKE %(txt)s OR salary_component_abbr LIKE %(txt)s)
+			ORDER BY name
+			LIMIT %(start)s, %(page_len)s
+			""",
+			{"txt": f"%{txt}%", "start": start, "page_len": page_len},
+		)
+
+	# Build exclusion conditions for non-empty suffixes
+	# Exclude components whose name ends with " <SUFFIX>"
+	suffix_conditions = " AND ".join(
+		[f"name NOT LIKE %(suffix_{i}s)s" for i, _ in enumerate(non_empty_suffixes)]
+	)
+
+	suffix_params = {
+		f"suffix_{i}s": f"% {s}" for i, s in enumerate(non_empty_suffixes)
+	}
+	suffix_params["txt"] = f"%{txt}%"
+	suffix_params["start"] = start
+	suffix_params["page_len"] = page_len
+
+	where_clause = "(name LIKE %(txt)s OR salary_component_abbr LIKE %(txt)s)"
+	if suffix_conditions:
+		where_clause += f" AND ({suffix_conditions})"
+
+	return frappe.db.sql(
+		f"""
+		SELECT name
+		FROM `tabSalary Component`
+		WHERE {where_clause}
+		ORDER BY name
+		LIMIT %(start)s, %(page_len)s
+		""",
+		suffix_params,
+	)

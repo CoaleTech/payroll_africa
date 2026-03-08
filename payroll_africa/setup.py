@@ -1845,27 +1845,148 @@ def _create_angola_income_tax_slab():
 
 
 def setup_workspace_sidebar():
-	"""Payroll Africa has its own Workspace Sidebar via workspace_sidebar/payroll_africa.json.
-	Remove any legacy items that were previously appended to the Payroll sidebar."""
-	if not frappe.db.exists("Workspace Sidebar", "Payroll"):
+	"""Rebuild Payroll Africa workspace sidebar based on enabled countries.
+
+	Reads the workspace_sidebar/payroll_africa.json template, filters out
+	sections for disabled countries, and writes the result to the database.
+	"""
+	import json
+	import os
+
+	from payroll_africa.boot import COUNTRY_FIELD_MAP, get_enabled_countries
+
+	# Remove legacy items from Payroll sidebar (unchanged from before)
+	if frappe.db.exists("Workspace Sidebar", "Payroll"):
+		sidebar = frappe.get_doc("Workspace Sidebar", "Payroll")
+		legacy_labels = {
+			"Payroll Africa", "Statutory Deductions Summary", "Employer Contributions",
+			"Cost to Company", "P9A Tax Deduction Card", "P10 Monthly Tax Return",
+			"NSSF Remittance", "SHIF Remittance", "Housing Levy Return",
+			"Kenya Payroll Settings",
+		}
+		original_count = len(sidebar.items)
+		sidebar.items = [item for item in sidebar.items if item.label not in legacy_labels]
+		if len(sidebar.items) < original_count:
+			sidebar.flags.ignore_permissions = True
+			sidebar.save()
+			frappe.db.commit()
+
+	# Load the full template sidebar JSON
+	template_path = os.path.join(
+		os.path.dirname(__file__),
+		"workspace_sidebar",
+		"payroll_africa.json",
+	)
+	if not os.path.exists(template_path):
 		return
+	with open(template_path, "r") as f:
+		template = json.load(f)
 
-	sidebar = frappe.get_doc("Workspace Sidebar", "Payroll")
+	enabled = get_enabled_countries()
 
-	# Remove any legacy Payroll Africa items from the Payroll sidebar
-	legacy_labels = {
-		"Payroll Africa", "Statutory Deductions Summary", "Employer Contributions",
-		"Cost to Company", "P9A Tax Deduction Card", "P10 Monthly Tax Return",
-		"NSSF Remittance", "SHIF Remittance", "Housing Levy Return",
-		"Kenya Payroll Settings",
-	}
-	original_count = len(sidebar.items)
-	sidebar.items = [item for item in sidebar.items if item.label not in legacy_labels]
+	# Map country settings labels to country names for filtering
+	# e.g. "Kenya Payroll Settings" -> "Kenya", "Kenya Reports" -> "Kenya"
+	_settings_to_country = {}
+	for country in COUNTRY_FIELD_MAP:
+		# Derive the label prefix used in sidebar
+		if country == "Congo, The Democratic Republic of the":
+			prefix = "DRC"
+		else:
+			prefix = country
+		_settings_to_country[f"{prefix} Payroll Settings"] = country
+		_settings_to_country[f"{prefix} Reports"] = country
 
-	if len(sidebar.items) < original_count:
-		sidebar.flags.ignore_permissions = True
-		sidebar.save()
-		frappe.db.commit()
+	# Filter items: keep non-country items, and country items only if enabled
+	filtered_items = []
+	skip_section = False
+
+	for item in template.get("items", []):
+		label = item.get("label", "")
+
+		# Check if this is a country section header
+		if item.get("type") == "Section Break" and label in _settings_to_country:
+			country = _settings_to_country[label]
+			skip_section = country not in enabled
+			if skip_section:
+				continue
+			else:
+				filtered_items.append(item)
+				continue
+
+		# Check if this is a country settings link
+		if label in _settings_to_country:
+			country = _settings_to_country[label]
+			if country not in enabled:
+				continue
+
+		# If we're inside a skipped section, skip child items
+		if skip_section and item.get("child"):
+			continue
+
+		# Non-section items reset skip_section when we hit a new section
+		if item.get("type") == "Section Break":
+			skip_section = False
+
+		filtered_items.append(item)
+
+	# Also filter out empty regional sections (East Africa, Southern Africa, etc.)
+	# A regional section is empty if it has no child links following it
+	final_items = []
+	i = 0
+	while i < len(filtered_items):
+		item = filtered_items[i]
+		if (
+			item.get("type") == "Section Break"
+			and item.get("label") in ("East Africa", "Southern Africa", "West & Central Africa")
+		):
+			# Check if next items are children of this section
+			has_children = False
+			j = i + 1
+			while j < len(filtered_items):
+				next_item = filtered_items[j]
+				if next_item.get("type") == "Section Break" and not next_item.get("child"):
+					break
+				if next_item.get("child"):
+					has_children = True
+					break
+				j += 1
+			if not has_children:
+				i += 1
+				continue
+		final_items.append(item)
+		i += 1
+
+	# Write to database
+	if frappe.db.exists("Workspace Sidebar", "Payroll Africa"):
+		frappe.db.delete("Workspace Sidebar Item", {"parent": "Payroll Africa"})
+		sidebar_doc = frappe.get_doc("Workspace Sidebar", "Payroll Africa")
+	else:
+		sidebar_doc = frappe.new_doc("Workspace Sidebar")
+		sidebar_doc.name = template.get("name", "Payroll Africa")
+		sidebar_doc.title = template.get("title", "Payroll Africa")
+		sidebar_doc.module = template.get("module", "Payroll Africa")
+		sidebar_doc.app = template.get("app", "payroll_africa")
+		sidebar_doc.header_icon = template.get("header_icon", "globe")
+		sidebar_doc.standard = 1
+
+	sidebar_doc.items = []
+	for item_data in final_items:
+		sidebar_doc.append("items", {
+			"label": item_data.get("label", ""),
+			"link_to": item_data.get("link_to", ""),
+			"link_type": item_data.get("link_type", ""),
+			"type": item_data.get("type", "Link"),
+			"icon": item_data.get("icon", ""),
+			"child": item_data.get("child", 0),
+			"collapsible": item_data.get("collapsible", 0),
+			"indent": item_data.get("indent", 0),
+			"keep_closed": item_data.get("keep_closed", 0),
+			"show_arrow": item_data.get("show_arrow", 0),
+		})
+
+	sidebar_doc.flags.ignore_permissions = True
+	sidebar_doc.save()
+	frappe.db.commit()
 
 
 def setup_desktop_icon():

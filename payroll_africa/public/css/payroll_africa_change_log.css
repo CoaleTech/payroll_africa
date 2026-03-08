@@ -1,0 +1,112 @@
+/* Payroll Africa — Enhanced Change Log Dialog Styles */
+
+.pa-changelog-entry {
+	margin-bottom: 1.5rem;
+}
+
+.pa-changelog-banner {
+	background: var(--gray-900, #1f2937);
+	border-radius: 8px;
+	padding: 1rem 1.25rem;
+	margin-bottom: 0.75rem;
+}
+
+.pa-changelog-banner-content {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.pa-changelog-icon {
+	width: 36px;
+	height: 36px;
+	flex-shrink: 0;
+	filter: brightness(0) invert(1);
+}
+
+.pa-changelog-headline {
+	color: #fff;
+	margin: 0;
+	font-size: 1.125rem;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.pa-changelog-version {
+	display: inline-block;
+	background: rgba(255, 255, 255, 0.15);
+	color: rgba(255, 255, 255, 0.85);
+	border-radius: 10px;
+	padding: 0.1rem 0.5rem;
+	font-size: 0.7rem;
+	font-weight: 500;
+	margin-top: 0.25rem;
+}
+
+.pa-changelog-description {
+	color: var(--text-muted);
+	font-size: 0.9rem;
+	margin-bottom: 1rem;
+	line-height: 1.5;
+}
+
+.pa-changelog-category {
+	margin-bottom: 0.75rem;
+}
+
+.pa-changelog-badge {
+	display: inline-block;
+	border-radius: 4px;
+	padding: 0.15rem 0.5rem;
+	font-size: 0.7rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 0.35rem;
+}
+
+.pa-badge-new {
+	background: var(--green-100, #dcfce7);
+	color: var(--green-700, #15803d);
+}
+
+.pa-badge-improved {
+	background: var(--blue-100, #dbeafe);
+	color: var(--blue-700, #1d4ed8);
+}
+
+.pa-badge-fixed {
+	background: var(--orange-100, #ffedd5);
+	color: var(--orange-700, #c2410c);
+}
+
+.pa-changelog-category ul {
+	margin: 0.25rem 0 0 1.25rem;
+	padding: 0;
+}
+
+.pa-changelog-category li {
+	font-size: 0.875rem;
+	color: var(--text-color);
+	line-height: 1.6;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .pa-changelog-banner {
+	background: var(--gray-800, #1e293b);
+}
+
+[data-theme="dark"] .pa-badge-new {
+	background: rgba(34, 197, 94, 0.15);
+	color: #4ade80;
+}
+
+[data-theme="dark"] .pa-badge-improved {
+	background: rgba(59, 130, 246, 0.15);
+	color: #60a5fa;
+}
+
+[data-theme="dark"] .pa-badge-fixed {
+	background: rgba(249, 115, 22, 0.15);
+	color: #fb923c;
+}

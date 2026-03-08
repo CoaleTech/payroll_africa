@@ -8,7 +8,17 @@ app_license = "gpl-3.0"
 required_apps = ["frappe/erpnext", "frappe/hrms"]
 
 # Includes
-app_include_css = "/assets/payroll_africa/css/payroll_africa.css"
+app_include_css = [
+	"/assets/payroll_africa/css/payroll_africa.css",
+	"/assets/payroll_africa/css/payroll_africa_change_log.css",
+]
+app_include_js = [
+	"/assets/payroll_africa/js/payroll_africa_change_log.js",
+	"/assets/payroll_africa/js/payroll_africa_salary_structure.js",
+]
+
+# Boot
+extend_bootinfo = "payroll_africa.boot.extend_bootinfo"
 
 # Document Events
 doc_events = {

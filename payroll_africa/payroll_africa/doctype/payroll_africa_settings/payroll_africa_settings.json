@@ -7,8 +7,18 @@
  "field_order": [
   "enabled",
   "section_break_countries",
-  "kenya_enabled",
-  "column_break_countries"
+  "enable_kenya",
+  "enable_uganda",
+  "enable_tanzania",
+  "enable_rwanda",
+  "enable_burundi",
+  "enable_malawi",
+  "column_break_countries",
+  "enable_zambia",
+  "enable_drc",
+  "enable_nigeria",
+  "enable_mozambique",
+  "enable_angola"
  ],
  "fields": [
   {
@@ -20,21 +30,82 @@
   {
    "fieldname": "section_break_countries",
    "fieldtype": "Section Break",
-   "label": "Enabled Countries"
+   "label": "Enabled Countries",
+   "depends_on": "eval:doc.enabled"
   },
   {
-   "fieldname": "kenya_enabled",
+   "fieldname": "enable_kenya",
    "fieldtype": "Check",
    "label": "Kenya",
    "default": "1"
   },
   {
+   "fieldname": "enable_uganda",
+   "fieldtype": "Check",
+   "label": "Uganda",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_tanzania",
+   "fieldtype": "Check",
+   "label": "Tanzania",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_rwanda",
+   "fieldtype": "Check",
+   "label": "Rwanda",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_burundi",
+   "fieldtype": "Check",
+   "label": "Burundi",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_malawi",
+   "fieldtype": "Check",
+   "label": "Malawi",
+   "default": "1"
+  },
+  {
    "fieldname": "column_break_countries",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enable_zambia",
+   "fieldtype": "Check",
+   "label": "Zambia",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_drc",
+   "fieldtype": "Check",
+   "label": "DRC",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_nigeria",
+   "fieldtype": "Check",
+   "label": "Nigeria",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_mozambique",
+   "fieldtype": "Check",
+   "label": "Mozambique",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_angola",
+   "fieldtype": "Check",
+   "label": "Angola",
+   "default": "1"
   }
  ],
  "links": [],
- "modified": "2026-03-01 00:00:00.000000",
+ "modified": "2026-03-08 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Payroll Africa",
  "name": "Payroll Africa Settings",

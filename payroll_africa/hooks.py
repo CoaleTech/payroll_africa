@@ -15,6 +15,7 @@ app_include_css = [
 app_include_js = [
 	"/assets/payroll_africa/js/payroll_africa_change_log.js",
 	"/assets/payroll_africa/js/payroll_africa_salary_structure.js",
+	"/assets/payroll_africa/js/payroll_africa_sidebar.js",
 ]
 
 # Boot

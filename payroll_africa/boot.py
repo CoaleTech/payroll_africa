@@ -18,6 +18,7 @@ COUNTRY_FIELD_MAP = {
 }
 
 
+@frappe.whitelist()
 def get_enabled_countries():
 	"""Return list of enabled country names from Payroll Africa Settings."""
 	settings = frappe.get_cached_doc("Payroll Africa Settings")

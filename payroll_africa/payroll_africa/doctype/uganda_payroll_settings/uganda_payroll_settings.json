@@ -13,7 +13,7 @@
   "column_break_nssf",
   "nssf_employer_rate",
   "lst_section",
-  "lst_annual_amount",
+  "lst_bands",
   "paye_section",
   "paye_bands"
  ],
@@ -63,11 +63,11 @@
    "label": "Local Service Tax (LST)"
   },
   {
-   "fieldname": "lst_annual_amount",
-   "fieldtype": "Currency",
-   "label": "LST Annual Amount",
-   "default": "100000",
-   "description": "Annual Local Service Tax per employee (UGX)"
+   "fieldname": "lst_bands",
+   "fieldtype": "Table",
+   "label": "LST Bands",
+   "options": "Uganda PAYE Band",
+   "description": "Graduated LST bands. From/To = monthly income range (UGX). Rate = annual LST amount (UGX, not a percentage)."
   },
   {
    "fieldname": "paye_section",

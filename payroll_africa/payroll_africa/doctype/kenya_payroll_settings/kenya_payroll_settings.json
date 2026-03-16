@@ -108,15 +108,15 @@
    "fieldname": "nssf_tier1_cap",
    "fieldtype": "Currency",
    "label": "Tier I Cap",
-   "default": "1080",
+   "default": "480",
    "description": "Maximum Tier I contribution per month (KES)"
   },
   {
    "fieldname": "nssf_tier1_upper_limit",
    "fieldtype": "Currency",
-   "label": "Tier I Upper Limit",
-   "default": "18000",
-   "description": "Lower Earnings Limit for Tier I (KES)"
+   "label": "Lower Earnings Limit",
+   "default": "8000",
+   "description": "NSSF Lower Earnings Limit - Tier I pensionable ceiling (KES)"
   },
   {
    "fieldname": "column_break_nssf",
@@ -132,9 +132,9 @@
   {
    "fieldname": "nssf_tier2_cap",
    "fieldtype": "Currency",
-   "label": "Tier II Cap",
-   "default": "1080",
-   "description": "Maximum Tier II contribution per month (KES)"
+   "label": "Upper Earnings Limit",
+   "default": "72000",
+   "description": "NSSF Upper Earnings Limit - Tier II pensionable ceiling (KES)"
   },
   {
    "fieldname": "shif_section",

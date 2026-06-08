@@ -81,8 +81,8 @@ BOOT_CACHE_KEY = "payroll_africa_enabled_countries"
 
 def extend_bootinfo(bootinfo):
 	"""Add enabled countries to boot info for client-side filtering."""
-	cached = frappe.cache().get_value(BOOT_CACHE_KEY)
+	cached = frappe.cache.get_value(BOOT_CACHE_KEY)
 	if cached is None:
 		cached = get_enabled_countries()
-		frappe.cache().set_value(BOOT_CACHE_KEY, cached, expires_in_sec=3600)
+		frappe.cache.set_value(BOOT_CACHE_KEY, cached, expires_in_sec=3600)
 	bootinfo.payroll_africa_enabled_countries = cached

@@ -9,6 +9,7 @@ Reference: SARS (South African Revenue Service)
 - Tax thresholds: Under 65: R95,750; 65-74: R148,217; 75+: R165,689
 """
 
+import frappe
 from frappe.utils import flt
 from payroll_africa.calculators.base import BaseCalculator
 

@@ -128,9 +128,9 @@ def recalculate_salary_slips(country: str, from_date: str, to_date: str, company
 			slip.flags.ignore_permissions = True
 			slip.save()
 			updated += 1
-		except Exception:
+		except Exception as e:
 			errors.append(slip_name)
-			frappe.log_error(title=f"Recalculate failed: {slip_name}")
+			frappe.log_error(title=f"Recalculate failed: {slip_name}", message=frappe.get_traceback())
 
 	return {
 		"updated": updated,

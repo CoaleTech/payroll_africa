@@ -9,10 +9,11 @@
   "column_break_1",
   "enabled",
   "cnss_section",
-  "cnss_employer_rate",
+  "cnss_rate",
+  "cnss_employee_rate",
   "cnss_ceiling",
   "col_break_cnss",
-  "cnamgs_employer_rate",
+  "cnamgs_rate",
   "pit_section",
   "tax_free_threshold",
   "pit_bands_section",
@@ -41,10 +42,17 @@
    "label": "CNSS"
   },
   {
-   "fieldname": "cnss_employer_rate",
+   "fieldname": "cnss_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employer Rate",
    "default": "21.5"
+  },
+  {
+   "fieldname": "cnss_employee_rate",
+   "fieldtype": "Percent",
+   "label": "CNSS Employee Rate",
+   "default": "4",
+   "description": "Employee CNSS contribution rate (%)"
   },
   {
    "fieldname": "cnss_ceiling",
@@ -57,7 +65,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "cnamgs_employer_rate",
+   "fieldname": "cnamgs_rate",
    "fieldtype": "Percent",
    "label": "CNAMGS Health Employer Rate",
    "default": "4"

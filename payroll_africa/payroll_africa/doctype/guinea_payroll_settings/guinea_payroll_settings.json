@@ -9,12 +9,15 @@
   "column_break_1",
   "enabled",
   "inss_section",
-  "inss_employee_rate",
-  "inss_employer_rate",
-  "inss_ceiling",
+  "inss_pension_employee_rate",
+  "inss_pension_employer_rate",
+  "minimum_wage",
   "col_break_inss",
-  "family_allowances_rate",
-  "work_injury_rate",
+  "inss_family_rate",
+  "work_injury_risk_class",
+  "amo_section",
+  "amo_employee_rate",
+  "amo_employer_rate",
   "pit_section",
   "tax_free_threshold",
   "pit_bands_section",
@@ -43,38 +46,57 @@
    "label": "INSS"
   },
   {
-   "fieldname": "inss_employee_rate",
+   "fieldname": "inss_pension_employee_rate",
    "fieldtype": "Percent",
-   "label": "INSS Employee Rate",
+   "label": "INSS Pension Employee Rate",
+   "default": "2.5"
+  },
+  {
+   "fieldname": "inss_pension_employer_rate",
+   "fieldtype": "Percent",
+   "label": "INSS Pension Employer Rate",
    "default": "5"
   },
   {
-   "fieldname": "inss_employer_rate",
-   "fieldtype": "Percent",
-   "label": "INSS Employer Rate",
-   "default": "18"
-  },
-  {
-   "fieldname": "inss_ceiling",
+   "fieldname": "minimum_wage",
    "fieldtype": "Currency",
-   "label": "INSS Ceiling (GNF)",
-   "default": "0"
+   "label": "Monthly Minimum Wage (GNF)",
+   "default": "440000",
+   "description": "Monthly minimum wage (GNF) — INSS ceiling = 8x this value"
   },
   {
    "fieldname": "col_break_inss",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "family_allowances_rate",
+   "fieldname": "inss_family_rate",
    "fieldtype": "Percent",
-   "label": "Family Allowances Rate",
-   "default": "8"
+   "label": "INSS Family Allowances Rate (Employer)",
+   "default": "3"
   },
   {
-   "fieldname": "work_injury_rate",
+   "fieldname": "work_injury_risk_class",
+   "fieldtype": "Int",
+   "label": "Work Injury Risk Class",
+   "default": "1",
+   "description": "1=Low (1.5%), 2=Medium (2.5%), 3=High (4%)"
+  },
+  {
+   "fieldname": "amo_section",
+   "fieldtype": "Section Break",
+   "label": "AMO Health Insurance"
+  },
+  {
+   "fieldname": "amo_employee_rate",
    "fieldtype": "Percent",
-   "label": "Work Injury Rate",
-   "default": "2"
+   "label": "AMO Health Employee Rate",
+   "default": "1.5"
+  },
+  {
+   "fieldname": "amo_employer_rate",
+   "fieldtype": "Percent",
+   "label": "AMO Health Employer Rate",
+   "default": "1.5"
   },
   {
    "fieldname": "pit_section",
@@ -84,8 +106,8 @@
   {
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
-   "label": "Tax-Free Threshold (GNF)",
-   "default": "0"
+   "label": "Tax-Free Threshold (GNF Annual)",
+   "default": "1200000"
   },
   {
    "fieldname": "pit_bands_section",

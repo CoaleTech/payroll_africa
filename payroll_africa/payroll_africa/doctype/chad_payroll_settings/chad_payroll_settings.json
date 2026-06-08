@@ -12,11 +12,12 @@
   "cnps_pension_employee_rate",
   "cnps_pension_employer_rate",
   "cnps_ceiling",
+  "minimum_wage",
   "col_break_cnps",
   "family_allowances_rate",
   "work_injury_risk_class",
   "pit_section",
-  "tax_free_threshold",
+  "pit_threshold",
   "pit_bands_section",
   "pit_bands"
  ],
@@ -61,6 +62,12 @@
    "default": "0"
   },
   {
+   "fieldname": "minimum_wage",
+   "fieldtype": "Currency",
+   "label": "Monthly Minimum Wage (XAF)",
+   "default": "60000"
+  },
+  {
    "fieldname": "col_break_cnps",
    "fieldtype": "Column Break"
   },
@@ -82,7 +89,7 @@
    "label": "PIT"
   },
   {
-   "fieldname": "tax_free_threshold",
+   "fieldname": "pit_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (XAF)",
    "default": "0"

@@ -68,8 +68,8 @@ class MaliCalculator(BaseCalculator):
         return base * rate
 
     def _compute_inss_employer(self, gross):
-        """INSS employer: 7.5% of capped base."""
-        rate = flt(self.settings.inss_employer_rate or 7.5) / 100
+        """INSS employer: 8.4% of capped base."""
+        rate = flt(self.settings.inss_employer_rate or 8.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 

@@ -30,7 +30,14 @@ class CongoCalculator(BaseCalculator):
             "is_employer_only": True,
         }
 
-        # 2. CNAMGS Health - Employer only (4.1%)
+        # 2. CNSS - Employee contribution (~4%)
+        cnss_employee = self._compute_cnss_employee(gross)
+        results["CNSS Employee"] = {
+            "amount": cnss_employee,
+            "is_employer_only": False,
+        }
+
+        # 3. CNAMGS Health - Employer only (4.1%)
         cnamgs_rate = flt(self.settings.cnamgs_rate or 4.1) / 100
         cnamgs_base = min(gross, cnss_ceiling) if gross > 0 else 0
         cnamgs_empr = cnamgs_base * cnamgs_rate
@@ -39,7 +46,7 @@ class CongoCalculator(BaseCalculator):
             "is_employer_only": True,
         }
 
-        # 3. PIT - progressive
+        # 4. PIT - progressive
         pit = self._compute_pit(gross)
         if pit > 0:
             results["PIT"] = {
@@ -48,6 +55,13 @@ class CongoCalculator(BaseCalculator):
             }
 
         return results
+
+    def _compute_cnss_employee(self, gross):
+        """Employee CNSS contribution (~4%), same ceiling as employer."""
+        rate = flt(self.settings.cnss_employee_rate or 4) / 100
+        ceiling = flt(self.settings.cnss_ceiling or 1500000)
+        base = min(gross, ceiling) if gross > 0 else 0
+        return base * rate
 
     def _compute_pit(self, gross):
         """PIT progressive.

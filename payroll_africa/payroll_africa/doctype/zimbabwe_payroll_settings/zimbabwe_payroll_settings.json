@@ -8,6 +8,7 @@
   "effective_from",
   "column_break_1",
   "enabled",
+  "currency_mode",
   "paye_section",
   "tax_free_threshold",
   "nssa_section",
@@ -36,6 +37,13 @@
    "default": "1"
   },
   {
+   "fieldname": "currency_mode",
+   "fieldtype": "Select",
+   "label": "Currency Mode",
+   "options": "USD\nZiG",
+   "default": "USD"
+  },
+  {
    "fieldname": "paye_section",
    "fieldtype": "Section Break",
    "label": "PAYE"
@@ -61,7 +69,7 @@
    "fieldname": "nssa_annual_ceiling",
    "fieldtype": "Currency",
    "label": "NSSA Annual Ceiling (ZiG)",
-   "default": "5040"
+   "default": "1914360"
   },
   {
    "fieldname": "col_break_nssa",

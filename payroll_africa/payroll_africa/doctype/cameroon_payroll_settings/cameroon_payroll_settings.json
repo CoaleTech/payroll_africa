@@ -24,8 +24,13 @@
   "cfc_employee_rate",
   "cfc_employer_rate",
   "fne_rate",
+  "taxe_communale_max",
   "pit_bands_section",
-  "pit_bands"
+  "pit_bands",
+  "crtv_bands_section",
+  "crtv_bands",
+  "taxe_communale_bands_section",
+  "taxe_communale_bands"
  ],
  "fields": [
   {
@@ -135,6 +140,13 @@
    "default": "1"
   },
   {
+   "fieldname": "taxe_communale_max",
+   "fieldtype": "Currency",
+   "label": "Maximum Taxe Communale (XAF)",
+   "default": "2520",
+   "description": "Maximum Taxe Communale (XAF)"
+  },
+  {
    "fieldname": "pit_bands_section",
    "fieldtype": "Section Break",
    "label": "Cameroon Tax Bands"
@@ -144,6 +156,28 @@
    "fieldtype": "Table",
    "label": "Cameroon Tax Bands",
    "options": "Cameroon PIT Band"
+  },
+  {
+   "fieldname": "crtv_bands_section",
+   "fieldtype": "Section Break",
+   "label": "CRTV Royalty Bands"
+  },
+  {
+   "fieldname": "crtv_bands",
+   "fieldtype": "Table",
+   "label": "CRTV Royalty Bands",
+   "options": "Cameroon CRTV Band"
+  },
+  {
+   "fieldname": "taxe_communale_bands_section",
+   "fieldtype": "Section Break",
+   "label": "Taxe Communale Bands"
+  },
+  {
+   "fieldname": "taxe_communale_bands",
+   "fieldtype": "Table",
+   "label": "Taxe Communale Bands",
+   "options": "Cameroon Taxe Communale Band"
   }
  ],
  "links": [],

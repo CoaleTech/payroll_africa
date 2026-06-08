@@ -17,6 +17,7 @@ def get_columns():
 		{"fieldname": "employee_name", "label": _("Employee Name"), "fieldtype": "Data", "width": 180},
 		{"fieldname": "gross_pay", "label": _("Gross Pay"), "fieldtype": "Currency", "width": 130},
 		{"fieldname":"cnss_empr", "label":_("CNSS Employer"), "fieldtype":"Currency", "width":130},
+		{"fieldname":"cnss_employee", "label":_("CNSS Employee"), "fieldtype":"Currency", "width":130},
 		{"fieldname":"cnamgs", "label":_("CNAMGS Employer"), "fieldtype":"Currency", "width":130},
 	]
 
@@ -40,11 +41,12 @@ def get_data(filters):
 	)
 
 	slip_names = [r.salary_slip for r in data]
-	amounts = fetch_component_amounts(slip_names, ['CNSS Employer', 'CNAMGS Health Employer'])
+	amounts = fetch_component_amounts(slip_names, ['CNSS Employer', 'CNSS Employee', 'CNAMGS Health Employer'])
 
 	for row in data:
 		slip_amounts = amounts.get(row.salary_slip, {})
 		row["cnss_empr"] = slip_amounts.get("CNSS Employer", 0)
+		row["cnss_employee"] = slip_amounts.get("CNSS Employee", 0)
 		row["cnamgs"] = slip_amounts.get("CNAMGS Health Employer", 0)
 		del row["salary_slip"]
 

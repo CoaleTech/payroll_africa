@@ -12,14 +12,22 @@
   "ipres_employee_rate",
   "ipres_employer_rate",
   "ipres_ceiling",
+  "minimum_wage",
+  "ipres_ceiling_multiplier",
   "col_break_ipres",
   "css_employee_rate",
   "css_employer_rate",
   "css_ceiling",
+  "amo_section",
+  "amo_applicable",
+  "amo_employee_rate",
+  "amo_employer_rate",
+  "amo_ceiling",
   "it_section",
   "tax_free_threshold_annual",
   "number_of_dependent_children",
   "child_deduction",
+  "max_deductible_children",
   "income_tax_bands_section",
   "income_tax_bands"
  ],
@@ -64,6 +72,20 @@
    "default": "299000"
   },
   {
+   "fieldname": "minimum_wage",
+   "fieldtype": "Currency",
+   "label": "Monthly Minimum Wage (XOF) — SMIG",
+   "default": "74750",
+   "description": "Monthly minimum wage (XOF) — SMIG"
+  },
+  {
+   "fieldname": "ipres_ceiling_multiplier",
+   "fieldtype": "Int",
+   "label": "IPRES Ceiling Multiplier",
+   "default": "4",
+   "description": "IPRES ceiling = minimum_wage × this multiplier"
+  },
+  {
    "fieldname": "col_break_ipres",
    "fieldtype": "Column Break"
   },
@@ -83,6 +105,35 @@
    "fieldname": "css_ceiling",
    "fieldtype": "Currency",
    "label": "CSS Ceiling (XOF)",
+   "default": "299000"
+  },
+  {
+   "fieldname": "amo_section",
+   "fieldtype": "Section Break",
+   "label": "AMO Health Insurance"
+  },
+  {
+   "fieldname": "amo_applicable",
+   "fieldtype": "Check",
+   "label": "AMO Health Applicable (>20 employees)",
+   "default": "0"
+  },
+  {
+   "fieldname": "amo_employee_rate",
+   "fieldtype": "Percent",
+   "label": "AMO Employee Rate",
+   "default": "3"
+  },
+  {
+   "fieldname": "amo_employer_rate",
+   "fieldtype": "Percent",
+   "label": "AMO Employer Rate",
+   "default": "3"
+  },
+  {
+   "fieldname": "amo_ceiling",
+   "fieldtype": "Currency",
+   "label": "AMO Ceiling (XOF)",
    "default": "299000"
   },
   {
@@ -107,6 +158,13 @@
    "fieldtype": "Currency",
    "label": "Deduction per Child (XOF)",
    "default": "100000"
+  },
+  {
+   "fieldname": "max_deductible_children",
+   "fieldtype": "Int",
+   "label": "Maximum Deductible Children",
+   "default": "6",
+   "description": "Maximum deductible dependent children"
   },
   {
    "fieldname": "income_tax_bands_section",

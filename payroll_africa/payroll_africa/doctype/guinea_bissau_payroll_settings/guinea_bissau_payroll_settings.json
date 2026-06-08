@@ -12,6 +12,7 @@
   "inss_employee_rate",
   "inss_employer_rate",
   "inss_ceiling",
+  "minimum_wage",
   "col_break_inss",
   "pit_section",
   "tax_free_threshold",
@@ -44,7 +45,7 @@
    "fieldname": "inss_employee_rate",
    "fieldtype": "Percent",
    "label": "INSS Employee Rate",
-   "default": "5"
+   "default": "8"
   },
   {
    "fieldname": "inss_employer_rate",
@@ -57,6 +58,12 @@
    "fieldtype": "Currency",
    "label": "INSS Ceiling (XOF)",
    "default": "0"
+  },
+  {
+   "fieldname": "minimum_wage",
+   "fieldtype": "Currency",
+   "label": "Minimum Wage (XOF)",
+   "default": "45000"
   },
   {
    "fieldname": "col_break_inss",

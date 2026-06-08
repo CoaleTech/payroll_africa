@@ -58,7 +58,7 @@
    "fieldname": "cnss_ceiling",
    "fieldtype": "Currency",
    "label": "CNSS Ceiling (MRU)",
-   "default": "0"
+   "default": "15000"
   },
   {
    "fieldname": "col_break_cnss",
@@ -68,7 +68,7 @@
    "fieldname": "cnam_employee_rate",
    "fieldtype": "Percent",
    "label": "CNAM Health Employee Rate",
-   "default": "2"
+   "default": "4"
   },
   {
    "fieldname": "cnam_employer_rate",

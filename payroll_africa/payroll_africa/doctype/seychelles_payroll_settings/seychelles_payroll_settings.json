@@ -11,7 +11,8 @@
   "paye_section",
   "tax_free_threshold",
   "social_section",
-  "social_employer_rate",
+  "social_security_rate",
+  "social_security_ceiling",
   "paye_bands_section",
   "paye_bands"
  ],
@@ -49,10 +50,17 @@
    "label": "Social Security"
   },
   {
-   "fieldname": "social_employer_rate",
+   "fieldname": "social_security_rate",
    "fieldtype": "Percent",
    "label": "Social Security Employer Rate",
-   "default": "3"
+   "default": "5"
+  },
+  {
+   "fieldname": "social_security_ceiling",
+   "fieldtype": "Currency",
+   "label": "Social Security Monthly Ceiling (SCR)",
+   "default": "15000",
+   "description": "Monthly ceiling for Social Security employer levy (SCR)"
   },
   {
    "fieldname": "paye_bands_section",

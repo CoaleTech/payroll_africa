@@ -11,13 +11,12 @@
   "inss_section",
   "inss_employee_rate",
   "inss_employer_rate",
-  "inss_ceiling",
+  "minimum_wage",
   "col_break_inss",
   "amo_employee_rate",
   "amo_employer_rate",
-  "amo_ceiling",
   "pit_section",
-  "tax_free_threshold",
+  "pit_threshold",
   "pit_bands_section",
   "pit_bands"
  ],
@@ -56,10 +55,11 @@
    "default": "8.4"
   },
   {
-   "fieldname": "inss_ceiling",
+   "fieldname": "minimum_wage",
    "fieldtype": "Currency",
-   "label": "INSS Ceiling (XOF)",
-   "default": "504000"
+   "label": "Monthly Minimum Wage (XOF)",
+   "default": "75000",
+   "description": "Monthly minimum wage (XOF) — INSS and AMO ceilings = 8x this value"
   },
   {
    "fieldname": "col_break_inss",
@@ -78,21 +78,15 @@
    "default": "4"
   },
   {
-   "fieldname": "amo_ceiling",
-   "fieldtype": "Currency",
-   "label": "AMO Ceiling (XOF)",
-   "default": "504000"
-  },
-  {
    "fieldname": "pit_section",
    "fieldtype": "Section Break",
    "label": "PIT"
   },
   {
-   "fieldname": "tax_free_threshold",
+   "fieldname": "pit_threshold",
    "fieldtype": "Currency",
-   "label": "Tax-Free Threshold (XOF)",
-   "default": "0"
+   "label": "PIT Tax-Free Threshold (XOF Annual)",
+   "default": "650000"
   },
   {
    "fieldname": "pit_bands_section",

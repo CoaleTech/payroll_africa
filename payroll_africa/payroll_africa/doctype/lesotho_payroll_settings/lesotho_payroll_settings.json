@@ -10,6 +10,7 @@
   "enabled",
   "paye_section",
   "tax_free_threshold",
+  "tax_credit_annual",
   "paye_bands_section",
   "paye_bands"
  ],
@@ -40,6 +41,12 @@
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (LSL)",
    "default": "21600"
+  },
+  {
+   "fieldname": "tax_credit_annual",
+   "fieldtype": "Currency",
+   "label": "Annual Tax Credit (LSL)",
+   "default": "11640"
   },
   {
    "fieldname": "paye_bands_section",

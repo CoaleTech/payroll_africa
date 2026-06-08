@@ -15,6 +15,12 @@
   "col_break_nsf",
   "csg_rate",
   "hrdc_rate",
+  "prgf_applicable",
+  "prgf_rate",
+  "prgf_exemption_threshold",
+  "fair_share_applicable",
+  "fair_share_threshold",
+  "fair_share_rate",
   "paye_section",
   "exempt_threshold_monthly",
   "paye_bands_section",
@@ -75,6 +81,48 @@
    "fieldtype": "Percent",
    "label": "HRDC Levy Rate",
    "default": "1.5"
+  },
+  {
+   "fieldname": "prgf_applicable",
+   "fieldtype": "Check",
+   "label": "PRGF Applicable",
+   "default": "0"
+  },
+  {
+   "fieldname": "prgf_rate",
+   "fieldtype": "Percent",
+   "label": "PRGF Rate",
+   "default": "2.5",
+   "depends_on": "eval:doc.prgf_applicable"
+  },
+  {
+   "fieldname": "prgf_exemption_threshold",
+   "fieldtype": "Currency",
+   "label": "PRGF Exemption Threshold (MUR)",
+   "default": "200000",
+   "depends_on": "eval:doc.prgf_applicable",
+   "description": "Basic salary above this: PRGF exempt (MUR)"
+  },
+  {
+   "fieldname": "fair_share_applicable",
+   "fieldtype": "Check",
+   "label": "Fair Share Contribution Applicable (July 2025–June 2028)",
+   "default": "0"
+  },
+  {
+   "fieldname": "fair_share_threshold",
+   "fieldtype": "Currency",
+   "label": "Fair Share Annual Threshold (MUR)",
+   "default": "12000000",
+   "depends_on": "eval:doc.fair_share_applicable",
+   "description": "Annual income threshold (MUR)"
+  },
+  {
+   "fieldname": "fair_share_rate",
+   "fieldtype": "Percent",
+   "label": "Fair Share Rate",
+   "default": "15",
+   "depends_on": "eval:doc.fair_share_applicable"
   },
   {
    "fieldname": "paye_section",

@@ -163,14 +163,15 @@ class CameroonCalculator(BaseCalculator):
         # Step 1: Less CNPS
         annual_cnps = cnps_employee * 12
 
-        # Step 2: 30% professional abatement
+        # Step 2: 30% professional abatement applied to (gross - CNPS), per DGI formula
         prof_abatement = flt(self.settings.professional_abatement_rate or 30) / 100
-        prof_deduction = annual_gross * prof_abatement
+        net_of_cnps = annual_gross - annual_cnps
+        prof_deduction = net_of_cnps * prof_abatement
 
         # Step 3: Standard deduction
         standard_deduction = flt(self.settings.standard_deduction or 500000)
 
-        taxable_annual = max(annual_gross - annual_cnps - prof_deduction - standard_deduction, 0)
+        taxable_annual = max(net_of_cnps - prof_deduction - standard_deduction, 0)
 
         # Round down to nearest 1,000
         taxable_annual = (taxable_annual // 1000) * 1000

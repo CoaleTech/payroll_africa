@@ -56,7 +56,7 @@
    "fieldname": "inss_ceiling",
    "fieldtype": "Currency",
    "label": "INSS Ceiling (STN)",
-   "default": "0"
+   "default": "500000"
   },
   {
    "fieldname": "col_break_inss",

@@ -12,11 +12,12 @@
   "cnss_employee_rate",
   "cnss_employer_rate",
   "cnss_ceiling",
+  "minimum_wage",
   "col_break_cnss",
   "amo_employee_rate",
   "amo_employer_rate",
   "pit_section",
-  "tax_free_threshold",
+  "pit_threshold",
   "pit_bands_section",
   "pit_bands"
  ],
@@ -61,6 +62,12 @@
    "default": "500000"
   },
   {
+   "fieldname": "minimum_wage",
+   "fieldtype": "Currency",
+   "label": "Monthly Minimum Wage (XOF)",
+   "default": "52000"
+  },
+  {
    "fieldname": "col_break_cnss",
    "fieldtype": "Column Break"
   },
@@ -82,7 +89,7 @@
    "label": "PIT"
   },
   {
-   "fieldname": "tax_free_threshold",
+   "fieldname": "pit_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (XOF)",
    "default": "0"

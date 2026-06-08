@@ -9,10 +9,10 @@
   "column_break_1",
   "enabled",
   "paye_section",
-  "tax_free_threshold",
+  "tax_rebate_annual",
   "enpf_section",
-  "enpf_employee_rate",
-  "enpf_employer_rate",
+  "enpf_rate",
+  "enpf_cap_total",
   "col_break_enpf",
   "sdl_rate",
   "paye_bands_section",
@@ -41,10 +41,11 @@
    "label": "PAYE"
   },
   {
-   "fieldname": "tax_free_threshold",
+   "fieldname": "tax_rebate_annual",
    "fieldtype": "Currency",
-   "label": "Tax-Free Threshold (SZL)",
-   "default": "41000"
+   "label": "Annual Primary Tax Rebate (SZL)",
+   "default": "8200",
+   "description": "Annual primary tax rebate (SZL)"
   },
   {
    "fieldname": "enpf_section",
@@ -52,16 +53,17 @@
    "label": "ENPF Pension"
   },
   {
-   "fieldname": "enpf_employee_rate",
+   "fieldname": "enpf_rate",
    "fieldtype": "Percent",
-   "label": "ENPF Employee Rate",
+   "label": "ENPF Rate (Employee & Employer)",
    "default": "5"
   },
   {
-   "fieldname": "enpf_employer_rate",
-   "fieldtype": "Percent",
-   "label": "ENPF Employer Rate",
-   "default": "10"
+   "fieldname": "enpf_cap_total",
+   "fieldtype": "Currency",
+   "label": "ENPF Monthly Cap — Total Both Sides (SZL)",
+   "default": "400",
+   "description": "Monthly ENPF cap — total both sides (SZL)"
   },
   {
    "fieldname": "col_break_enpf",

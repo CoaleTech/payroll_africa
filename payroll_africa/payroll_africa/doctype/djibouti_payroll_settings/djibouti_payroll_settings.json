@@ -12,9 +12,10 @@
   "cnss_employee_rate",
   "cnss_employer_rate",
   "cnss_ceiling",
+  "minimum_wage",
   "col_break_cnss",
   "pit_section",
-  "tax_free_threshold",
+  "pit_threshold",
   "pit_bands_section",
   "pit_bands"
  ],
@@ -59,6 +60,12 @@
    "default": "0"
   },
   {
+   "fieldname": "minimum_wage",
+   "fieldtype": "Currency",
+   "label": "Monthly Minimum Wage (DJF)",
+   "default": "40000"
+  },
+  {
    "fieldname": "col_break_cnss",
    "fieldtype": "Column Break"
   },
@@ -68,7 +75,7 @@
    "label": "PIT"
   },
   {
-   "fieldname": "tax_free_threshold",
+   "fieldname": "pit_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (DJF)",
    "default": "0"

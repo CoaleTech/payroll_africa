@@ -9,12 +9,13 @@
   "column_break_1",
   "enabled",
   "cnss_section",
+  "use_2026_reform",
   "cnss_employee_rate",
   "cnss_employer_rate",
   "cnss_ceiling",
   "col_break_cnss",
   "pit_section",
-  "tax_free_threshold",
+  "pit_threshold_annual",
   "pit_bands_section",
   "pit_bands"
  ],
@@ -39,6 +40,12 @@
    "fieldname": "cnss_section",
    "fieldtype": "Section Break",
    "label": "CNSS"
+  },
+  {
+   "fieldname": "use_2026_reform",
+   "fieldtype": "Check",
+   "label": "Use 2026 Reform Rates",
+   "default": "1"
   },
   {
    "fieldname": "cnss_employee_rate",
@@ -68,10 +75,10 @@
    "label": "PIT"
   },
   {
-   "fieldname": "tax_free_threshold",
+   "fieldname": "pit_threshold_annual",
    "fieldtype": "Currency",
-   "label": "Tax-Free Threshold (XAF)",
-   "default": "0"
+   "label": "PIT Annual Threshold (XAF)",
+   "default": "2160000"
   },
   {
    "fieldname": "pit_bands_section",

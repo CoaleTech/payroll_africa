@@ -56,7 +56,7 @@
    "fieldname": "nsif_ceiling",
    "fieldtype": "Currency",
    "label": "NSIF Ceiling (SDG)",
-   "default": "0"
+   "default": "100000"
   },
   {
    "fieldname": "col_break_nsif",

@@ -42,7 +42,7 @@ class EswatiniCalculator(BaseCalculator):
         }
 
         # 2. Skills Development Levy - Employer only (1%)
-        sdl = gross * (flt(self.settings.sdl_rate or 1) / 100) if gross > 0 else 0
+        sdl = gross * (flt(self.settings.sdl_rate or 0.2) / 100) if gross > 0 else 0
         results["Skills Development Levy"] = {
             "amount": sdl, "is_employer_only": True,
         }

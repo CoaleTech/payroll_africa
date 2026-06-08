@@ -60,13 +60,13 @@
    "fieldname": "nasscorp_employer_rate",
    "fieldtype": "Percent",
    "label": "NASSCorp Employer Rate",
-   "default": "8"
+   "default": "4.75"
   },
   {
    "fieldname": "nasscorp_ceiling",
    "fieldtype": "Currency",
    "label": "NASSCorp Ceiling (LRD)",
-   "default": "0"
+   "default": "500000"
   },
   {
    "fieldname": "paye_bands_section",

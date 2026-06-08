@@ -1,7 +1,7 @@
 """Libya statutory deduction calculator.
 
-Reference: SSF Libya
-- Social Security Fund: Employee 3.75%, Employer 14.35%
+Reference: SSF Libya (Law 13/1980)
+- Social Security Fund: Employee 3.75%, Employer 11.25%, State 0.75%
 - Solidarity Fund: 1% of gross (employee)
 - PIT: Progressive 5-10% (2 bands)
   Annual: 0-12,000@5%, 12,000+@10%
@@ -30,8 +30,8 @@ class LibyaCalculator(BaseCalculator):
             "amount": ssf_emp, "is_employer_only": False,
         }
 
-        # SSF Employer (14.35%)
-        ssf_empr = gross * (flt(self.settings.ssf_employer_rate or 14.35) / 100) if gross > 0 else 0
+        # SSF Employer (11.25%)
+        ssf_empr = gross * (flt(self.settings.ssf_employer_rate or 11.25) / 100) if gross > 0 else 0
         results["SSF Employer"] = {
             "amount": ssf_empr, "is_employer_only": True,
         }

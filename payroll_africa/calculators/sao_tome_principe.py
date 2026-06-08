@@ -1,8 +1,7 @@
 """Sao Tome and Principe statutory deduction calculator.
 
 Reference: INSS Sao Tome and Principe
-- INSS: Employer 8% (from Africa-HR reference)
-- Employee contribution: minimal or 0%
+- INSS: Employee 8%, Employer 12% (capped)
 - PIT: Progressive tax system
 """
 from frappe.utils import flt
@@ -15,8 +14,8 @@ class SaoTomePrincipeCalculator(BaseCalculator):
         ceiling = flt(self.settings.inss_ceiling or 500000)
         base = min(gross, ceiling) if gross > 0 else 0
 
-        inss_emp = base * (flt(self.settings.inss_employee_rate or 3) / 100)
-        inss_empr = base * (flt(self.settings.inss_employer_rate or 8) / 100)
+        inss_emp = base * (flt(self.settings.inss_employee_rate or 8) / 100)
+        inss_empr = base * (flt(self.settings.inss_employer_rate or 12) / 100)
         results["INSS Employee"] = {"amount": inss_emp, "is_employer_only": False}
         results["INSS Employer"] = {"amount": inss_empr, "is_employer_only": True}
 

@@ -2,6 +2,8 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
+
 
 def execute(filters=None):
 	columns = get_columns()
@@ -22,7 +24,7 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
+	conditions = standard_slip_conditions(filters)
 
 	data = frappe.db.sql(
 		"""
@@ -31,39 +33,25 @@ def get_data(filters):
 			e.ao_inss_no, ss.name as salary_slip
 		FROM `tabSalary Slip` ss
 		LEFT JOIN `tabEmployee` e ON ss.employee = e.name
-		WHERE ss.docstatus = 1 {conditions}
+		WHERE ss.docstatus = 1"""
+		+ conditions
+		+ """
 		ORDER BY ss.employee
-		""".format(conditions=conditions),
+		""",
 		filters,
 		as_dict=True,
 	)
 
-	for row in data:
-		emp = flt(frappe.db.get_value(
-			"Salary Detail",
-			{"parent": row.salary_slip, "salary_component": "INSS Employee AO", "parentfield": "deductions"},
-			"amount",
-		))
-		empr = flt(frappe.db.get_value(
-			"Salary Detail",
-			{"parent": row.salary_slip, "salary_component": "INSS Employer AO", "parentfield": "deductions"},
-			"amount",
-		))
+	slip_names = [r.salary_slip for r in data]
+	amounts = fetch_component_amounts(slip_names, ["INSS Employee AO", "INSS Employer AO"])
 
+	for row in data:
+		slip_amounts = amounts.get(row.salary_slip, {})
+		emp = slip_amounts.get("INSS Employee AO", 0)
+		empr = slip_amounts.get("INSS Employer AO", 0)
 		row["inss_employee"] = emp
 		row["inss_employer"] = empr
 		row["total_inss"] = emp + empr
 		del row["salary_slip"]
 
 	return data
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.end_date <= %(to_date)s"
-	return conditions

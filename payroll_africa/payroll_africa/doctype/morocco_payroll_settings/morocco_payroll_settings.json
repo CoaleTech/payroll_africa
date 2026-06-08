@@ -1,0 +1,198 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "cnss_section",
+  "cnss_capped_rate",
+  "cnss_uncapped_rate",
+  "column_break_cnss",
+  "cnss_ceiling",
+  "cnss_employer_section",
+  "cnss_employer_capped_rate",
+  "cnss_employer_uncapped_rate",
+  "deductions_section",
+  "professional_deduction_rate",
+  "professional_deduction_ceiling",
+  "column_break_ded",
+  "annual_exemption",
+  "family_section",
+  "number_of_dependents",
+  "max_dependents_for_allowance",
+  "column_break_fam",
+  "dependent_allowance",
+  "ir_section",
+  "ir_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "cnss_section",
+   "fieldtype": "Section Break",
+   "label": "CNSS Employee"
+  },
+  {
+   "fieldname": "cnss_capped_rate",
+   "fieldtype": "Percent",
+   "label": "CNSS Capped Rate",
+   "default": "4.48",
+   "description": "Pension/unemployment rate on capped salary"
+  },
+  {
+   "fieldname": "cnss_uncapped_rate",
+   "fieldtype": "Percent",
+   "label": "CNSS Uncapped Rate",
+   "default": "2.26",
+   "description": "AMO health rate on full gross salary"
+  },
+  {
+   "fieldname": "column_break_cnss",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cnss_ceiling",
+   "fieldtype": "Currency",
+   "label": "CNSS Ceiling",
+   "default": "6000",
+   "description": "Maximum salary subject to capped CNSS (MAD/month)"
+  },
+  {
+   "fieldname": "cnss_employer_section",
+   "fieldtype": "Section Break",
+   "label": "CNSS Employer"
+  },
+  {
+   "fieldname": "cnss_employer_capped_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Capped Rate",
+   "default": "8.6",
+   "description": "Employer rate on capped salary portion"
+  },
+  {
+   "fieldname": "cnss_employer_uncapped_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Uncapped Rate",
+   "default": "4.11",
+   "description": "Employer rate on uncapped salary portion"
+  },
+  {
+   "fieldname": "deductions_section",
+   "fieldtype": "Section Break",
+   "label": "Deductions & Exemptions"
+  },
+  {
+   "fieldname": "professional_deduction_rate",
+   "fieldtype": "Percent",
+   "label": "Professional Deduction Rate",
+   "default": "20",
+   "description": "Professional expense deduction rate on net salary"
+  },
+  {
+   "fieldname": "professional_deduction_ceiling",
+   "fieldtype": "Currency",
+   "label": "Professional Deduction Ceiling",
+   "default": "2500",
+   "description": "Monthly cap on professional expense deduction (MAD)"
+  },
+  {
+   "fieldname": "column_break_ded",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "annual_exemption",
+   "fieldtype": "Currency",
+   "label": "Annual Exemption",
+   "default": "40000",
+   "description": "Annual tax exemption amount (MAD)"
+  },
+  {
+   "fieldname": "family_section",
+   "fieldtype": "Section Break",
+   "label": "Family Allowance"
+  },
+  {
+   "fieldname": "number_of_dependents",
+   "fieldtype": "Int",
+   "label": "Number of Dependents",
+   "default": "0",
+   "description": "Number of dependents for family allowance"
+  },
+  {
+   "fieldname": "max_dependents_for_allowance",
+   "fieldtype": "Int",
+   "label": "Max Dependents for Allowance",
+   "default": "6",
+   "description": "Maximum dependents eligible for allowance"
+  },
+  {
+   "fieldname": "column_break_fam",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dependent_allowance",
+   "fieldtype": "Currency",
+   "label": "Dependent Allowance",
+   "default": "500",
+   "description": "Monthly allowance per dependent (MAD)"
+  },
+  {
+   "fieldname": "ir_section",
+   "fieldtype": "Section Break",
+   "label": "IR (Impôt sur le Revenu)"
+  },
+  {
+   "fieldname": "ir_bands",
+   "fieldtype": "Table",
+   "label": "IR Bands",
+   "options": "Morocco PAYE Band",
+   "description": "Progressive IR tax bands (annual amounts in MAD)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Morocco Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

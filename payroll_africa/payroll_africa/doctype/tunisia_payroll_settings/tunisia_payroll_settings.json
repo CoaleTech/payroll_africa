@@ -1,0 +1,155 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "cnss_section",
+  "cnss_employee_rate",
+  "cnss_employer_rate",
+  "column_break_cnss",
+  "is_exporting_company",
+  "cnss_employer_export_rate",
+  "ssc_section",
+  "ssc_rate",
+  "deductions_section",
+  "professional_deduction_rate",
+  "column_break_ded",
+  "professional_deduction_cap",
+  "irpp_section",
+  "irpp_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "cnss_section",
+   "fieldtype": "Section Break",
+   "label": "CNSS"
+  },
+  {
+   "fieldname": "cnss_employee_rate",
+   "fieldtype": "Percent",
+   "label": "CNSS Employee Rate",
+   "default": "9.18",
+   "description": "Employee CNSS contribution rate on gross salary"
+  },
+  {
+   "fieldname": "cnss_employer_rate",
+   "fieldtype": "Percent",
+   "label": "CNSS Employer Rate",
+   "default": "17.07",
+   "description": "Employer CNSS rate for standard companies"
+  },
+  {
+   "fieldname": "column_break_cnss",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "is_exporting_company",
+   "fieldtype": "Check",
+   "label": "Is Exporting Company",
+   "default": "0",
+   "description": "Wholly exporting industrial company (reduced CNSS rate)"
+  },
+  {
+   "fieldname": "cnss_employer_export_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Export Rate",
+   "default": "16.57",
+   "description": "Reduced employer CNSS rate for exporting companies"
+  },
+  {
+   "fieldname": "ssc_section",
+   "fieldtype": "Section Break",
+   "label": "Social Solidarity Contribution"
+  },
+  {
+   "fieldname": "ssc_rate",
+   "fieldtype": "Percent",
+   "label": "SSC Rate",
+   "default": "0.5",
+   "description": "Social solidarity contribution rate on gross salary"
+  },
+  {
+   "fieldname": "deductions_section",
+   "fieldtype": "Section Break",
+   "label": "Professional Deduction"
+  },
+  {
+   "fieldname": "professional_deduction_rate",
+   "fieldtype": "Percent",
+   "label": "Professional Deduction Rate",
+   "default": "10",
+   "description": "Professional expense deduction rate on gross salary"
+  },
+  {
+   "fieldname": "column_break_ded",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "professional_deduction_cap",
+   "fieldtype": "Currency",
+   "label": "Professional Deduction Cap",
+   "default": "2000",
+   "description": "Annual cap on professional expense deduction (TND)"
+  },
+  {
+   "fieldname": "irpp_section",
+   "fieldtype": "Section Break",
+   "label": "IRPP (Impôt sur le Revenu des Personnes Physiques)"
+  },
+  {
+   "fieldname": "irpp_bands",
+   "fieldtype": "Table",
+   "label": "IRPP Bands",
+   "options": "Tunisia PAYE Band",
+   "description": "Progressive IRPP tax bands (annual amounts in TND)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Tunisia Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

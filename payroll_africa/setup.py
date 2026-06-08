@@ -14,6 +14,16 @@ REQUIRED_CURRENCIES = {
 	"NGN": {"currency_name": "Nigerian Naira", "symbol": "₦", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Kobo", "fraction_units": 100},
 	"MZN": {"currency_name": "Mozambican Metical", "symbol": "MT", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Centavo", "fraction_units": 100},
 	"AOA": {"currency_name": "Angolan Kwanza", "symbol": "Kz", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Cêntimo", "fraction_units": 100},
+	"ETB": {"currency_name": "Ethiopian Birr", "symbol": "Br", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Santim", "fraction_units": 100},
+	"ZAR": {"currency_name": "South African Rand", "symbol": "R", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Cent", "fraction_units": 100},
+	"EGP": {"currency_name": "Egyptian Pound", "symbol": "£", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Piastre", "fraction_units": 100},
+	"GHS": {"currency_name": "Ghanaian Cedi", "symbol": "GH₵", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Pesewa", "fraction_units": 100},
+	"BWP": {"currency_name": "Botswana Pula", "symbol": "P", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Thebe", "fraction_units": 100},
+	"MAD": {"currency_name": "Moroccan Dirham", "symbol": "DH", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Centime", "fraction_units": 100},
+	"XOF": {"currency_name": "West African CFA Franc", "symbol": "CFA", "number_format": "# ###", "smallest_currency_fraction_value": 1, "fraction": "Centime", "fraction_units": 100},
+	"TND": {"currency_name": "Tunisian Dinar", "symbol": "DT", "number_format": "# ###.###", "smallest_currency_fraction_value": 0.001, "fraction": "Millime", "fraction_units": 1000},
+	"NAD": {"currency_name": "Namibian Dollar", "symbol": "N$", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Cent", "fraction_units": 100},
+	"MGA": {"currency_name": "Malagasy Ariary", "symbol": "Ar", "number_format": "# ###", "smallest_currency_fraction_value": 1, "fraction": "Iraimbilanja", "fraction_units": 5},
 }
 
 
@@ -25,8 +35,13 @@ def _ensure_currencies():
 	currency referenced by the country setups is present before we try to link
 	to it.
 	"""
+	existing = set(frappe.get_all(
+		"Currency",
+		filters={"name": ["in", list(REQUIRED_CURRENCIES.keys())]},
+		pluck="name",
+	))
 	for code, meta in REQUIRED_CURRENCIES.items():
-		if frappe.db.exists("Currency", code):
+		if code in existing:
 			continue
 		doc = frappe.new_doc("Currency")
 		doc.name = code
@@ -38,45 +53,135 @@ def _ensure_currencies():
 		doc.fraction_units = meta.get("fraction_units", 100)
 		doc.enabled = 1
 		doc.flags.ignore_permissions = True
-		doc.db_insert()
+		doc.insert(ignore_if_duplicate=True)
 
-	frappe.db.commit()
+
+def _setup_custom_fields():
+	"""Create or update custom fields added by this app."""
+	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+	create_custom_fields({
+		"Employee": [
+			{
+				"fieldname": "payroll_country",
+				"fieldtype": "Link",
+				"label": "Payroll Country",
+				"options": "Country",
+				"insert_after": "company",
+				"description": "Country for statutory payroll deduction rules. Falls back to Company country if not set.",
+				"module": "Payroll Africa",
+			}
+		],
+		"Salary Component": [
+			{
+				"fieldname": "payroll_africa_section",
+				"fieldtype": "Section Break",
+				"label": "Kenya Statutory Tags",
+				"insert_after": "description",
+				"collapsible": 1,
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "p9a_tax_deduction_card_type",
+				"fieldtype": "Select",
+				"label": "P9A Tax Deduction Card Type",
+				"options": "\nBasic Salary\nBenefits NonCash\nValue of Quarters\nTotal Gross Pay\nE1 Defined Contribution Retirement Scheme\nE2 Defined Contribution Retirement Scheme\nE3 Defined Contribution Retirement Scheme\nOwner Occupied Interest\nRetirement Contribution and Owner Occupied Interest\nChargeable Pay\nHousing Levy\nSHIF\nTax Charged\nPersonal Relief\nInsurance Relief\nPAYE Tax",
+				"insert_after": "payroll_africa_section",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "p10a_tax_deduction_card_type",
+				"fieldtype": "Select",
+				"label": "P10A Tax Deduction Card Type",
+				"options": "\nBasic Salary\nHousing Allowance\nTransport Allowance\nLeave Pay\nOvertime\nDirectors Fee\nOther Allowance\nTotal Cash Pay\nValue of Car Benefit\nOther Non Cash Benefits\nTotal Non Cash Pay\nGlobal Income\nType of Housing\nRent of House\nComputed Rent of House\nRent Recovered from Employee\nNet Value of Housing\nTotal Gross Pay\n30 Percent of Cash Pay\nActual Contribution\nPermissible Limit\nMortgage Interest\nAffordable Housing Levy\nSHIF\nAmount of Benefit\nTaxable Pay\nTax Payable\nMonthly Personal Relief\nAmount of Insurance\nPAYE Tax\nSelf Assessed PAYE Tax",
+				"insert_after": "p9a_tax_deduction_card_type",
+				"module": "Payroll Africa",
+			},
+		],
+	})
+
+
+def _upsert_salary_component(comp_data: dict):
+	"""Insert a Salary Component or update its p9a/p10a tags if it already exists."""
+	name = comp_data["salary_component"]
+	if frappe.db.exists("Salary Component", name):
+		updates = {}
+		for tag_field in ("p9a_tax_deduction_card_type", "p10a_tax_deduction_card_type"):
+			tag_key = tag_field.replace("_tax_deduction_card_type", "_tag")
+			if comp_data.get(tag_key):
+				updates[tag_field] = comp_data[tag_key]
+		if updates:
+			frappe.db.set_value("Salary Component", name, updates)
+		return
+
+	doc = frappe.new_doc("Salary Component")
+	for field in ("salary_component", "salary_component_abbr", "type",
+				  "variable_based_on_taxable_salary", "exempted_from_income_tax",
+				  "statistical_component", "do_not_include_in_total",
+				  "remove_if_zero_valued", "depends_on_payment_days"):
+		setattr(doc, field, comp_data.get(field, 0))
+	if comp_data.get("p9a_tag"):
+		doc.p9a_tax_deduction_card_type = comp_data["p9a_tag"]
+	if comp_data.get("p10a_tag"):
+		doc.p10a_tax_deduction_card_type = comp_data["p10a_tag"]
+	doc.flags.ignore_permissions = True
+	doc.insert()
+
+
+def _create_income_tax_slab(slab_name: str, currency: str, bands: list, personal_relief: float = 0):
+	"""Create an Income Tax Slab unless one with this name already exists."""
+	if frappe.db.exists("Income Tax Slab", slab_name):
+		return
+
+	doc = frappe.new_doc("Income Tax Slab")
+	doc.__newname = slab_name
+	doc.effective_from = "2025-01-01"
+	doc.company = ""
+	doc.currency = currency
+	doc.allow_tax_exemption = 1
+
+	for band in bands:
+		doc.append("slabs", {
+			"from_amount": band["from_amount"],
+			"to_amount": band["to_amount"],
+			"percent_deduction": band["rate"],
+		})
+
+	if personal_relief:
+		doc.append("other_taxes_and_charges", {
+			"description": "Personal Relief",
+			"percent": 0,
+			"flat_amount": -personal_relief,
+		})
+
+	doc.flags.ignore_permissions = True
+	doc.insert()
+
+
+def _run_setup():
+	"""Shared setup logic for install and migrate."""
+	_ensure_currencies()
+	_setup_custom_fields()
+	for setup_fn in (
+		setup_kenya, setup_uganda, setup_tanzania, setup_rwanda,
+		setup_burundi, setup_zambia, setup_malawi, setup_nigeria,
+		setup_drc, setup_angola, setup_mozambique,
+		setup_ethiopia, setup_south_africa, setup_egypt, setup_ghana,
+		setup_botswana, setup_morocco, setup_tunisia, setup_namibia,
+		setup_madagascar, setup_ivory_coast,
+	):
+		setup_fn()
+	setup_workspace_sidebar()
+	setup_desktop_icon()
 
 
 def after_install():
 	"""Run after app installation."""
-	_ensure_currencies()
-	setup_kenya()
-	setup_uganda()
-	setup_tanzania()
-	setup_rwanda()
-	setup_burundi()
-	setup_zambia()
-	setup_malawi()
-	setup_nigeria()
-	setup_drc()
-	setup_angola()
-	setup_mozambique()
-	setup_workspace_sidebar()
-	setup_desktop_icon()
+	_run_setup()
 
 
 def after_migrate():
 	"""Run after bench migrate."""
-	_ensure_currencies()
-	setup_kenya()
-	setup_uganda()
-	setup_tanzania()
-	setup_rwanda()
-	setup_burundi()
-	setup_zambia()
-	setup_malawi()
-	setup_nigeria()
-	setup_drc()
-	setup_angola()
-	setup_mozambique()
-	setup_workspace_sidebar()
-	setup_desktop_icon()
+	_run_setup()
 
 
 def _create_salary_structure(name, currency, deductions):
@@ -90,7 +195,6 @@ def _create_salary_structure(name, currency, deductions):
 	if frappe.db.exists("Salary Structure", name):
 		return
 
-	# Ensure Basic Salary component exists
 	if not frappe.db.exists("Salary Component", "Basic Salary"):
 		bs = frappe.new_doc("Salary Component")
 		bs.salary_component = "Basic Salary"
@@ -102,7 +206,6 @@ def _create_salary_structure(name, currency, deductions):
 
 	company = frappe.db.get_default("company") or frappe.db.get_value("Company", {}, "name")
 	if not company:
-		# No company set up yet; salary structures can be created later via after_migrate
 		return
 
 	doc = frappe.new_doc("Salary Structure")
@@ -112,14 +215,12 @@ def _create_salary_structure(name, currency, deductions):
 	doc.currency = currency
 	doc.company = company
 
-	# Basic Salary earning (formula = base)
 	doc.append("earnings", {
 		"salary_component": "Basic Salary",
 		"amount_based_on_formula": 1,
 		"formula": "base",
 	})
 
-	# All statutory deductions (amounts overridden by payroll hook)
 	for component in deductions:
 		doc.append("deductions", {
 			"salary_component": component,
@@ -143,6 +244,8 @@ def setup_kenya():
 
 def _create_kenya_settings():
 	"""Create Kenya Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Kenya Payroll Settings"):
+		return
 	doc = frappe.get_doc("Kenya Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -162,7 +265,6 @@ def _create_kenya_settings():
 	doc.nssf_tier2_cap = 1080
 	doc.nita_amount = 50
 
-	# PAYE bands (monthly, KES)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 24000, "rate": 10},
 		{"from_amount": 24001, "to_amount": 32333, "rate": 25},
@@ -274,72 +376,23 @@ def _create_kenya_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			# Update p9a/p10a tags on existing components
-			if comp_data.get("p9a_tag") or comp_data.get("p10a_tag"):
-				frappe.db.set_value("Salary Component", comp_name, {
-					"p9a_tax_deduction_card_type": comp_data.get("p9a_tag", ""),
-					"p10a_tax_deduction_card_type": comp_data.get("p10a_tag", ""),
-				})
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		# Set p9a/p10a statutory tags
-		if comp_data.get("p9a_tag"):
-			doc.p9a_tax_deduction_card_type = comp_data["p9a_tag"]
-		if comp_data.get("p10a_tag"):
-			doc.p10a_tax_deduction_card_type = comp_data["p10a_tag"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_kenya_income_tax_slab():
 	"""Create Kenya PAYE Income Tax Slab for 2025."""
-	slab_name = "Kenya PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "KES"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands
-	bands = [
-		{"from_amount": 0, "to_amount": 24000, "percent_deduction": 10},
-		{"from_amount": 24001, "to_amount": 32333, "percent_deduction": 25},
-		{"from_amount": 32334, "to_amount": 500000, "percent_deduction": 30},
-		{"from_amount": 500001, "to_amount": 800000, "percent_deduction": 32.5},
-		{"from_amount": 800001, "to_amount": 0, "percent_deduction": 35},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	# Personal relief as negative tax
-	doc.append("other_taxes_and_charges", {
-		"description": "Personal Relief",
-		"percent": 0,
-		"min_taxable_income": 0,
-		"max_taxable_income": 0,
-		"flat_amount": -2400,
-	})
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Kenya PAYE 2025",
+		currency="KES",
+		bands=[
+			{"from_amount": 0, "to_amount": 24000, "rate": 10},
+			{"from_amount": 24001, "to_amount": 32333, "rate": 25},
+			{"from_amount": 32334, "to_amount": 500000, "rate": 30},
+			{"from_amount": 500001, "to_amount": 800000, "rate": 32.5},
+			{"from_amount": 800001, "to_amount": 0, "rate": 35},
+		],
+		personal_relief=2400,
+	)
 
 
 def setup_uganda():
@@ -354,6 +407,8 @@ def setup_uganda():
 
 def _create_uganda_settings():
 	"""Create Uganda Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Uganda Payroll Settings"):
+		return
 	doc = frappe.get_doc("Uganda Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -363,7 +418,6 @@ def _create_uganda_settings():
 	doc.nssf_employer_rate = 10
 	doc.lst_annual_amount = 100000
 
-	# PAYE bands (monthly, UGX)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 235000, "rate": 0},
 		{"from_amount": 235001, "to_amount": 335000, "rate": 10},
@@ -428,51 +482,22 @@ def _create_uganda_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_uganda_income_tax_slab():
 	"""Create Uganda PAYE Income Tax Slab for 2025."""
-	slab_name = "Uganda PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "UGX"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands (monthly, UGX)
-	bands = [
-		{"from_amount": 0, "to_amount": 235000, "percent_deduction": 0},
-		{"from_amount": 235001, "to_amount": 335000, "percent_deduction": 10},
-		{"from_amount": 335001, "to_amount": 410000, "percent_deduction": 20},
-		{"from_amount": 410001, "to_amount": 10000000, "percent_deduction": 30},
-		{"from_amount": 10000001, "to_amount": 0, "percent_deduction": 40},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Uganda PAYE 2025",
+		currency="UGX",
+		bands=[
+			{"from_amount": 0, "to_amount": 235000, "rate": 0},
+			{"from_amount": 235001, "to_amount": 335000, "rate": 10},
+			{"from_amount": 335001, "to_amount": 410000, "rate": 20},
+			{"from_amount": 410001, "to_amount": 10000000, "rate": 30},
+			{"from_amount": 10000001, "to_amount": 0, "rate": 40},
+		],
+	)
 
 
 def setup_tanzania():
@@ -487,6 +512,8 @@ def setup_tanzania():
 
 def _create_tanzania_settings():
 	"""Create Tanzania Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Tanzania Payroll Settings"):
+		return
 	doc = frappe.get_doc("Tanzania Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -497,7 +524,6 @@ def _create_tanzania_settings():
 	doc.sdl_rate = 3.5
 	doc.wcf_rate = 0.5
 
-	# PAYE bands (monthly, TZS)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 270000, "rate": 0},
 		{"from_amount": 270001, "to_amount": 520000, "rate": 8},
@@ -573,51 +599,22 @@ def _create_tanzania_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_tanzania_income_tax_slab():
 	"""Create Tanzania PAYE Income Tax Slab for 2025."""
-	slab_name = "Tanzania PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "TZS"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands (monthly, TZS)
-	bands = [
-		{"from_amount": 0, "to_amount": 270000, "percent_deduction": 0},
-		{"from_amount": 270001, "to_amount": 520000, "percent_deduction": 8},
-		{"from_amount": 520001, "to_amount": 760000, "percent_deduction": 20},
-		{"from_amount": 760001, "to_amount": 1000000, "percent_deduction": 25},
-		{"from_amount": 1000001, "to_amount": 0, "percent_deduction": 30},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Tanzania PAYE 2025",
+		currency="TZS",
+		bands=[
+			{"from_amount": 0, "to_amount": 270000, "rate": 0},
+			{"from_amount": 270001, "to_amount": 520000, "rate": 8},
+			{"from_amount": 520001, "to_amount": 760000, "rate": 20},
+			{"from_amount": 760001, "to_amount": 1000000, "rate": 25},
+			{"from_amount": 1000001, "to_amount": 0, "rate": 30},
+		],
+	)
 
 
 def setup_rwanda():
@@ -634,6 +631,8 @@ def setup_rwanda():
 
 def _create_rwanda_settings():
 	"""Create Rwanda Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Rwanda Payroll Settings"):
+		return
 	doc = frappe.get_doc("Rwanda Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -646,7 +645,6 @@ def _create_rwanda_settings():
 	doc.cbhi_rate = 0.5
 	doc.occupational_hazards_rate = 2
 
-	# PAYE bands (monthly, RWF)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 60000, "rate": 0},
 		{"from_amount": 60001, "to_amount": 100000, "rate": 10},
@@ -743,50 +741,21 @@ def _create_rwanda_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_rwanda_income_tax_slab():
 	"""Create Rwanda PAYE Income Tax Slab for 2025."""
-	slab_name = "Rwanda PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "RWF"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands (monthly, RWF)
-	bands = [
-		{"from_amount": 0, "to_amount": 60000, "percent_deduction": 0},
-		{"from_amount": 60001, "to_amount": 100000, "percent_deduction": 10},
-		{"from_amount": 100001, "to_amount": 200000, "percent_deduction": 20},
-		{"from_amount": 200001, "to_amount": 0, "percent_deduction": 30},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Rwanda PAYE 2025",
+		currency="RWF",
+		bands=[
+			{"from_amount": 0, "to_amount": 60000, "rate": 0},
+			{"from_amount": 60001, "to_amount": 100000, "rate": 10},
+			{"from_amount": 100001, "to_amount": 200000, "rate": 20},
+			{"from_amount": 200001, "to_amount": 0, "rate": 30},
+		],
+	)
 
 
 def setup_burundi():
@@ -803,6 +772,8 @@ def setup_burundi():
 
 def _create_burundi_settings():
 	"""Create Burundi Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Burundi Payroll Settings"):
+		return
 	doc = frappe.get_doc("Burundi Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -816,7 +787,6 @@ def _create_burundi_settings():
 	doc.training_employee_rate = 1
 	doc.training_employer_rate = 1
 
-	# PAYE bands (monthly, BIF)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 150000, "rate": 0},
 		{"from_amount": 150001, "to_amount": 300000, "rate": 20},
@@ -924,50 +894,21 @@ def _create_burundi_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_burundi_income_tax_slab():
 	"""Create Burundi PAYE Income Tax Slab for 2025."""
-	slab_name = "Burundi PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "BIF"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands (monthly, BIF)
-	bands = [
-		{"from_amount": 0, "to_amount": 150000, "percent_deduction": 0},
-		{"from_amount": 150001, "to_amount": 300000, "percent_deduction": 20},
-		{"from_amount": 300001, "to_amount": 600000, "percent_deduction": 25},
-		{"from_amount": 600001, "to_amount": 0, "percent_deduction": 30},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Burundi PAYE 2025",
+		currency="BIF",
+		bands=[
+			{"from_amount": 0, "to_amount": 150000, "rate": 0},
+			{"from_amount": 150001, "to_amount": 300000, "rate": 20},
+			{"from_amount": 300001, "to_amount": 600000, "rate": 25},
+			{"from_amount": 600001, "to_amount": 0, "rate": 30},
+		],
+	)
 
 
 def setup_zambia():
@@ -983,6 +924,8 @@ def setup_zambia():
 
 def _create_zambia_settings():
 	"""Create Zambia Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Zambia Payroll Settings"):
+		return
 	doc = frappe.get_doc("Zambia Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -994,7 +937,6 @@ def _create_zambia_settings():
 	doc.nhima_employee_rate = 1
 	doc.nhima_employer_rate = 1
 
-	# PAYE bands (monthly, ZMW)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 5100, "rate": 0},
 		{"from_amount": 5101, "to_amount": 7100, "rate": 20},
@@ -1069,50 +1011,21 @@ def _create_zambia_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_zambia_income_tax_slab():
 	"""Create Zambia PAYE Income Tax Slab for 2025."""
-	slab_name = "Zambia PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "ZMW"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands (monthly, ZMW)
-	bands = [
-		{"from_amount": 0, "to_amount": 5100, "percent_deduction": 0},
-		{"from_amount": 5101, "to_amount": 7100, "percent_deduction": 20},
-		{"from_amount": 7101, "to_amount": 9200, "percent_deduction": 30},
-		{"from_amount": 9201, "to_amount": 0, "percent_deduction": 37},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Zambia PAYE 2025",
+		currency="ZMW",
+		bands=[
+			{"from_amount": 0, "to_amount": 5100, "rate": 0},
+			{"from_amount": 5101, "to_amount": 7100, "rate": 20},
+			{"from_amount": 7101, "to_amount": 9200, "rate": 30},
+			{"from_amount": 9201, "to_amount": 0, "rate": 37},
+		],
+	)
 
 
 def setup_malawi():
@@ -1127,6 +1040,8 @@ def setup_malawi():
 
 def _create_malawi_settings():
 	"""Create Malawi Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Malawi Payroll Settings"):
+		return
 	doc = frappe.get_doc("Malawi Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1135,7 +1050,6 @@ def _create_malawi_settings():
 	doc.pension_employee_rate = 5
 	doc.pension_employer_rate = 10
 
-	# PAYE bands (monthly, MWK)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 150000, "rate": 0},
 		{"from_amount": 150001, "to_amount": 500000, "rate": 25},
@@ -1188,50 +1102,21 @@ def _create_malawi_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_malawi_income_tax_slab():
 	"""Create Malawi PAYE Income Tax Slab for 2025."""
-	slab_name = "Malawi PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "MWK"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands (monthly, MWK)
-	bands = [
-		{"from_amount": 0, "to_amount": 150000, "percent_deduction": 0},
-		{"from_amount": 150001, "to_amount": 500000, "percent_deduction": 25},
-		{"from_amount": 500001, "to_amount": 2550000, "percent_deduction": 30},
-		{"from_amount": 2550001, "to_amount": 0, "percent_deduction": 35},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Malawi PAYE 2025",
+		currency="MWK",
+		bands=[
+			{"from_amount": 0, "to_amount": 150000, "rate": 0},
+			{"from_amount": 150001, "to_amount": 500000, "rate": 25},
+			{"from_amount": 500001, "to_amount": 2550000, "rate": 30},
+			{"from_amount": 2550001, "to_amount": 0, "rate": 35},
+		],
+	)
 
 
 def setup_drc():
@@ -1248,6 +1133,8 @@ def setup_drc():
 
 def _create_drc_settings():
 	"""Create DRC Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("DRC Payroll Settings"):
+		return
 	doc = frappe.get_doc("DRC Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1260,7 +1147,6 @@ def _create_drc_settings():
 	doc.inpp_rate = 3
 	doc.onem_rate = 0.2
 
-	# PAYE/IPR bands (monthly, CDF)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 162000, "rate": 3},
 		{"from_amount": 162001, "to_amount": 1800000, "rate": 15},
@@ -1357,50 +1243,21 @@ def _create_drc_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_drc_income_tax_slab():
 	"""Create DRC IPR/PAYE Income Tax Slab for 2025."""
-	slab_name = "DRC PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "CDF"
-	doc.allow_tax_exemption = 1
-
-	# IPR/PAYE bands (monthly, CDF)
-	bands = [
-		{"from_amount": 0, "to_amount": 162000, "percent_deduction": 3},
-		{"from_amount": 162001, "to_amount": 1800000, "percent_deduction": 15},
-		{"from_amount": 1800001, "to_amount": 3600000, "percent_deduction": 30},
-		{"from_amount": 3600001, "to_amount": 0, "percent_deduction": 40},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="DRC PAYE 2025",
+		currency="CDF",
+		bands=[
+			{"from_amount": 0, "to_amount": 162000, "rate": 3},
+			{"from_amount": 162001, "to_amount": 1800000, "rate": 15},
+			{"from_amount": 1800001, "to_amount": 3600000, "rate": 30},
+			{"from_amount": 3600001, "to_amount": 0, "rate": 40},
+		],
+	)
 
 
 def setup_nigeria():
@@ -1417,6 +1274,8 @@ def setup_nigeria():
 
 def _create_nigeria_settings():
 	"""Create Nigeria Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Nigeria Payroll Settings"):
+		return
 	doc = frappe.get_doc("Nigeria Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1430,7 +1289,6 @@ def _create_nigeria_settings():
 	doc.nsitf_rate = 1
 	doc.itf_rate = 1
 
-	# PAYE bands (monthly, NGN)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 25000, "rate": 7},
 		{"from_amount": 25001, "to_amount": 50000, "rate": 11},
@@ -1540,52 +1398,23 @@ def _create_nigeria_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_nigeria_income_tax_slab():
 	"""Create Nigeria PAYE Income Tax Slab for 2025."""
-	slab_name = "Nigeria PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "NGN"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands (monthly, NGN)
-	bands = [
-		{"from_amount": 0, "to_amount": 25000, "percent_deduction": 7},
-		{"from_amount": 25001, "to_amount": 50000, "percent_deduction": 11},
-		{"from_amount": 50001, "to_amount": 91667, "percent_deduction": 15},
-		{"from_amount": 91668, "to_amount": 133333, "percent_deduction": 19},
-		{"from_amount": 133334, "to_amount": 266667, "percent_deduction": 21},
-		{"from_amount": 266668, "to_amount": 0, "percent_deduction": 24},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Nigeria PAYE 2025",
+		currency="NGN",
+		bands=[
+			{"from_amount": 0, "to_amount": 25000, "rate": 7},
+			{"from_amount": 25001, "to_amount": 50000, "rate": 11},
+			{"from_amount": 50001, "to_amount": 91667, "rate": 15},
+			{"from_amount": 91668, "to_amount": 133333, "rate": 19},
+			{"from_amount": 133334, "to_amount": 266667, "rate": 21},
+			{"from_amount": 266668, "to_amount": 0, "rate": 24},
+		],
+	)
 
 
 def setup_mozambique():
@@ -1600,6 +1429,8 @@ def setup_mozambique():
 
 def _create_mozambique_settings():
 	"""Create Mozambique Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Mozambique Payroll Settings"):
+		return
 	doc = frappe.get_doc("Mozambique Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1608,7 +1439,6 @@ def _create_mozambique_settings():
 	doc.inss_employee_rate = 3
 	doc.inss_employer_rate = 4
 
-	# PAYE bands (monthly, MZN)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 3500, "rate": 10},
 		{"from_amount": 3501, "to_amount": 14000, "rate": 15},
@@ -1662,51 +1492,22 @@ def _create_mozambique_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_mozambique_income_tax_slab():
 	"""Create Mozambique PAYE Income Tax Slab for 2025."""
-	slab_name = "Mozambique PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
-		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
-	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "MZN"
-	doc.allow_tax_exemption = 1
-
-	# PAYE bands (monthly, MZN)
-	bands = [
-		{"from_amount": 0, "to_amount": 3500, "percent_deduction": 10},
-		{"from_amount": 3501, "to_amount": 14000, "percent_deduction": 15},
-		{"from_amount": 14001, "to_amount": 42000, "percent_deduction": 20},
-		{"from_amount": 42001, "to_amount": 126000, "percent_deduction": 25},
-		{"from_amount": 126001, "to_amount": 0, "percent_deduction": 32},
-	]
-	for band in bands:
-		doc.append("slabs", band)
-
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	_create_income_tax_slab(
+		slab_name="Mozambique PAYE 2025",
+		currency="MZN",
+		bands=[
+			{"from_amount": 0, "to_amount": 3500, "rate": 10},
+			{"from_amount": 3501, "to_amount": 14000, "rate": 15},
+			{"from_amount": 14001, "to_amount": 42000, "rate": 20},
+			{"from_amount": 42001, "to_amount": 126000, "rate": 25},
+			{"from_amount": 126001, "to_amount": 0, "rate": 32},
+		],
+	)
 
 
 def setup_angola():
@@ -1721,6 +1522,8 @@ def setup_angola():
 
 def _create_angola_settings():
 	"""Create Angola Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Angola Payroll Settings"):
+		return
 	doc = frappe.get_doc("Angola Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1729,7 +1532,6 @@ def _create_angola_settings():
 	doc.inss_employee_rate = 3
 	doc.inss_employer_rate = 8
 
-	# PAYE/IRT bands (monthly, AOA)
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 100000, "rate": 0},
 		{"from_amount": 100001, "to_amount": 150000, "rate": 13},
@@ -1790,58 +1592,1189 @@ def _create_angola_salary_components():
 	]
 
 	for comp_data in components:
-		comp_name = comp_data["salary_component"]
-		if frappe.db.exists("Salary Component", comp_name):
-			continue
-
-		doc = frappe.new_doc("Salary Component")
-		doc.salary_component = comp_data["salary_component"]
-		doc.salary_component_abbr = comp_data["salary_component_abbr"]
-		doc.type = comp_data["type"]
-		doc.variable_based_on_taxable_salary = comp_data["variable_based_on_taxable_salary"]
-		doc.exempted_from_income_tax = comp_data["exempted_from_income_tax"]
-		doc.statistical_component = comp_data["statistical_component"]
-		doc.do_not_include_in_total = comp_data["do_not_include_in_total"]
-		doc.remove_if_zero_valued = comp_data["remove_if_zero_valued"]
-		doc.depends_on_payment_days = comp_data["depends_on_payment_days"]
-
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		_upsert_salary_component(comp_data)
 
 
 def _create_angola_income_tax_slab():
 	"""Create Angola IRT/PAYE Income Tax Slab for 2025."""
-	slab_name = "Angola PAYE 2025"
-	if frappe.db.exists("Income Tax Slab", slab_name):
+	_create_income_tax_slab(
+		slab_name="Angola PAYE 2025",
+		currency="AOA",
+		bands=[
+			{"from_amount": 0, "to_amount": 100000, "rate": 0},
+			{"from_amount": 100001, "to_amount": 150000, "rate": 13},
+			{"from_amount": 150001, "to_amount": 200000, "rate": 16},
+			{"from_amount": 200001, "to_amount": 300000, "rate": 18},
+			{"from_amount": 300001, "to_amount": 500000, "rate": 19},
+			{"from_amount": 500001, "to_amount": 1000000, "rate": 20},
+			{"from_amount": 1000001, "to_amount": 1500000, "rate": 21},
+			{"from_amount": 1500001, "to_amount": 2000000, "rate": 22},
+			{"from_amount": 2000001, "to_amount": 2500000, "rate": 23},
+			{"from_amount": 2500001, "to_amount": 5000000, "rate": 24},
+			{"from_amount": 5000001, "to_amount": 10000000, "rate": 24.5},
+			{"from_amount": 10000001, "to_amount": 0, "rate": 25},
+		],
+	)
+
+
+def setup_ethiopia():
+	"""Set up Ethiopia payroll components, Income Tax Slab, and default settings."""
+	_create_ethiopia_settings()
+	_create_ethiopia_salary_components()
+	_create_ethiopia_income_tax_slab()
+	_create_salary_structure("Ethiopia Payroll Template", "ETB", [
+		"PIT", "Pension Employee", "Pension Employer",
+	])
+
+
+def _create_ethiopia_settings():
+	"""Create Ethiopia Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Ethiopia Payroll Settings"):
 		return
-
-	doc = frappe.new_doc("Income Tax Slab")
-	doc.__newname = slab_name
+	doc = frappe.get_doc("Ethiopia Payroll Settings")
+	if doc.pit_bands:
+		return
+	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
-	doc.company = ""  # applicable to all companies
-	doc.currency = "AOA"
-	doc.allow_tax_exemption = 1
+	doc.pension_employee_rate = 7
+	doc.pension_employer_rate = 11
+	doc.pension_ceiling = 15000
 
-	# IRT/PAYE bands (monthly, AOA)
-	bands = [
-		{"from_amount": 0, "to_amount": 100000, "percent_deduction": 0},
-		{"from_amount": 100001, "to_amount": 150000, "percent_deduction": 13},
-		{"from_amount": 150001, "to_amount": 200000, "percent_deduction": 16},
-		{"from_amount": 200001, "to_amount": 300000, "percent_deduction": 18},
-		{"from_amount": 300001, "to_amount": 500000, "percent_deduction": 19},
-		{"from_amount": 500001, "to_amount": 1000000, "percent_deduction": 20},
-		{"from_amount": 1000001, "to_amount": 1500000, "percent_deduction": 21},
-		{"from_amount": 1500001, "to_amount": 2000000, "percent_deduction": 22},
-		{"from_amount": 2000001, "to_amount": 2500000, "percent_deduction": 23},
-		{"from_amount": 2500001, "to_amount": 5000000, "percent_deduction": 24},
-		{"from_amount": 5000001, "to_amount": 10000000, "percent_deduction": 24.5},
-		{"from_amount": 10000001, "to_amount": 0, "percent_deduction": 25},
+	pit_bands = [
+		{"from_amount": 0, "to_amount": 2000, "rate": 0},
+		{"from_amount": 2001, "to_amount": 4000, "rate": 15},
+		{"from_amount": 4001, "to_amount": 7000, "rate": 20},
+		{"from_amount": 7001, "to_amount": 10000, "rate": 25},
+		{"from_amount": 10001, "to_amount": 14000, "rate": 30},
+		{"from_amount": 14001, "to_amount": 0, "rate": 35},
 	]
-	for band in bands:
-		doc.append("slabs", band)
+	for band in pit_bands:
+		doc.append("pit_bands", band)
 
 	doc.flags.ignore_permissions = True
-	doc.insert()
+	doc.save()
+
+
+def _create_ethiopia_salary_components():
+	"""Create Ethiopia statutory salary components."""
+	components = [
+		{
+			"salary_component": "PIT",
+			"salary_component_abbr": "PIT",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Pension Employee",
+			"salary_component_abbr": "PENSe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Pension Employer",
+			"salary_component_abbr": "PENSr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_ethiopia_income_tax_slab():
+	"""Create Ethiopia PIT Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="Ethiopia PIT 2025",
+		currency="ETB",
+		bands=[
+			{"from_amount": 0, "to_amount": 2000, "rate": 0},
+			{"from_amount": 2001, "to_amount": 4000, "rate": 15},
+			{"from_amount": 4001, "to_amount": 7000, "rate": 20},
+			{"from_amount": 7001, "to_amount": 10000, "rate": 25},
+			{"from_amount": 10001, "to_amount": 14000, "rate": 30},
+			{"from_amount": 14001, "to_amount": 0, "rate": 35},
+		],
+	)
+
+
+def setup_south_africa():
+	"""Set up South Africa payroll components, Income Tax Slab, and default settings."""
+	_create_south_africa_settings()
+	_create_south_africa_salary_components()
+	_create_south_africa_income_tax_slab()
+	_create_salary_structure("South Africa Payroll Template", "ZAR", [
+		"PAYE", "UIF Employee", "UIF Employer", "SDL",
+	])
+
+
+def _create_south_africa_settings():
+	"""Create South Africa Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("South Africa Payroll Settings"):
+		return
+	doc = frappe.get_doc("South Africa Payroll Settings")
+	if doc.paye_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.threshold_under_65 = 95750
+	doc.threshold_65_74 = 148217
+	doc.threshold_75_plus = 165689
+	doc.rebate_primary = 17235
+	doc.rebate_secondary = 9444
+	doc.rebate_tertiary = 3145
+	doc.uif_rate = 1
+	doc.uif_ceiling = 17712
+	doc.sdl_applicable = 1
+	doc.sdl_rate = 1
+
+	paye_bands = [
+		{"from_amount": 0, "to_amount": 237100, "rate": 18, "base_tax": 0},
+		{"from_amount": 237101, "to_amount": 370500, "rate": 26, "base_tax": 42678},
+		{"from_amount": 370501, "to_amount": 512800, "rate": 31, "base_tax": 77362},
+		{"from_amount": 512801, "to_amount": 673000, "rate": 36, "base_tax": 121475},
+		{"from_amount": 673001, "to_amount": 857900, "rate": 39, "base_tax": 179147},
+		{"from_amount": 857901, "to_amount": 1817000, "rate": 41, "base_tax": 251258},
+		{"from_amount": 1817001, "to_amount": 0, "rate": 45, "base_tax": 644489},
+	]
+	for band in paye_bands:
+		doc.append("paye_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_south_africa_salary_components():
+	"""Create South Africa statutory salary components."""
+	components = [
+		{
+			"salary_component": "PAYE",
+			"salary_component_abbr": "PAYE",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "UIF Employee",
+			"salary_component_abbr": "UIFe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "UIF Employer",
+			"salary_component_abbr": "UIFr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "SDL",
+			"salary_component_abbr": "SDL",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_south_africa_income_tax_slab():
+	"""Create South Africa PAYE Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="South Africa PAYE 2025",
+		currency="ZAR",
+		bands=[
+			{"from_amount": 0, "to_amount": 237100, "rate": 18},
+			{"from_amount": 237101, "to_amount": 370500, "rate": 26},
+			{"from_amount": 370501, "to_amount": 512800, "rate": 31},
+			{"from_amount": 512801, "to_amount": 673000, "rate": 36},
+			{"from_amount": 673001, "to_amount": 857900, "rate": 39},
+			{"from_amount": 857901, "to_amount": 1817000, "rate": 41},
+			{"from_amount": 1817001, "to_amount": 0, "rate": 45},
+		],
+	)
+
+
+def setup_egypt():
+	"""Set up Egypt payroll components, Income Tax Slab, and default settings."""
+	_create_egypt_settings()
+	_create_egypt_salary_components()
+	_create_egypt_income_tax_slab()
+	_create_salary_structure("Egypt Payroll Template", "EGP", [
+		"Income Tax", "Social Insurance Employee", "Social Insurance Employer",
+		"Health Insurance Employee", "Health Insurance Employer", "Martyrs Fund",
+	])
+
+
+def _create_egypt_settings():
+	"""Create Egypt Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Egypt Payroll Settings"):
+		return
+	doc = frappe.get_doc("Egypt Payroll Settings")
+	if doc.income_tax_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.social_insurance_employee_rate = 11
+	doc.social_insurance_employer_rate = 18.75
+	doc.social_insurance_ceiling = 16700
+	doc.health_insurance_employee_rate = 1
+	doc.health_insurance_employer_rate = 3.25
+	doc.personal_exemption = 15000
+	doc.number_of_dependents = 0
+	doc.max_dependents = 3
+	doc.dependent_deduction = 3000
+
+	income_tax_bands = [
+		{"from_amount": 0, "to_amount": 40000, "rate": 0},
+		{"from_amount": 40001, "to_amount": 55000, "rate": 10},
+		{"from_amount": 55001, "to_amount": 70000, "rate": 15},
+		{"from_amount": 70001, "to_amount": 200000, "rate": 20},
+		{"from_amount": 200001, "to_amount": 400000, "rate": 22.5},
+		{"from_amount": 400001, "to_amount": 1200000, "rate": 25},
+		{"from_amount": 1200001, "to_amount": 0, "rate": 27.5},
+	]
+	for band in income_tax_bands:
+		doc.append("income_tax_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_egypt_salary_components():
+	"""Create Egypt statutory salary components."""
+	components = [
+		{
+			"salary_component": "Income Tax",
+			"salary_component_abbr": "IT",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Social Insurance Employee",
+			"salary_component_abbr": "SICe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Social Insurance Employer",
+			"salary_component_abbr": "SICr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Health Insurance Employee",
+			"salary_component_abbr": "HIe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Health Insurance Employer",
+			"salary_component_abbr": "HIr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Martyrs Fund",
+			"salary_component_abbr": "MF",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_egypt_income_tax_slab():
+	"""Create Egypt Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="Egypt Income Tax 2025",
+		currency="EGP",
+		bands=[
+			{"from_amount": 0, "to_amount": 40000, "rate": 0},
+			{"from_amount": 40001, "to_amount": 55000, "rate": 10},
+			{"from_amount": 55001, "to_amount": 70000, "rate": 15},
+			{"from_amount": 70001, "to_amount": 200000, "rate": 20},
+			{"from_amount": 200001, "to_amount": 400000, "rate": 22.5},
+			{"from_amount": 400001, "to_amount": 1200000, "rate": 25},
+			{"from_amount": 1200001, "to_amount": 0, "rate": 27.5},
+		],
+	)
+
+
+def setup_ghana():
+	"""Set up Ghana payroll components, Income Tax Slab, and default settings."""
+	_create_ghana_settings()
+	_create_ghana_salary_components()
+	_create_ghana_income_tax_slab()
+	_create_salary_structure("Ghana Payroll Template", "GHS", [
+		"PAYE", "SSNIT Employee", "SSNIT Employer", "Tier 2 Pension Employer",
+	])
+
+
+def _create_ghana_settings():
+	"""Create Ghana Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Ghana Payroll Settings"):
+		return
+	doc = frappe.get_doc("Ghana Payroll Settings")
+	if doc.paye_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.ssnit_employee_rate = 5.5
+	doc.ssnit_employer_rate = 13
+	doc.ssnit_ceiling = 0
+	doc.tier2_employer_rate = 5
+
+	paye_bands = [
+		{"from_amount": 0, "to_amount": 5880, "rate": 0},
+		{"from_amount": 5881, "to_amount": 7200, "rate": 5},
+		{"from_amount": 7201, "to_amount": 8760, "rate": 10},
+		{"from_amount": 8761, "to_amount": 46760, "rate": 17.5},
+		{"from_amount": 46761, "to_amount": 238760, "rate": 25},
+		{"from_amount": 238761, "to_amount": 604760, "rate": 30},
+		{"from_amount": 604761, "to_amount": 0, "rate": 35},
+	]
+	for band in paye_bands:
+		doc.append("paye_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_ghana_salary_components():
+	"""Create Ghana statutory salary components."""
+	components = [
+		{
+			"salary_component": "PAYE",
+			"salary_component_abbr": "PAYE",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "SSNIT Employee",
+			"salary_component_abbr": "SSNITe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "SSNIT Employer",
+			"salary_component_abbr": "SSNITr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Tier 2 Pension Employer",
+			"salary_component_abbr": "T2PENSr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_ghana_income_tax_slab():
+	"""Create Ghana PAYE Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="Ghana PAYE 2025",
+		currency="GHS",
+		bands=[
+			{"from_amount": 0, "to_amount": 5880, "rate": 0},
+			{"from_amount": 5881, "to_amount": 7200, "rate": 5},
+			{"from_amount": 7201, "to_amount": 8760, "rate": 10},
+			{"from_amount": 8761, "to_amount": 46760, "rate": 17.5},
+			{"from_amount": 46761, "to_amount": 238760, "rate": 25},
+			{"from_amount": 238761, "to_amount": 604760, "rate": 30},
+			{"from_amount": 604761, "to_amount": 0, "rate": 35},
+		],
+	)
+
+
+def setup_botswana():
+	"""Set up Botswana payroll components, Income Tax Slab, and default settings."""
+	_create_botswana_settings()
+	_create_botswana_salary_components()
+	_create_botswana_income_tax_slab()
+	_create_salary_structure("Botswana Payroll Template", "BWP", [
+		"PAYE",
+	])
+
+
+def _create_botswana_settings():
+	"""Create Botswana Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Botswana Payroll Settings"):
+		return
+	doc = frappe.get_doc("Botswana Payroll Settings")
+	if doc.paye_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.tax_free_threshold = 48000
+
+	paye_bands = [
+		{"from_amount": 0, "to_amount": 48000, "rate": 0},
+		{"from_amount": 48001, "to_amount": 96000, "rate": 5},
+		{"from_amount": 96001, "to_amount": 144000, "rate": 12.5},
+		{"from_amount": 144001, "to_amount": 192000, "rate": 18.75},
+		{"from_amount": 192001, "to_amount": 240000, "rate": 25},
+		{"from_amount": 240001, "to_amount": 0, "rate": 26.5},
+	]
+	for band in paye_bands:
+		doc.append("paye_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_botswana_salary_components():
+	"""Create Botswana statutory salary components."""
+	components = [
+		{
+			"salary_component": "PAYE",
+			"salary_component_abbr": "PAYE",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_botswana_income_tax_slab():
+	"""Create Botswana PAYE Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="Botswana PAYE 2025",
+		currency="BWP",
+		bands=[
+			{"from_amount": 0, "to_amount": 48000, "rate": 0},
+			{"from_amount": 48001, "to_amount": 96000, "rate": 5},
+			{"from_amount": 96001, "to_amount": 144000, "rate": 12.5},
+			{"from_amount": 144001, "to_amount": 192000, "rate": 18.75},
+			{"from_amount": 192001, "to_amount": 240000, "rate": 25},
+			{"from_amount": 240001, "to_amount": 0, "rate": 26.5},
+		],
+	)
+
+
+def setup_morocco():
+	"""Set up Morocco payroll components, Income Tax Slab, and default settings."""
+	_create_morocco_settings()
+	_create_morocco_salary_components()
+	_create_morocco_income_tax_slab()
+	_create_salary_structure("Morocco Payroll Template", "MAD", [
+		"IR", "CNSS Employee", "CNSS Employer",
+	])
+
+
+def _create_morocco_settings():
+	"""Create Morocco Payroll Settings with 2026 default rates."""
+	if not frappe.db.exists("Morocco Payroll Settings"):
+		return
+	doc = frappe.get_doc("Morocco Payroll Settings")
+	if doc.ir_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.cnss_capped_rate = 4.48
+	doc.cnss_uncapped_rate = 2.26
+	doc.cnss_ceiling = 6000
+	doc.cnss_employer_capped_rate = 8.6
+	doc.cnss_employer_uncapped_rate = 4.11
+	doc.professional_deduction_rate = 20
+	doc.professional_deduction_ceiling = 2500
+	doc.annual_exemption = 40000
+	doc.number_of_dependents = 0
+	doc.max_dependents_for_allowance = 6
+	doc.dependent_allowance = 500
+
+	ir_bands = [
+		{"from_amount": 0, "to_amount": 40000, "rate": 0},
+		{"from_amount": 40001, "to_amount": 60000, "rate": 10},
+		{"from_amount": 60001, "to_amount": 80000, "rate": 20},
+		{"from_amount": 80001, "to_amount": 100000, "rate": 30},
+		{"from_amount": 100001, "to_amount": 150000, "rate": 34},
+		{"from_amount": 150001, "to_amount": 0, "rate": 37},
+	]
+	for band in ir_bands:
+		doc.append("ir_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_morocco_salary_components():
+	"""Create Morocco statutory salary components."""
+	components = [
+		{
+			"salary_component": "IR",
+			"salary_component_abbr": "IR",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNSS Employee",
+			"salary_component_abbr": "CNSSe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNSS Employer",
+			"salary_component_abbr": "CNSSr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_morocco_income_tax_slab():
+	"""Create Morocco IR Income Tax Slab for 2026."""
+	_create_income_tax_slab(
+		slab_name="Morocco IR 2026",
+		currency="MAD",
+		bands=[
+			{"from_amount": 0, "to_amount": 40000, "rate": 0},
+			{"from_amount": 40001, "to_amount": 60000, "rate": 10},
+			{"from_amount": 60001, "to_amount": 80000, "rate": 20},
+			{"from_amount": 80001, "to_amount": 100000, "rate": 30},
+			{"from_amount": 100001, "to_amount": 150000, "rate": 34},
+			{"from_amount": 150001, "to_amount": 0, "rate": 37},
+		],
+	)
+
+
+def setup_tunisia():
+	"""Set up Tunisia payroll components, Income Tax Slab, and default settings."""
+	_create_tunisia_settings()
+	_create_tunisia_salary_components()
+	_create_tunisia_income_tax_slab()
+	_create_salary_structure("Tunisia Payroll Template", "TND", [
+		"IRPP", "CNSS Employee", "CNSS Employer", "Social Solidarity Contribution",
+	])
+
+
+def _create_tunisia_settings():
+	"""Create Tunisia Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Tunisia Payroll Settings"):
+		return
+	doc = frappe.get_doc("Tunisia Payroll Settings")
+	if doc.irpp_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.cnss_employee_rate = 9.18
+	doc.cnss_employer_rate = 17.07
+	doc.cnss_employer_export_rate = 16.57
+	doc.ssc_rate = 0.5
+	doc.professional_deduction_rate = 10
+	doc.professional_deduction_cap = 2000
+
+	irpp_bands = [
+		{"from_amount": 0, "to_amount": 5000, "rate": 0},
+		{"from_amount": 5001, "to_amount": 10000, "rate": 15},
+		{"from_amount": 10001, "to_amount": 20000, "rate": 25},
+		{"from_amount": 20001, "to_amount": 30000, "rate": 30},
+		{"from_amount": 30001, "to_amount": 40000, "rate": 33},
+		{"from_amount": 40001, "to_amount": 50000, "rate": 36},
+		{"from_amount": 50001, "to_amount": 70000, "rate": 38},
+		{"from_amount": 70001, "to_amount": 0, "rate": 40},
+	]
+	for band in irpp_bands:
+		doc.append("irpp_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_tunisia_salary_components():
+	"""Create Tunisia statutory salary components."""
+	components = [
+		{
+			"salary_component": "IRPP",
+			"salary_component_abbr": "IRPP",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNSS Employee",
+			"salary_component_abbr": "CNSSe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNSS Employer",
+			"salary_component_abbr": "CNSSr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Social Solidarity Contribution",
+			"salary_component_abbr": "SSC",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_tunisia_income_tax_slab():
+	"""Create Tunisia IRPP Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="Tunisia IRPP 2025",
+		currency="TND",
+		bands=[
+			{"from_amount": 0, "to_amount": 5000, "rate": 0},
+			{"from_amount": 5001, "to_amount": 10000, "rate": 15},
+			{"from_amount": 10001, "to_amount": 20000, "rate": 25},
+			{"from_amount": 20001, "to_amount": 30000, "rate": 30},
+			{"from_amount": 30001, "to_amount": 40000, "rate": 33},
+			{"from_amount": 40001, "to_amount": 50000, "rate": 36},
+			{"from_amount": 50001, "to_amount": 70000, "rate": 38},
+			{"from_amount": 70001, "to_amount": 0, "rate": 40},
+		],
+	)
+
+
+def setup_namibia():
+	"""Set up Namibia payroll components, Income Tax Slab, and default settings."""
+	_create_namibia_settings()
+	_create_namibia_salary_components()
+	_create_namibia_income_tax_slab()
+	_create_salary_structure("Namibia Payroll Template", "NAD", [
+		"PAYE", "Social Security Employee", "Social Security Employer",
+		"VET Levy", "Employees Compensation",
+	])
+
+
+def _create_namibia_settings():
+	"""Create Namibia Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Namibia Payroll Settings"):
+		return
+	doc = frappe.get_doc("Namibia Payroll Settings")
+	if doc.paye_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.ssc_rate = 0.9
+	doc.ssc_annual_ceiling = 108000
+	doc.vet_levy_applicable = 1
+	doc.vet_levy_rate = 1
+	doc.ecf_risk_sector = "low"
+
+	paye_bands = [
+		{"from_amount": 0, "to_amount": 100000, "rate": 0, "base_tax": 0},
+		{"from_amount": 100001, "to_amount": 250000, "rate": 18, "base_tax": 0},
+		{"from_amount": 250001, "to_amount": 500000, "rate": 25, "base_tax": 27000},
+		{"from_amount": 500001, "to_amount": 750000, "rate": 28, "base_tax": 89500},
+		{"from_amount": 750001, "to_amount": 1000000, "rate": 30, "base_tax": 159500},
+		{"from_amount": 1000001, "to_amount": 1500000, "rate": 32, "base_tax": 234500},
+		{"from_amount": 1500001, "to_amount": 0, "rate": 37, "base_tax": 394500},
+	]
+	for band in paye_bands:
+		doc.append("paye_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_namibia_salary_components():
+	"""Create Namibia statutory salary components."""
+	components = [
+		{
+			"salary_component": "PAYE",
+			"salary_component_abbr": "PAYE",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Social Security Employee",
+			"salary_component_abbr": "SSCe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Social Security Employer",
+			"salary_component_abbr": "SSCr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "VET Levy",
+			"salary_component_abbr": "VET",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Employees Compensation",
+			"salary_component_abbr": "ECF",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_namibia_income_tax_slab():
+	"""Create Namibia PAYE Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="Namibia PAYE 2025",
+		currency="NAD",
+		bands=[
+			{"from_amount": 0, "to_amount": 100000, "rate": 0},
+			{"from_amount": 100001, "to_amount": 250000, "rate": 18},
+			{"from_amount": 250001, "to_amount": 500000, "rate": 25},
+			{"from_amount": 500001, "to_amount": 750000, "rate": 28},
+			{"from_amount": 750001, "to_amount": 1000000, "rate": 30},
+			{"from_amount": 1000001, "to_amount": 1500000, "rate": 32},
+			{"from_amount": 1500001, "to_amount": 0, "rate": 37},
+		],
+	)
+
+
+def setup_madagascar():
+	"""Set up Madagascar payroll components, Income Tax Slab, and default settings."""
+	_create_madagascar_settings()
+	_create_madagascar_salary_components()
+	_create_madagascar_income_tax_slab()
+	_create_salary_structure("Madagascar Payroll Template", "MGA", [
+		"IRSA", "CNaPS Employee", "CNaPS Employer",
+		"Health Insurance Employee", "Health Insurance Employer", "FMFP Training Fund",
+	])
+
+
+def _create_madagascar_settings():
+	"""Create Madagascar Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Madagascar Payroll Settings"):
+		return
+	doc = frappe.get_doc("Madagascar Payroll Settings")
+	if doc.irsa_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.cnaps_employee_rate = 1
+	doc.cnaps_employer_rate = 13
+	doc.health_employee_rate = 1
+	doc.health_employer_rate = 5
+	doc.fmfp_rate = 1
+	doc.minimum_wage = 262680
+	doc.ceiling_multiplier = 8
+	doc.minimum_irsa = 2000
+
+	irsa_bands = [
+		{"from_amount": 0, "to_amount": 350000, "rate": 0},
+		{"from_amount": 350001, "to_amount": 400000, "rate": 5},
+		{"from_amount": 400001, "to_amount": 500000, "rate": 10},
+		{"from_amount": 500001, "to_amount": 600000, "rate": 15},
+		{"from_amount": 600001, "to_amount": 800000, "rate": 20},
+		{"from_amount": 800001, "to_amount": 1000000, "rate": 25},
+		{"from_amount": 1000001, "to_amount": 0, "rate": 30},
+	]
+	for band in irsa_bands:
+		doc.append("irsa_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_madagascar_salary_components():
+	"""Create Madagascar statutory salary components."""
+	components = [
+		{
+			"salary_component": "IRSA",
+			"salary_component_abbr": "IRSA",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNaPS Employee",
+			"salary_component_abbr": "CNaPSe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNaPS Employer",
+			"salary_component_abbr": "CNaPSr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Health Insurance Employee",
+			"salary_component_abbr": "HIe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Health Insurance Employer",
+			"salary_component_abbr": "HIr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "FMFP Training Fund",
+			"salary_component_abbr": "FMFP",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_madagascar_income_tax_slab():
+	"""Create Madagascar IRSA Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="Madagascar IRSA 2025",
+		currency="MGA",
+		bands=[
+			{"from_amount": 0, "to_amount": 350000, "rate": 0},
+			{"from_amount": 350001, "to_amount": 400000, "rate": 5},
+			{"from_amount": 400001, "to_amount": 500000, "rate": 10},
+			{"from_amount": 500001, "to_amount": 600000, "rate": 15},
+			{"from_amount": 600001, "to_amount": 800000, "rate": 20},
+			{"from_amount": 800001, "to_amount": 1000000, "rate": 25},
+			{"from_amount": 1000001, "to_amount": 0, "rate": 30},
+		],
+	)
+
+
+def setup_ivory_coast():
+	"""Set up Ivory Coast payroll components, Income Tax Slab, and default settings."""
+	_create_ivory_coast_settings()
+	_create_ivory_coast_salary_components()
+	_create_ivory_coast_income_tax_slab()
+	_create_salary_structure("Ivory Coast Payroll Template", "XOF", [
+		"ITS", "CNPS Retirement Employee", "CNPS Retirement Employer",
+		"CNPS Family Allowances", "Work Injury Insurance", "Vocational Training Tax",
+		"Housing Construction Fund",
+	])
+
+
+def _create_ivory_coast_settings():
+	"""Create Ivory Coast Payroll Settings with 2025 default rates."""
+	if not frappe.db.exists("Ivory Coast Payroll Settings"):
+		return
+	doc = frappe.get_doc("Ivory Coast Payroll Settings")
+	if doc.its_bands:
+		return
+	doc.enabled = 1
+	doc.effective_from = "2025-01-01"
+	doc.cnps_employee_rate = 6.3
+	doc.cnps_employer_rate = 7.7
+	doc.cnps_ceiling = 3375000
+	doc.family_allowances_rate = 5.75
+	doc.training_tax_rate = 1.2
+	doc.housing_fund_rate = 1.5
+	doc.work_injury_risk_class = 1
+	doc.standard_deduction_rate = 20
+	doc.family_shares = 1
+	doc.max_shares = 5
+	doc.tax_credit_per_share = 5500
+
+	its_bands = [
+		{"from_amount": 0, "to_amount": 150000, "rate": 0},
+		{"from_amount": 150001, "to_amount": 300000, "rate": 12},
+		{"from_amount": 300001, "to_amount": 500000, "rate": 18},
+		{"from_amount": 500001, "to_amount": 1000000, "rate": 25},
+		{"from_amount": 1000001, "to_amount": 2000000, "rate": 30},
+		{"from_amount": 2000001, "to_amount": 0, "rate": 32},
+	]
+	for band in its_bands:
+		doc.append("its_bands", band)
+
+	doc.flags.ignore_permissions = True
+	doc.save()
+
+
+def _create_ivory_coast_salary_components():
+	"""Create Ivory Coast statutory salary components."""
+	components = [
+		{
+			"salary_component": "ITS",
+			"salary_component_abbr": "ITS",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 1,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNPS Retirement Employee",
+			"salary_component_abbr": "CNPSe",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 1,
+			"statistical_component": 0,
+			"do_not_include_in_total": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNPS Retirement Employer",
+			"salary_component_abbr": "CNPSr",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNPS Family Allowances",
+			"salary_component_abbr": "FA",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Work Injury Insurance",
+			"salary_component_abbr": "WII",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Vocational Training Tax",
+			"salary_component_abbr": "VTT",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Housing Construction Fund",
+			"salary_component_abbr": "HCF",
+			"type": "Deduction",
+			"variable_based_on_taxable_salary": 0,
+			"exempted_from_income_tax": 0,
+			"statistical_component": 1,
+			"do_not_include_in_total": 1,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+	]
+
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
+
+def _create_ivory_coast_income_tax_slab():
+	"""Create Ivory Coast ITS Income Tax Slab for 2025."""
+	_create_income_tax_slab(
+		slab_name="Ivory Coast ITS 2025",
+		currency="XOF",
+		bands=[
+			{"from_amount": 0, "to_amount": 150000, "rate": 0},
+			{"from_amount": 150001, "to_amount": 300000, "rate": 12},
+			{"from_amount": 300001, "to_amount": 500000, "rate": 18},
+			{"from_amount": 500001, "to_amount": 1000000, "rate": 25},
+			{"from_amount": 1000001, "to_amount": 2000000, "rate": 30},
+			{"from_amount": 2000001, "to_amount": 0, "rate": 32},
+		],
+	)
 
 
 def setup_workspace_sidebar():
@@ -1855,7 +2788,6 @@ def setup_workspace_sidebar():
 
 	from payroll_africa.boot import COUNTRY_FIELD_MAP, get_enabled_countries
 
-	# Remove legacy items from Payroll sidebar (unchanged from before)
 	if frappe.db.exists("Workspace Sidebar", "Payroll"):
 		sidebar = frappe.get_doc("Workspace Sidebar", "Payroll")
 		legacy_labels = {
@@ -1869,26 +2801,18 @@ def setup_workspace_sidebar():
 		if len(sidebar.items) < original_count:
 			sidebar.flags.ignore_permissions = True
 			sidebar.save()
-			frappe.db.commit()
+			frappe.db.commit()  # nosemgrep: frappe-manual-commit
 
-	# Load the full template sidebar JSON
-	template_path = os.path.join(
-		os.path.dirname(__file__),
-		"workspace_sidebar",
-		"payroll_africa.json",
-	)
+	template_path = frappe.get_app_path("payroll_africa", "workspace_sidebar", "payroll_africa.json")
 	if not os.path.exists(template_path):
 		return
-	with open(template_path, "r") as f:
+	with open(template_path, "r") as f:  # nosemgrep: frappe-security-file-traversal
 		template = json.load(f)
 
 	enabled = get_enabled_countries()
 
-	# Map country settings labels to country names for filtering
-	# e.g. "Kenya Payroll Settings" -> "Kenya", "Kenya Reports" -> "Kenya"
 	_settings_to_country = {}
 	for country in COUNTRY_FIELD_MAP:
-		# Derive the label prefix used in sidebar
 		if country == "Congo, The Democratic Republic of the":
 			prefix = "DRC"
 		else:
@@ -1896,14 +2820,12 @@ def setup_workspace_sidebar():
 		_settings_to_country[f"{prefix} Payroll Settings"] = country
 		_settings_to_country[f"{prefix} Reports"] = country
 
-	# Filter items: keep non-country items, and country items only if enabled
 	filtered_items = []
 	skip_section = False
 
 	for item in template.get("items", []):
 		label = item.get("label", "")
 
-		# Check if this is a country section header
 		if item.get("type") == "Section Break" and label in _settings_to_country:
 			country = _settings_to_country[label]
 			skip_section = country not in enabled
@@ -1913,24 +2835,19 @@ def setup_workspace_sidebar():
 				filtered_items.append(item)
 				continue
 
-		# Check if this is a country settings link
 		if label in _settings_to_country:
 			country = _settings_to_country[label]
 			if country not in enabled:
 				continue
 
-		# If we're inside a skipped section, skip child items
 		if skip_section and item.get("child"):
 			continue
 
-		# Non-section items reset skip_section when we hit a new section
 		if item.get("type") == "Section Break":
 			skip_section = False
 
 		filtered_items.append(item)
 
-	# Also filter out empty regional sections (East Africa, Southern Africa, etc.)
-	# A regional section is empty if it has no child links following it
 	final_items = []
 	i = 0
 	while i < len(filtered_items):
@@ -1939,7 +2856,6 @@ def setup_workspace_sidebar():
 			item.get("type") == "Section Break"
 			and item.get("label") in ("East Africa", "Southern Africa", "West & Central Africa")
 		):
-			# Check if next items are children of this section
 			has_children = False
 			j = i + 1
 			while j < len(filtered_items):
@@ -1956,7 +2872,6 @@ def setup_workspace_sidebar():
 		final_items.append(item)
 		i += 1
 
-	# Write to database
 	if frappe.db.exists("Workspace Sidebar", "Payroll Africa"):
 		frappe.db.delete("Workspace Sidebar Item", {"parent": "Payroll Africa"})
 		sidebar_doc = frappe.get_doc("Workspace Sidebar", "Payroll Africa")
@@ -1986,7 +2901,7 @@ def setup_workspace_sidebar():
 
 	sidebar_doc.flags.ignore_permissions = True
 	sidebar_doc.save()
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit
 
 
 def setup_desktop_icon():
@@ -1995,13 +2910,12 @@ def setup_desktop_icon():
 		return
 
 	if frappe.db.exists("Desktop Icon", {"label": "Payroll Africa", "icon_type": "Link"}):
-		# Update existing icon logo_url if needed
 		existing = frappe.get_doc("Desktop Icon", {"label": "Payroll Africa", "icon_type": "Link"})
 		if existing.logo_url != "/assets/payroll_africa/icons/desktop_icons/solid/payroll_africa.svg":
 			existing.logo_url = "/assets/payroll_africa/icons/desktop_icons/solid/payroll_africa.svg"
 			existing.flags.ignore_permissions = True
 			existing.save()
-			frappe.db.commit()
+			frappe.db.commit()  # nosemgrep: frappe-manual-commit
 		return
 
 	icon = frappe.new_doc("Desktop Icon")
@@ -2016,7 +2930,7 @@ def setup_desktop_icon():
 	icon.standard = 1
 	icon.flags.ignore_permissions = True
 	icon.insert(ignore_if_duplicate=True)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit
 
 
 def before_uninstall():
@@ -2046,6 +2960,11 @@ def _remove_salary_structures():
 		"Malawi Payroll Template", "DRC Payroll Template",
 		"Nigeria Payroll Template", "Mozambique Payroll Template",
 		"Angola Payroll Template",
+		"Ethiopia Payroll Template", "South Africa Payroll Template",
+		"Egypt Payroll Template", "Ghana Payroll Template",
+		"Botswana Payroll Template", "Morocco Payroll Template",
+		"Tunisia Payroll Template", "Namibia Payroll Template",
+		"Madagascar Payroll Template", "Ivory Coast Payroll Template",
 	]
 	for name in templates:
 		if frappe.db.exists("Salary Structure", name):
@@ -2087,6 +3006,31 @@ def _remove_salary_components():
 		"PAYE MZ", "INSS Employee MZ", "INSS Employer MZ",
 		# Angola
 		"PAYE AO", "INSS Employee AO", "INSS Employer AO",
+		# Ethiopia
+		"PIT", "Pension Employee", "Pension Employer",
+		# South Africa
+		"PAYE", "UIF Employee", "UIF Employer", "SDL",
+		# Egypt
+		"Income Tax", "Social Insurance Employee", "Social Insurance Employer",
+		"Health Insurance Employee", "Health Insurance Employer", "Martyrs Fund",
+		# Ghana
+		"PAYE", "SSNIT Employee", "SSNIT Employer", "Tier 2 Pension Employer",
+		# Botswana
+		"PAYE",
+		# Morocco
+		"IR", "CNSS Employee", "CNSS Employer",
+		# Tunisia
+		"IRPP", "CNSS Employee", "CNSS Employer", "Social Solidarity Contribution",
+		# Namibia
+		"PAYE", "Social Security Employee", "Social Security Employer",
+		"VET Levy", "Employees Compensation",
+		# Madagascar
+		"IRSA", "CNaPS Employee", "CNaPS Employer",
+		"Health Insurance Employee", "Health Insurance Employer", "FMFP Training Fund",
+		# Ivory Coast
+		"ITS", "CNPS Retirement Employee", "CNPS Retirement Employer",
+		"CNPS Family Allowances", "Work Injury Insurance", "Vocational Training Tax",
+		"Housing Construction Fund",
 	]
 	for name in components:
 		if frappe.db.exists("Salary Component", name):
@@ -2100,6 +3044,11 @@ def _remove_income_tax_slabs():
 		"Rwanda PAYE 2025", "Burundi PAYE 2025", "Zambia PAYE 2025",
 		"Malawi PAYE 2025", "DRC PAYE 2025", "Nigeria PAYE 2025",
 		"Mozambique PAYE 2025", "Angola PAYE 2025",
+		"Ethiopia PIT 2025", "South Africa PAYE 2025",
+		"Egypt Income Tax 2025", "Ghana PAYE 2025",
+		"Botswana PAYE 2025", "Morocco IR 2026",
+		"Tunisia IRPP 2025", "Namibia PAYE 2025",
+		"Madagascar IRSA 2025", "Ivory Coast ITS 2025",
 	]
 	for name in slabs:
 		if frappe.db.exists("Income Tax Slab", name):

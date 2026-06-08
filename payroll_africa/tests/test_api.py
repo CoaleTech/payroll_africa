@@ -12,14 +12,14 @@ sys.modules.setdefault("frappe", _mock_frappe)
 sys.modules.setdefault("frappe.utils", _mock_frappe.utils)
 
 from payroll_africa.api import calculate_deductions, get_supported_countries
-from payroll_africa.engine.registry import _country_map
+from payroll_africa.engine.registry import COUNTRY_MAP
 
 
 class TestGetSupportedCountries(unittest.TestCase):
 
 	def test_returns_sorted_countries(self):
 		result = get_supported_countries()
-		self.assertEqual(result, sorted(_country_map.keys()))
+		self.assertEqual(result, sorted(COUNTRY_MAP.keys()))
 		self.assertEqual(len(result), 11)
 
 	def test_includes_all_countries(self):

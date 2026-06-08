@@ -1,0 +1,170 @@
+{
+ "actions": [],
+ "creation": "2026-06-03 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "cnaps_section",
+  "cnaps_employee_rate",
+  "cnaps_employer_rate",
+  "health_section",
+  "health_employee_rate",
+  "health_employer_rate",
+  "fmfp_section",
+  "fmfp_rate",
+  "ceiling_section",
+  "minimum_wage",
+  "column_break_ceiling",
+  "ceiling_multiplier",
+  "irsa_section",
+  "minimum_irsa",
+  "irsa_bands_section",
+  "irsa_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "cnaps_section",
+   "fieldtype": "Section Break",
+   "label": "CNaPS Social Security"
+  },
+  {
+   "fieldname": "cnaps_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "1",
+   "description": "CNaPS employee contribution rate (%)"
+  },
+  {
+   "fieldname": "cnaps_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "13",
+   "description": "CNaPS employer contribution rate (%)"
+  },
+  {
+   "fieldname": "health_section",
+   "fieldtype": "Section Break",
+   "label": "Health Insurance (OSTIE)"
+  },
+  {
+   "fieldname": "health_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Employee Rate",
+   "default": "1",
+   "description": "Health insurance employee contribution rate (%)"
+  },
+  {
+   "fieldname": "health_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Employer Rate",
+   "default": "5",
+   "description": "Health insurance employer contribution rate (%)"
+  },
+  {
+   "fieldname": "fmfp_section",
+   "fieldtype": "Section Break",
+   "label": "FMFP (Vocational Training)"
+  },
+  {
+   "fieldname": "fmfp_rate",
+   "fieldtype": "Percent",
+   "label": "FMFP Rate",
+   "default": "1",
+   "description": "FMFP employer-only contribution rate (%)"
+  },
+  {
+   "fieldname": "ceiling_section",
+   "fieldtype": "Section Break",
+   "label": "Contribution Ceiling"
+  },
+  {
+   "fieldname": "minimum_wage",
+   "fieldtype": "Currency",
+   "label": "Minimum Wage",
+   "default": "262680",
+   "description": "Monthly minimum wage (MGA)"
+  },
+  {
+   "fieldname": "column_break_ceiling",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ceiling_multiplier",
+   "fieldtype": "Int",
+   "label": "Ceiling Multiplier",
+   "default": "8",
+   "description": "Multiplier for minimum wage to determine contribution ceiling"
+  },
+  {
+   "fieldname": "irsa_section",
+   "fieldtype": "Section Break",
+   "label": "IRSA (Income Tax)"
+  },
+  {
+   "fieldname": "minimum_irsa",
+   "fieldtype": "Currency",
+   "label": "Minimum IRSA",
+   "default": "2000",
+   "description": "Minimum monthly IRSA payment (MGA)"
+  },
+  {
+   "fieldname": "irsa_bands_section",
+   "fieldtype": "Section Break",
+   "label": "IRSA Bands"
+  },
+  {
+   "fieldname": "irsa_bands",
+   "fieldtype": "Table",
+   "label": "IRSA Bands",
+   "options": "Madagascar IRSA Band",
+   "description": "Progressive IRSA tax bands (monthly amounts in MGA)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-03 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Madagascar Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

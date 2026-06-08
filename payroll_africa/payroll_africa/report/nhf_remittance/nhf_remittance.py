@@ -2,6 +2,8 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
+
 
 def execute(filters=None):
 	columns = get_columns()
@@ -20,7 +22,7 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
+	conditions = standard_slip_conditions(filters)
 
 	data = frappe.db.sql(
 		"""
@@ -29,38 +31,22 @@ def get_data(filters):
 			e.ng_nhf_no, ss.name as salary_slip
 		FROM `tabSalary Slip` ss
 		LEFT JOIN `tabEmployee` e ON ss.employee = e.name
-		WHERE ss.docstatus = 1 {conditions}
+		WHERE ss.docstatus = 1"""
+		+ conditions
+		+ """
 		ORDER BY ss.employee
-		""".format(conditions=conditions),
+		""",
 		filters,
 		as_dict=True,
 	)
 
-	for row in data:
-		basic = flt(frappe.db.get_value(
-			"Salary Detail",
-			{"parent": row.salary_slip, "salary_component": "Basic Salary", "parentfield": "earnings"},
-			"amount",
-		))
-		nhf = flt(frappe.db.get_value(
-			"Salary Detail",
-			{"parent": row.salary_slip, "salary_component": "NHF NG", "parentfield": "deductions"},
-			"amount",
-		))
+	slip_names = [r.salary_slip for r in data]
+	earnings = fetch_component_amounts(slip_names, ["Basic Salary"], parentfield="earnings")
+	deductions = fetch_component_amounts(slip_names, ["NHF NG"])
 
-		row["basic_salary"] = basic
-		row["nhf_amount"] = nhf
+	for row in data:
+		row["basic_salary"] = earnings.get(row.salary_slip, {}).get("Basic Salary", 0)
+		row["nhf_amount"] = deductions.get(row.salary_slip, {}).get("NHF NG", 0)
 		del row["salary_slip"]
 
 	return data
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.end_date <= %(to_date)s"
-	return conditions

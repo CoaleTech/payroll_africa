@@ -1,0 +1,176 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "social_insurance_section",
+  "social_insurance_employee_rate",
+  "social_insurance_employer_rate",
+  "column_break_si",
+  "social_insurance_ceiling",
+  "health_insurance_section",
+  "health_insurance_employee_rate",
+  "column_break_hi",
+  "health_insurance_employer_rate",
+  "dependents_section",
+  "personal_exemption",
+  "column_break_dep",
+  "number_of_dependents",
+  "max_dependents",
+  "dependent_deduction",
+  "income_tax_section",
+  "income_tax_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "social_insurance_section",
+   "fieldtype": "Section Break",
+   "label": "Social Insurance"
+  },
+  {
+   "fieldname": "social_insurance_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Social Insurance Employee Rate",
+   "default": "11",
+   "description": "Employee social insurance rate on gross salary"
+  },
+  {
+   "fieldname": "social_insurance_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Social Insurance Employer Rate",
+   "default": "18.75",
+   "description": "Employer social insurance rate on gross salary"
+  },
+  {
+   "fieldname": "column_break_si",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "social_insurance_ceiling",
+   "fieldtype": "Currency",
+   "label": "Social Insurance Ceiling",
+   "default": "16700",
+   "description": "Maximum gross salary subject to social insurance (EGP/month)"
+  },
+  {
+   "fieldname": "health_insurance_section",
+   "fieldtype": "Section Break",
+   "label": "Health Insurance"
+  },
+  {
+   "fieldname": "health_insurance_employee_rate",
+   "fieldtype": "Percent",
+   "label": "Health Insurance Employee Rate",
+   "default": "1",
+   "description": "Employee health insurance rate on gross salary"
+  },
+  {
+   "fieldname": "column_break_hi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "health_insurance_employer_rate",
+   "fieldtype": "Percent",
+   "label": "Health Insurance Employer Rate",
+   "default": "3.25",
+   "description": "Employer health insurance rate on gross salary"
+  },
+  {
+   "fieldname": "dependents_section",
+   "fieldtype": "Section Break",
+   "label": "Dependents & Exemptions"
+  },
+  {
+   "fieldname": "personal_exemption",
+   "fieldtype": "Currency",
+   "label": "Personal Exemption",
+   "default": "15000",
+   "description": "Annual personal tax exemption (EGP)"
+  },
+  {
+   "fieldname": "column_break_dep",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "number_of_dependents",
+   "fieldtype": "Int",
+   "label": "Number of Dependents",
+   "default": "0",
+   "description": "Number of dependents for tax deduction"
+  },
+  {
+   "fieldname": "max_dependents",
+   "fieldtype": "Int",
+   "label": "Max Dependents",
+   "default": "3",
+   "description": "Maximum dependents allowed for deduction"
+  },
+  {
+   "fieldname": "dependent_deduction",
+   "fieldtype": "Currency",
+   "label": "Dependent Deduction",
+   "default": "3000",
+   "description": "Deduction amount per dependent (EGP)"
+  },
+  {
+   "fieldname": "income_tax_section",
+   "fieldtype": "Section Break",
+   "label": "Income Tax"
+  },
+  {
+   "fieldname": "income_tax_bands",
+   "fieldtype": "Table",
+   "label": "Income Tax Bands",
+   "options": "Egypt PAYE Band",
+   "description": "Progressive income tax bands (annual amounts in EGP)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Egypt Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

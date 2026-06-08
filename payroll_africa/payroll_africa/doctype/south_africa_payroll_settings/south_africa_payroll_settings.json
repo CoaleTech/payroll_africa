@@ -1,0 +1,192 @@
+{
+ "actions": [],
+ "creation": "2026-06-03 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "paye_section",
+  "threshold_under_65",
+  "threshold_65_74",
+  "threshold_75_plus",
+  "column_break_paye",
+  "rebate_primary",
+  "rebate_secondary",
+  "rebate_tertiary",
+  "medical_tax_credit",
+  "paye_bands_section",
+  "paye_bands",
+  "uif_section",
+  "uif_rate",
+  "column_break_uif",
+  "uif_ceiling",
+  "sdl_section",
+  "sdl_applicable",
+  "column_break_sdl",
+  "sdl_rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "threshold_under_65",
+   "fieldtype": "Currency",
+   "label": "Threshold (Under 65)",
+   "default": "95750",
+   "description": "Annual tax threshold for under 65 (ZAR)"
+  },
+  {
+   "fieldname": "threshold_65_74",
+   "fieldtype": "Currency",
+   "label": "Threshold (65-74)",
+   "default": "148217",
+   "description": "Annual tax threshold for 65-74 (ZAR)"
+  },
+  {
+   "fieldname": "threshold_75_plus",
+   "fieldtype": "Currency",
+   "label": "Threshold (75+)",
+   "default": "165689",
+   "description": "Annual tax threshold for 75+ (ZAR)"
+  },
+  {
+   "fieldname": "column_break_paye",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rebate_primary",
+   "fieldtype": "Currency",
+   "label": "Primary Rebate",
+   "default": "17235",
+   "description": "Primary annual tax rebate (ZAR)"
+  },
+  {
+   "fieldname": "rebate_secondary",
+   "fieldtype": "Currency",
+   "label": "Secondary Rebate",
+   "default": "9444",
+   "description": "Secondary annual tax rebate for 65+ (ZAR)"
+  },
+  {
+   "fieldname": "rebate_tertiary",
+   "fieldtype": "Currency",
+   "label": "Tertiary Rebate",
+   "default": "3145",
+   "description": "Tertiary annual tax rebate for 75+ (ZAR)"
+  },
+  {
+   "fieldname": "medical_tax_credit",
+   "fieldtype": "Currency",
+   "label": "Medical Tax Credit",
+   "default": "0",
+   "description": "Monthly medical tax credit (ZAR)"
+  },
+  {
+   "fieldname": "paye_bands_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE Bands"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "PAYE Bands",
+   "options": "South Africa PAYE Band",
+   "description": "Progressive PAYE tax bands (annual amounts in ZAR)"
+  },
+  {
+   "fieldname": "uif_section",
+   "fieldtype": "Section Break",
+   "label": "UIF"
+  },
+  {
+   "fieldname": "uif_rate",
+   "fieldtype": "Percent",
+   "label": "UIF Rate",
+   "default": "1",
+   "description": "UIF contribution rate per side (%)"
+  },
+  {
+   "fieldname": "column_break_uif",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "uif_ceiling",
+   "fieldtype": "Currency",
+   "label": "UIF Ceiling",
+   "default": "17712",
+   "description": "Maximum monthly gross subject to UIF (ZAR)"
+  },
+  {
+   "fieldname": "sdl_section",
+   "fieldtype": "Section Break",
+   "label": "SDL (Skills Development Levy)"
+  },
+  {
+   "fieldname": "sdl_applicable",
+   "fieldtype": "Check",
+   "label": "SDL Applicable",
+   "default": "1",
+   "description": "Apply SDL if annual payroll exceeds R500,000"
+  },
+  {
+   "fieldname": "column_break_sdl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sdl_rate",
+   "fieldtype": "Percent",
+   "label": "SDL Rate",
+   "default": "1",
+   "description": "SDL rate on gross salary (%)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-03 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "South Africa Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

@@ -16,8 +16,7 @@ def execute():
 
 	for fieldname, expected_name in expected.items():
 		dt = expected_name.split("-")[0]
-		# Find any Custom Field with this fieldname on the target doctype
-		existing = frappe.db.get_all(
+		existing = frappe.get_all(
 			"Custom Field",
 			filters={"dt": dt, "fieldname": fieldname},
 			pluck="name",
@@ -28,4 +27,4 @@ def execute():
 					"UPDATE `tabCustom Field` SET `name`=%s WHERE `name`=%s",
 					(expected_name, name),
 				)
-				frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit

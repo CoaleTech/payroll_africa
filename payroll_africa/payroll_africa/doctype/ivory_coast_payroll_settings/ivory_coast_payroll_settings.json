@@ -1,0 +1,186 @@
+{
+ "actions": [],
+ "creation": "2026-03-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "cnps_section",
+  "cnps_employee_rate",
+  "cnps_employer_rate",
+  "column_break_cnps",
+  "cnps_ceiling",
+  "employer_contributions_section",
+  "family_allowances_rate",
+  "training_tax_rate",
+  "column_break_emp",
+  "housing_fund_rate",
+  "work_injury_risk_class",
+  "its_section",
+  "standard_deduction_rate",
+  "column_break_its",
+  "family_shares",
+  "max_shares",
+  "tax_credit_per_share",
+  "its_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "cnps_section",
+   "fieldtype": "Section Break",
+   "label": "CNPS Retirement"
+  },
+  {
+   "fieldname": "cnps_employee_rate",
+   "fieldtype": "Percent",
+   "label": "CNPS Employee Rate",
+   "default": "6.3",
+   "description": "Employee CNPS retirement contribution rate"
+  },
+  {
+   "fieldname": "cnps_employer_rate",
+   "fieldtype": "Percent",
+   "label": "CNPS Employer Rate",
+   "default": "7.7",
+   "description": "Employer CNPS retirement contribution rate"
+  },
+  {
+   "fieldname": "column_break_cnps",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cnps_ceiling",
+   "fieldtype": "Currency",
+   "label": "CNPS Ceiling",
+   "default": "3375000",
+   "description": "Maximum gross salary subject to CNPS (XOF/month)"
+  },
+  {
+   "fieldname": "employer_contributions_section",
+   "fieldtype": "Section Break",
+   "label": "Employer Contributions"
+  },
+  {
+   "fieldname": "family_allowances_rate",
+   "fieldtype": "Percent",
+   "label": "Family Allowances Rate",
+   "default": "5.75",
+   "description": "CNPS family allowances employer rate"
+  },
+  {
+   "fieldname": "training_tax_rate",
+   "fieldtype": "Percent",
+   "label": "Training Tax Rate",
+   "default": "1.2",
+   "description": "Vocational training tax employer rate"
+  },
+  {
+   "fieldname": "column_break_emp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "housing_fund_rate",
+   "fieldtype": "Percent",
+   "label": "Housing Fund Rate",
+   "default": "1.5",
+   "description": "Housing construction fund employer rate"
+  },
+  {
+   "fieldname": "work_injury_risk_class",
+   "fieldtype": "Int",
+   "label": "Work Injury Risk Class",
+   "default": "1",
+   "description": "Risk class 1-5 (1=office 2%, 5=hazardous 5%)"
+  },
+  {
+   "fieldname": "its_section",
+   "fieldtype": "Section Break",
+   "label": "ITS (Impôt sur les Traitements et Salaires)"
+  },
+  {
+   "fieldname": "standard_deduction_rate",
+   "fieldtype": "Percent",
+   "label": "Standard Deduction Rate",
+   "default": "20",
+   "description": "Automatic standard deduction on gross income"
+  },
+  {
+   "fieldname": "column_break_its",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "family_shares",
+   "fieldtype": "Int",
+   "label": "Family Shares",
+   "default": "1",
+   "description": "Number of half-shares for tax credit"
+  },
+  {
+   "fieldname": "max_shares",
+   "fieldtype": "Int",
+   "label": "Max Shares",
+   "default": "5",
+   "description": "Maximum half-shares allowed"
+  },
+  {
+   "fieldname": "tax_credit_per_share",
+   "fieldtype": "Currency",
+   "label": "Tax Credit per Share",
+   "default": "5500",
+   "description": "Tax credit per half-share (XOF)"
+  },
+  {
+   "fieldname": "its_bands",
+   "fieldtype": "Table",
+   "label": "ITS Bands",
+   "options": "Ivory Coast PAYE Band",
+   "description": "Progressive ITS tax bands (monthly amounts in XOF)"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Ivory Coast Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

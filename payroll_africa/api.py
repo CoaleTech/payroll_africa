@@ -2,11 +2,17 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
-from payroll_africa.engine.registry import get_calculator, _country_map
+from payroll_africa.engine.registry import (
+	get_calculator,
+	COUNTRY_MAP,
+	is_supported_country,
+	get_supported_countries as _get_supported_countries,
+	VALID_SUFFIXES,
+)
 
 
 @frappe.whitelist()
-def calculate_deductions(country, gross_pay, basic_pay=None):
+def calculate_deductions(country: str, gross_pay: float, basic_pay: float | None = None):
 	"""Calculate statutory deductions for a country without creating a Salary Slip.
 
 	Args:
@@ -17,13 +23,14 @@ def calculate_deductions(country, gross_pay, basic_pay=None):
 	Returns:
 		dict with deductions list and totals
 	"""
+	frappe.has_permission("Salary Slip", "read", throw=True)
 	gross_pay = flt(gross_pay)
 	basic_pay = flt(basic_pay) if basic_pay else gross_pay
 
-	if country not in _country_map:
+	if not is_supported_country(country):
 		frappe.throw(
 			_("Country {0} is not supported. Supported countries: {1}").format(
-				country, ", ".join(sorted(_country_map.keys()))
+				country, ", ".join(_get_supported_countries())
 			)
 		)
 
@@ -72,24 +79,17 @@ def calculate_deductions(country, gross_pay, basic_pay=None):
 @frappe.whitelist()
 def get_supported_countries():
 	"""Return list of supported countries."""
-	return sorted(_country_map.keys())
+	return _get_supported_countries()
 
 
 @frappe.whitelist()
-def recalculate_salary_slips(country, from_date, to_date, company=None):
+def recalculate_salary_slips(country: str, from_date: str, to_date: str, company: str | None = None):
 	"""Recalculate statutory deductions on draft Salary Slips.
 
 	Use after updating statutory rates to apply new rates to existing drafts.
-
-	Args:
-		country: Country name to filter employees
-		from_date: Start of posting date range
-		to_date: End of posting date range
-		company: Optional company filter
-
-	Returns:
-		dict with count of updated slips
 	"""
+	frappe.has_permission("Salary Slip", "write", throw=True)
+
 	filters = {
 		"docstatus": 0,
 		"posting_date": ["between", [from_date, to_date]],
@@ -121,30 +121,33 @@ def recalculate_salary_slips(country, from_date, to_date, company=None):
 	slips = frappe.get_all("Salary Slip", filters=filters, pluck="name")
 
 	updated = 0
+	errors = []
 	for slip_name in slips:
-		slip = frappe.get_doc("Salary Slip", slip_name)
-		slip.flags.ignore_permissions = True
-		slip.save()
-		updated += 1
-
-	if updated:
-		frappe.db.commit()
+		try:
+			slip = frappe.get_doc("Salary Slip", slip_name)
+			slip.flags.ignore_permissions = True
+			slip.save()
+			updated += 1
+		except Exception:
+			errors.append(slip_name)
+			frappe.log_error(title=f"Recalculate failed: {slip_name}")
 
 	return {
 		"updated": updated,
+		"errors": errors,
 		"message": _("{0} salary slip(s) recalculated for {1}").format(updated, country),
 	}
 
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_filtered_salary_components(doctype, txt, searchfield, start, page_len, filters):
+def get_filtered_salary_components(doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict):
 	"""Return salary components excluding those from disabled countries.
 
 	Country suffixes: UG, TZ, RW, BI, ZM, MW, CD, NG, MZ, AO
 	Kenya components have no suffix (e.g. "PAYE", "NSSF Employee").
 	"""
-	disabled_suffixes = filters.get("disabled_suffixes", [])
+	disabled_suffixes = [s for s in filters.get("disabled_suffixes", []) if s in VALID_SUFFIXES]
 
 	# Remove empty string — Kenya filtering is handled separately below
 	non_empty_suffixes = [s for s in disabled_suffixes if s]
@@ -180,12 +183,49 @@ def get_filtered_salary_components(doctype, txt, searchfield, start, page_len, f
 		where_clause += f" AND ({suffix_conditions})"
 
 	return frappe.db.sql(
-		f"""
+		"""
 		SELECT name
 		FROM `tabSalary Component`
-		WHERE {where_clause}
+		WHERE """
+		+ where_clause
+		+ """
 		ORDER BY name
 		LIMIT %(start)s, %(page_len)s
 		""",
 		suffix_params,
 	)
+
+
+@frappe.whitelist()
+def recalculate_all_countries(from_date: str, to_date: str, company: str | None = None):
+	"""Recalculate statutory deductions for all enabled countries.
+
+	Convenience wrapper around recalculate_salary_slips that iterates every
+	country currently enabled in Payroll Africa Settings.
+	"""
+	frappe.has_permission("Salary Slip", "write", throw=True)
+
+	from payroll_africa.boot import get_enabled_countries
+
+	countries = get_enabled_countries()
+	if not countries:
+		return {"updated": 0, "message": _("No countries are enabled in Payroll Africa Settings")}
+
+	total_updated = 0
+	total_errors = []
+	results = {}
+
+	for country in countries:
+		result = recalculate_salary_slips(country, from_date, to_date, company)
+		results[country] = result
+		total_updated += result.get("updated", 0)
+		total_errors.extend(result.get("errors", []))
+
+	return {
+		"updated": total_updated,
+		"errors": total_errors,
+		"by_country": results,
+		"message": _("{0} salary slip(s) recalculated across {1} countries").format(
+			total_updated, len(countries)
+		),
+	}

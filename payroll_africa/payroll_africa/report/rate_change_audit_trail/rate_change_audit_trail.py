@@ -3,20 +3,16 @@ import json
 import frappe
 from frappe import _
 
+from payroll_africa.engine.registry import SETTINGS_MAP
 
-SETTINGS_DOCTYPES = {
-	"Kenya": "Kenya Payroll Settings",
-	"Uganda": "Uganda Payroll Settings",
-	"Tanzania": "Tanzania Payroll Settings",
-	"Rwanda": "Rwanda Payroll Settings",
-	"Burundi": "Burundi Payroll Settings",
-	"Malawi": "Malawi Payroll Settings",
-	"Zambia": "Zambia Payroll Settings",
-	"Mozambique": "Mozambique Payroll Settings",
-	"Angola": "Angola Payroll Settings",
-	"Nigeria": "Nigeria Payroll Settings",
-	"DRC": "DRC Payroll Settings",
+# Display-friendly country labels for the report (DRC instead of full name)
+_DISPLAY_LABELS = {
+	"Congo, The Democratic Republic of the": "DRC",
 }
+
+
+def _display_label(country):
+	return _DISPLAY_LABELS.get(country, country)
 
 
 def execute(filters=None):
@@ -38,16 +34,17 @@ def get_columns():
 
 
 def get_data(filters):
-	# Determine which doctypes to query
 	if filters and filters.get("country"):
-		country = filters["country"]
-		if country not in SETTINGS_DOCTYPES:
+		filter_country = filters["country"]
+		# Accept both display label (DRC) and full name
+		reverse_display = {v: k for k, v in _DISPLAY_LABELS.items()}
+		canonical = reverse_display.get(filter_country, filter_country)
+		if canonical not in SETTINGS_MAP:
 			return []
-		doctypes = {country: SETTINGS_DOCTYPES[country]}
+		doctypes = {canonical: SETTINGS_MAP[canonical]}
 	else:
-		doctypes = SETTINGS_DOCTYPES
+		doctypes = dict(SETTINGS_MAP)
 
-	# Build reverse map: doctype -> country
 	doctype_to_country = {v: k for k, v in doctypes.items()}
 	doctype_list = list(doctypes.values())
 
@@ -66,9 +63,11 @@ def get_data(filters):
 		SELECT v.ref_doctype, v.data, v.owner, v.creation
 		FROM `tabVersion` v
 		WHERE v.ref_doctype IN %(doctypes)s
-		{conditions}
+		"""
+		+ conditions
+		+ """
 		ORDER BY v.creation DESC
-		""".format(conditions=conditions),
+		""",
 		query_filters,
 		as_dict=True,
 	)
@@ -80,9 +79,8 @@ def get_data(filters):
 		except (json.JSONDecodeError, TypeError):
 			continue
 
-		country = doctype_to_country.get(version.ref_doctype, version.ref_doctype)
+		country = _display_label(doctype_to_country.get(version.ref_doctype, version.ref_doctype))
 
-		# Process field-level changes
 		for change in version_data.get("changed", []):
 			if len(change) >= 3:
 				data.append({
@@ -95,7 +93,6 @@ def get_data(filters):
 					"changed_on": version.creation,
 				})
 
-		# Process child table changes (added/removed/row_changed)
 		for change_type in ("added", "removed"):
 			for item in version_data.get(change_type, []):
 				if isinstance(item, dict):

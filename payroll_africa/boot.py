@@ -15,6 +15,16 @@ COUNTRY_FIELD_MAP = {
 	"Nigeria": "enable_nigeria",
 	"Mozambique": "enable_mozambique",
 	"Angola": "enable_angola",
+	"Ghana": "enable_ghana",
+	"Ethiopia": "enable_ethiopia",
+	"South Africa": "enable_south_africa",
+	"Egypt": "enable_egypt",
+	"Botswana": "enable_botswana",
+	"Morocco": "enable_morocco",
+	"Ivory Coast": "enable_ivory_coast",
+	"Tunisia": "enable_tunisia",
+	"Namibia": "enable_namibia",
+	"Madagascar": "enable_madagascar",
 }
 
 
@@ -30,6 +40,13 @@ def get_enabled_countries():
 	]
 
 
+BOOT_CACHE_KEY = "payroll_africa_enabled_countries"
+
+
 def extend_bootinfo(bootinfo):
 	"""Add enabled countries to boot info for client-side filtering."""
-	bootinfo.payroll_africa_enabled_countries = get_enabled_countries()
+	cached = frappe.cache().get_value(BOOT_CACHE_KEY)
+	if cached is None:
+		cached = get_enabled_countries()
+		frappe.cache().set_value(BOOT_CACHE_KEY, cached, expires_in_sec=3600)
+	bootinfo.payroll_africa_enabled_countries = cached

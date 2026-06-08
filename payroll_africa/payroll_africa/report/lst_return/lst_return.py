@@ -2,6 +2,8 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
+
 
 def execute(filters=None):
 	columns = get_columns()
@@ -19,7 +21,7 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
+	conditions = standard_slip_conditions(filters)
 
 	data = frappe.db.sql(
 		"""
@@ -27,31 +29,20 @@ def get_data(filters):
 			ss.employee, ss.employee_name, ss.net_pay,
 			ss.name as salary_slip
 		FROM `tabSalary Slip` ss
-		WHERE ss.docstatus = 1 {conditions}
+		WHERE ss.docstatus = 1"""
+		+ conditions
+		+ """
 		ORDER BY ss.employee
-		""".format(conditions=conditions),
+		""",
 		filters,
 		as_dict=True,
 	)
 
+	slip_names = [r.salary_slip for r in data]
+	amounts = fetch_component_amounts(slip_names, ["LST"])
+
 	for row in data:
-		lst = flt(frappe.db.get_value(
-			"Salary Detail",
-			{"parent": row.salary_slip, "salary_component": "LST", "parentfield": "deductions"},
-			"amount",
-		))
-		row["lst_amount"] = lst
+		row["lst_amount"] = amounts.get(row.salary_slip, {}).get("LST", 0)
 		del row["salary_slip"]
 
 	return data
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.end_date <= %(to_date)s"
-	return conditions

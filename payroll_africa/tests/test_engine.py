@@ -48,15 +48,20 @@ class TestSetComponentAmount(unittest.TestCase):
 		self.assertEqual(row.default_amount, 1080.0)
 
 
-class TestRegistryClearCache(unittest.TestCase):
+class TestRegistryHelpers(unittest.TestCase):
 
-	def test_clear_cache(self):
-		"""Should clear the calculator cache."""
-		from payroll_africa.engine.registry import _calculators, clear_cache
+	def test_is_supported_country(self):
+		"""Should return True for known countries, False otherwise."""
+		from payroll_africa.engine.registry import is_supported_country
+		self.assertTrue(is_supported_country("Kenya"))
+		self.assertFalse(is_supported_country("Atlantis"))
 
-		_calculators["Kenya"] = "dummy"
-		clear_cache()
-		self.assertEqual(len(_calculators), 0)
+	def test_get_supported_countries_sorted(self):
+		"""Should return a sorted list of all supported countries."""
+		from payroll_africa.engine.registry import get_supported_countries
+		result = get_supported_countries()
+		self.assertEqual(result, sorted(result))
+		self.assertIn("Kenya", result)
 
 
 if __name__ == "__main__":

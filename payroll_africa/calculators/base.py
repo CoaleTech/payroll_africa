@@ -29,8 +29,16 @@ class BaseCalculator:
 		return flt(salary_slip.gross_pay)
 
 	def get_basic_pay(self, salary_slip):
-		"""Get basic salary from earnings."""
-		for earning in salary_slip.earnings:
-			if earning.salary_component == "Basic Salary":
-				return flt(earning.amount)
-		return 0
+		"""Extract basic salary from earnings table, fallback to gross_pay."""
+		for row in salary_slip.earnings or []:
+			if getattr(row, "salary_component", "") == "Basic Salary":
+				return flt(row.amount)
+		return self.get_gross_pay(salary_slip)
+
+	def validate_settings(self):
+		"""Validate that all required settings fields are present.
+
+		Override in subclass to add country-specific validation.
+		Raises frappe.ValidationError if settings are incomplete.
+		"""
+		pass

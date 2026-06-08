@@ -10,19 +10,17 @@ def on_salary_slip_validate(doc, method):
 	if not country:
 		return
 
-	# Check if Payroll Africa is enabled globally
+	if not frappe.db.exists("Payroll Africa Settings"):
+		return
+
 	settings = frappe.get_cached_doc("Payroll Africa Settings")
 	if not settings.enabled:
 		return
 
-	# Check if this specific country is enabled
 	from payroll_africa.boot import COUNTRY_FIELD_MAP
 	field = COUNTRY_FIELD_MAP.get(country)
 	if field and not settings.get(field):
-		frappe.throw(
-			frappe._("Payroll for {0} is disabled in Payroll Africa Settings").format(country),
-			title=frappe._("Country Disabled"),
-		)
+		return
 
 	calculator = get_calculator(country)
 	if not calculator:
@@ -54,7 +52,13 @@ def _set_component_amount(doc, component_name, amount, is_employer_only):
 			row.default_amount = row.amount
 			return
 
-	# Component not in salary structure - append it
+	if not frappe.db.exists("Salary Component", component_name):
+		frappe.log_error(
+			title="Payroll Africa: Missing Salary Component",
+			message=f"Salary Component '{component_name}' not found. Run Setup Wizard or bench migrate.",
+		)
+		return
+
 	component_doc = frappe.get_cached_doc("Salary Component", component_name)
 	doc.append("deductions", {
 		"salary_component": component_name,

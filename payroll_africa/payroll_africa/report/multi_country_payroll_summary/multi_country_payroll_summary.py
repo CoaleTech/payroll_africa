@@ -34,8 +34,10 @@ def get_data(filters):
 		FROM `tabSalary Slip` ss
 		LEFT JOIN `tabEmployee` e ON ss.employee = e.name
 		LEFT JOIN `tabCompany` c ON ss.company = c.name
-		WHERE ss.docstatus = 1 {conditions}
-		""".format(conditions=conditions),
+		WHERE ss.docstatus = 1"""
+		+ conditions
+		+ """
+		""",
 		filters,
 		as_dict=True,
 	)
@@ -100,13 +102,14 @@ def get_conditions(filters):
 	conditions = ""
 	if filters.get("company_group"):
 		lft, rgt = frappe.db.get_value("Company", filters["company_group"], ["lft", "rgt"])
-		companies = frappe.db.sql_list(
-			"SELECT name FROM `tabCompany` WHERE lft >= %s AND rgt <= %s",
-			(lft, rgt),
+		companies = frappe.get_all(
+			"Company",
+			filters=[["lft", ">=", lft], ["rgt", "<=", rgt]],
+			pluck="name",
 		)
-		conditions += " AND ss.company IN ({})".format(
-			", ".join(frappe.db.escape(c) for c in companies)
-		)
+		if companies:
+			filters["_companies"] = companies
+			conditions += " AND ss.company IN %(_companies)s"
 	elif filters.get("company"):
 		conditions += " AND ss.company = %(company)s"
 	if filters.get("from_date"):

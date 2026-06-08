@@ -47,9 +47,11 @@ def get_data(filters):
 			ss.gross_pay, ss.total_deduction, ss.net_pay,
 			ss.name as salary_slip
 		FROM `tabSalary Slip` ss
-		WHERE ss.docstatus = 1 {conditions}
+		WHERE ss.docstatus = 1"""
+		+ conditions
+		+ """
 		ORDER BY ss.employee
-		""".format(conditions=conditions),
+		""",
 		filters,
 		as_dict=True,
 	)

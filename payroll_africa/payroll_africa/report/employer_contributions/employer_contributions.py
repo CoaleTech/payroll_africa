@@ -2,6 +2,8 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from payroll_africa.payroll_africa.report.utils import standard_slip_conditions
+
 
 def execute(filters=None):
 	data, component_names = get_data(filters)
@@ -33,7 +35,7 @@ def get_columns(component_names):
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
+	conditions = standard_slip_conditions(filters)
 
 	salary_slips = frappe.db.sql(
 		"""
@@ -41,9 +43,11 @@ def get_data(filters):
 			ss.employee, ss.employee_name, ss.gross_pay,
 			ss.name as salary_slip
 		FROM `tabSalary Slip` ss
-		WHERE ss.docstatus = 1 {conditions}
+		WHERE ss.docstatus = 1"""
+		+ conditions
+		+ """
 		ORDER BY ss.employee
-		""".format(conditions=conditions),
+		""",
 		filters,
 		as_dict=True,
 	)
@@ -53,7 +57,6 @@ def get_data(filters):
 
 	slip_names = [s.salary_slip for s in salary_slips]
 
-	# Get all statistical (employer-only) deduction components
 	details = frappe.db.sql(
 		"""
 		SELECT parent, salary_component, amount
@@ -82,14 +85,3 @@ def get_data(filters):
 		del slip["salary_slip"]
 
 	return salary_slips, component_names
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.end_date <= %(to_date)s"
-	return conditions

@@ -2,6 +2,8 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
+
 
 def execute(filters=None):
 	columns = get_columns()
@@ -24,7 +26,7 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
+	conditions = standard_slip_conditions(filters)
 
 	data = frappe.db.sql(
 		"""
@@ -33,39 +35,26 @@ def get_data(filters):
 			e.tz_tin, ss.name as salary_slip
 		FROM `tabSalary Slip` ss
 		LEFT JOIN `tabEmployee` e ON ss.employee = e.name
-		WHERE ss.docstatus = 1 {conditions}
+		WHERE ss.docstatus = 1"""
+		+ conditions
+		+ """
 		ORDER BY ss.employee
-		""".format(conditions=conditions),
+		""",
 		filters,
 		as_dict=True,
 	)
 
-	for row in data:
-		slip = row.salary_slip
-		components = {"NSSF Employee TZ": 0, "PAYE TZ": 0, "SDL": 0, "WCF": 0}
-		for comp_name in components:
-			components[comp_name] = flt(frappe.db.get_value(
-				"Salary Detail",
-				{"parent": slip, "salary_component": comp_name, "parentfield": "deductions"},
-				"amount",
-			))
+	slip_names = [r.salary_slip for r in data]
+	amounts = fetch_component_amounts(slip_names, ["NSSF Employee TZ", "PAYE TZ", "SDL", "WCF"])
 
-		row["nssf_employee"] = components["NSSF Employee TZ"]
-		row["taxable_income"] = flt(row.gross_pay) - components["NSSF Employee TZ"]
-		row["paye"] = components["PAYE TZ"]
-		row["sdl"] = components["SDL"]
-		row["wcf"] = components["WCF"]
+	for row in data:
+		slip_amounts = amounts.get(row.salary_slip, {})
+		nssf = slip_amounts.get("NSSF Employee TZ", 0)
+		row["nssf_employee"] = nssf
+		row["taxable_income"] = flt(row.gross_pay) - nssf
+		row["paye"] = slip_amounts.get("PAYE TZ", 0)
+		row["sdl"] = slip_amounts.get("SDL", 0)
+		row["wcf"] = slip_amounts.get("WCF", 0)
 		del row["salary_slip"]
 
 	return data
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.end_date <= %(to_date)s"
-	return conditions

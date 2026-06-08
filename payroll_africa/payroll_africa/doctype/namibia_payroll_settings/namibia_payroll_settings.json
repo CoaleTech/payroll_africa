@@ -1,0 +1,140 @@
+{
+ "actions": [],
+ "creation": "2026-06-03 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "paye_section",
+  "paye_bands",
+  "ssc_section",
+  "ssc_rate",
+  "column_break_ssc",
+  "ssc_annual_ceiling",
+  "vet_levy_section",
+  "vet_levy_applicable",
+  "column_break_vet",
+  "vet_levy_rate",
+  "ecf_section",
+  "ecf_risk_sector"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "PAYE Bands",
+   "options": "Namibia PAYE Band",
+   "description": "Progressive PAYE tax bands (annual amounts in NAD)"
+  },
+  {
+   "fieldname": "ssc_section",
+   "fieldtype": "Section Break",
+   "label": "Social Security (SSC)"
+  },
+  {
+   "fieldname": "ssc_rate",
+   "fieldtype": "Percent",
+   "label": "SSC Rate",
+   "default": "0.9",
+   "description": "SSC contribution rate per side (%)"
+  },
+  {
+   "fieldname": "column_break_ssc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ssc_annual_ceiling",
+   "fieldtype": "Currency",
+   "label": "SSC Annual Ceiling",
+   "default": "108000",
+   "description": "Maximum annual gross subject to SSC (NAD)"
+  },
+  {
+   "fieldname": "vet_levy_section",
+   "fieldtype": "Section Break",
+   "label": "VET Levy"
+  },
+  {
+   "fieldname": "vet_levy_applicable",
+   "fieldtype": "Check",
+   "label": "VET Levy Applicable",
+   "default": "1",
+   "description": "Apply VET Levy if annual payroll exceeds NAD 1,000,000"
+  },
+  {
+   "fieldname": "column_break_vet",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vet_levy_rate",
+   "fieldtype": "Percent",
+   "label": "VET Levy Rate",
+   "default": "1",
+   "description": "VET Levy rate on gross payroll (%)"
+  },
+  {
+   "fieldname": "ecf_section",
+   "fieldtype": "Section Break",
+   "label": "Employees Compensation Fund (ECF)"
+  },
+  {
+   "fieldname": "ecf_risk_sector",
+   "fieldtype": "Select",
+   "label": "ECF Risk Sector",
+   "options": "low\nmedium\nhigh\nvery_high",
+   "default": "low",
+   "description": "Risk sector for ECF employer contribution rate"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-03 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Namibia Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

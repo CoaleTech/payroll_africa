@@ -13,6 +13,16 @@ COMPANIES = {
     "Garda Malawi":     {"abbr": "GM",  "currency": "MWK", "country": "Malawi"},
     "Garda DRC":        {"abbr": "GD",  "currency": "CDF", "country": "Congo, The Democratic Republic of the"},
     "Garda Burundi":    {"abbr": "GB",  "currency": "BIF", "country": "Burundi"},
+    "Garda Ethiopia":      {"abbr": "GET", "currency": "ETB", "country": "Ethiopia"},
+    "Garda Botswana":      {"abbr": "GBW", "currency": "BWP", "country": "Botswana"},
+    "Garda Ghana":         {"abbr": "GHG", "currency": "GHS", "country": "Ghana"},
+    "Garda South Africa":  {"abbr": "GZA", "currency": "ZAR", "country": "South Africa"},
+    "Garda Egypt":         {"abbr": "GEG", "currency": "EGP", "country": "Egypt"},
+    "Garda Morocco":       {"abbr": "GMA", "currency": "MAD", "country": "Morocco"},
+    "Garda Ivory Coast":   {"abbr": "GCI", "currency": "XOF", "country": "Ivory Coast"},
+    "Garda Tunisia":       {"abbr": "GTN", "currency": "TND", "country": "Tunisia"},
+    "Garda Namibia":       {"abbr": "GNA", "currency": "NAD", "country": "Namibia"},
+    "Garda Madagascar":    {"abbr": "GMG", "currency": "MGA", "country": "Madagascar"},
 }
 
 ITEMS = [
@@ -35,6 +45,16 @@ CUSTOMERS = {
     "Garda Malawi":     ["Illovo Sugar Malawi", "National Bank of Malawi", "Airtel Malawi", "Press Corporation", "FDH Bank Malawi"],
     "Garda DRC":        ["Rawbank DRC", "Vodacom Congo", "Brasimba SARL", "Orange RDC", "Equity BCDC"],
     "Garda Burundi":    ["Brarudi SA", "Econet Leo Burundi", "Interbank Burundi", "SOSUMO Burundi", "KCB Burundi"],
+    "Garda Ethiopia":      ["Ethiopian Airlines", "CBE Ethiopia", "Safaricom Ethiopia", "Ethio Telecom", "Dashen Bank"],
+    "Garda Botswana":      ["Debswana Diamond", "BPC Botswana", "Mascom Botswana", "Letshego Holdings", "Stanbic Botswana"],
+    "Garda Ghana":         ["MTN Ghana", "GCB Bank", "Ghana National Petroleum", "AirtelTigo Ghana", "Ecobank Ghana"],
+    "Garda South Africa":  ["MTN South Africa", "Standard Bank SA", "Sasol", "Pick n Pay", "Absa Bank"],
+    "Garda Egypt":         ["EgyptAir", "QNB Egypt", "Telecom Egypt", "CIB Egypt", "EFG Hermes"],
+    "Garda Morocco":       ["Maroc Telecom", "Attijariwafa Bank", "OCP Group", "BMCE Bank", "Royal Air Maroc"],
+    "Garda Ivory Coast":   ["Orange CI", "NSIA Banque", "SOTRA CI", "CMA CGM CI", "Bank of Africa CI"],
+    "Garda Tunisia":       ["Ooredoo Tunisia", "Attijari Bank Tunisia", "Tunisie Telecom", "BIAT Tunisia", "Tunisair"],
+    "Garda Namibia":       ["MTC Namibia", "Bank Windhoek", "NamPower", "FirstRand Namibia", "Namibia Breweries"],
+    "Garda Madagascar":    ["Telma Madagascar", "BFV-Societe Generale", "Air Madagascar", "BMOI Madagascar", "Jirama"],
 }
 
 SUPPLIERS = {
@@ -49,6 +69,16 @@ SUPPLIERS = {
     "Garda Malawi":     ["Lilongwe Supplies", "Malawi Fleet Services", "TNM Business MW", "GuardForce Malawi", "CleanTech Malawi"],
     "Garda DRC":        ["Kinshasa Security Equip", "Congo Fleet Hire", "Vodacom Congo Biz", "Securite Kinshasa", "Proprete Congo"],
     "Garda Burundi":    ["Bujumbura Supplies", "Burundi Fleet Lease", "Lumitel Business", "SecureForce Burundi", "NettService Burundi"],
+    "Garda Ethiopia":      ["Addis Security Equip", "Ethiopia Fleet Hire", "Safaricom Ethiopia Biz", "SegurTech Ethiopia", "CleanPro Ethiopia"],
+    "Garda Botswana":      ["Gaborone Supplies", "Botswana Fleet Services", "Mascom Business BW", "GuardTech Botswana", "CleanZam BW"],
+    "Garda Ghana":         ["Accra Security Equip", "Ghana Fleet Hire", "MTN Ghana Biz", "SafeGuard Ghana", "CleanServ Ghana"],
+    "Garda South Africa":  ["JHB Tactical", "SA Fleet Hire", "Vodacom SA Biz", "SecureGuard SA", "CleanPro SA"],
+    "Garda Egypt":         ["Cairo Security Equip", "Egypt Fleet Lease", "Vodafone Egypt Biz", "SecurTech Egypt", "CleanServ Egypt"],
+    "Garda Morocco":       ["Casablanca Supplies", "Morocco Fleet Hire", "Inwi Business", "Seguranca Morocco", "Limpeza Morocco"],
+    "Garda Ivory Coast":   ["Abidjan Supplies", "CI Fleet Services", "Orange CI Biz", "SecureForce CI", "NettService CI"],
+    "Garda Tunisia":       ["Tunis Security Equip", "Tunisia Fleet Lease", "Ooredoo Biz TN", "SafeGuard Tunisia", "CleanPro Tunisia"],
+    "Garda Namibia":       ["Windhoek Supplies", "Namibia Fleet Hire", "MTC Namibia Biz", "GuardTech Namibia", "CleanNam Services"],
+    "Garda Madagascar":    ["Antananarivo Supplies", "Madagascar Fleet", "Telma Business MG", "SecureForce MG", "NettService MG"],
 }
 
 BANKS = {
@@ -63,6 +93,16 @@ BANKS = {
     "Garda Malawi":     {"bank": "National Bank Malawi",  "account_name": "NBM Main Account"},
     "Garda DRC":        {"bank": "Rawbank",               "account_name": "Rawbank Main Account"},
     "Garda Burundi":    {"bank": "Interbank Burundi",     "account_name": "Interbank Main Account"},
+    "Garda Ethiopia":      {"bank": "Commercial Bank of Ethiopia", "account_name": "CBE Main Account"},
+    "Garda Botswana":      {"bank": "Stanbic Bank Botswana",       "account_name": "Stanbic BW Main Account"},
+    "Garda Ghana":         {"bank": "Ghana Commercial Bank",       "account_name": "GCB Main Account"},
+    "Garda South Africa":  {"bank": "Standard Bank South Africa",  "account_name": "Standard Bank SA Main Account"},
+    "Garda Egypt":         {"bank": "QNB Egypt",                   "account_name": "QNB Main Account"},
+    "Garda Morocco":       {"bank": "Attijariwafa Bank",           "account_name": "Attijariwafa Main Account"},
+    "Garda Ivory Coast":   {"bank": "NSIA Banque",                 "account_name": "NSIA Main Account"},
+    "Garda Tunisia":       {"bank": "Attijari Bank Tunisia",       "account_name": "Attijari TN Main Account"},
+    "Garda Namibia":       {"bank": "Bank Windhoek",               "account_name": "Bank Windhoek Main Account"},
+    "Garda Madagascar":    {"bank": "BFV-Societe Generale",        "account_name": "BFV Main Account"},
 }
 
 EMPLOYEES = {
@@ -143,6 +183,76 @@ EMPLOYEES = {
         ("Odette", "Hakizimana", "Female", "1992-08-26"),
         ("Aimable", "Niyongabo", "Male", "1986-04-08"),
     ],
+    "Garda Ethiopia": [
+        ("Dawit", "Abebe", "Male", "1982-03-15"),
+        ("Hanna", "Tadesse", "Female", "1986-07-22"),
+        ("Solomon", "Kebede", "Male", "1990-01-10"),
+        ("Meron", "Bekele", "Female", "1992-11-05"),
+        ("Yonas", "Hailu", "Male", "1988-06-18"),
+    ],
+    "Garda Botswana": [
+        ("Kabelo", "Mokgwathi", "Male", "1981-04-20"),
+        ("Lesego", "Kgosi", "Female", "1985-08-12"),
+        ("Thuso", "Mokgosi", "Male", "1991-02-14"),
+        ("Amantle", "Montsho", "Female", "1993-09-30"),
+        ("Tumelo", "Kgafela", "Male", "1987-05-25"),
+    ],
+    "Garda Ghana": [
+        ("Kwame", "Asante", "Male", "1982-06-08"),
+        ("Akosua", "Mensah", "Female", "1984-12-01"),
+        ("Kofi", "Boateng", "Male", "1989-03-22"),
+        ("Abena", "Owusu", "Female", "1991-10-17"),
+        ("Yaw", "Addo", "Male", "1986-01-30"),
+    ],
+    "Garda South Africa": [
+        ("Siyabonga", "Nkabinde", "Male", "1983-07-14"),
+        ("Lerato", "Mokoena", "Female", "1987-11-09"),
+        ("Thabo", "Dlamini", "Male", "1990-04-28"),
+        ("Nomsa", "Zulu", "Female", "1992-02-19"),
+        ("Bongani", "Mbatha", "Male", "1985-08-03"),
+    ],
+    "Garda Egypt": [
+        ("Omar", "Hassan", "Male", "1982-05-10"),
+        ("Fatima", "Ibrahim", "Female", "1986-09-14"),
+        ("Amr", "Mahmoud", "Male", "1990-03-28"),
+        ("Nour", "Sayed", "Female", "1991-12-02"),
+        ("Karim", "Fouad", "Male", "1987-07-19"),
+    ],
+    "Garda Morocco": [
+        ("Youssef", "El Amrani", "Male", "1983-02-25"),
+        ("Amina", "Bennani", "Female", "1987-06-11"),
+        ("Mehdi", "Fassi", "Male", "1989-10-05"),
+        ("Salma", "Idrissi", "Female", "1992-04-17"),
+        ("Hicham", "Ouazzani", "Male", "1986-08-30"),
+    ],
+    "Garda Ivory Coast": [
+        ("Kouame", "Kone", "Male", "1981-11-08"),
+        ("Aya", "Yao", "Female", "1985-04-22"),
+        ("Yao", "Kouassi", "Male", "1990-07-15"),
+        ("Mariam", "Bamba", "Female", "1993-01-28"),
+        ("Jean", "Amani", "Male", "1988-09-12"),
+    ],
+    "Garda Tunisia": [
+        ("Ahmed", "Ben Ali", "Male", "1982-08-20"),
+        ("Sana", "Trabelsi", "Female", "1986-12-05"),
+        ("Mehdi", "Guesmi", "Male", "1991-02-18"),
+        ("Rania", "Jaziri", "Female", "1992-06-30"),
+        ("Hatem", "Bouazizi", "Male", "1985-10-14"),
+    ],
+    "Garda Namibia": [
+        ("Johannes", "Nambala", "Male", "1983-04-12"),
+        ("Maria", "Shikongo", "Female", "1987-08-25"),
+        ("Petrus", "Iiyambo", "Male", "1990-11-07"),
+        ("Helena", "Nuuyoma", "Female", "1992-03-19"),
+        ("Tobias", "Hainyeko", "Male", "1986-06-01"),
+    ],
+    "Garda Madagascar": [
+        ("Andry", "Rajoelina", "Male", "1982-01-15"),
+        ("Mialy", "Rakoto", "Female", "1986-05-28"),
+        ("Hery", "Rajaonarimampianina", "Male", "1989-09-10"),
+        ("Lalao", "Ravalomanana", "Female", "1991-07-22"),
+        ("Rivo", "Andrianarivo", "Male", "1987-12-04"),
+    ],
 }
 
 DESIGNATIONS = ["Manager", "Consultant", "Associate", "Associate", "Associate"]
@@ -160,6 +270,16 @@ SALARIES = {
     "Garda Malawi":     [800000, 600000, 400000, 300000, 250000],
     "Garda DRC":        [2500000, 2000000, 1400000, 1000000, 800000],
     "Garda Burundi":    [1500000, 1200000, 800000, 600000, 500000],
+    "Garda Ethiopia":      [45000, 35000, 25000, 18000, 15000],
+    "Garda Botswana":      [25000, 20000, 14000, 10000, 8000],
+    "Garda Ghana":         [12000, 9500, 6500, 5000, 4000],
+    "Garda South Africa":  [45000, 35000, 25000, 18000, 15000],
+    "Garda Egypt":         [25000, 20000, 14000, 10000, 8000],
+    "Garda Morocco":       [15000, 12000, 8000, 6000, 5000],
+    "Garda Ivory Coast":   [800000, 600000, 400000, 300000, 250000],
+    "Garda Tunisia":       [4500, 3500, 2500, 1800, 1500],
+    "Garda Namibia":       [25000, 20000, 14000, 10000, 8000],
+    "Garda Madagascar":    [4500000, 3500000, 2500000, 1800000, 1500000],
 }
 
 STRUCTURE_DEDUCTIONS = {
@@ -174,6 +294,16 @@ STRUCTURE_DEDUCTIONS = {
     "Garda Malawi":     ["PAYE MW", "Pension Employee MW", "Pension Employer MW"],
     "Garda DRC":        ["PAYE CD", "INSS Pension Employee CD", "INSS Pension Employer CD", "INSS Family Benefits CD", "INSS Occupational Risks CD", "INPP CD", "ONEM CD"],
     "Garda Burundi":    ["PAYE BI", "INSS Employee BI", "INSS Employer BI", "Health Insurance Employee BI", "Health Insurance Employer BI", "Training Fund Employee BI", "Training Fund Employer BI", "Work Injury BI"],
+    "Garda Ethiopia":      ["PAYE ET", "Pension Employee ET", "Pension Employer ET", "Social Insurance Employee ET", "Social Insurance Employer ET"],
+    "Garda Botswana":      ["PAYE BW", "BPOPF Employee BW", "BPOPF Employer BW", "BOMPEC Employee BW", "BOMPEC Employer BW"],
+    "Garda Ghana":         ["PAYE GH", "SSNIT Employee GH", "SSNIT Employer GH", "NHIL GH", "GETFund GH"],
+    "Garda South Africa":  ["PAYE ZA", "UIF Employee ZA", "UIF Employer ZA", "SDL ZA", "Pension Employee ZA", "Pension Employer ZA"],
+    "Garda Egypt":         ["PAYE EG", "Social Insurance Employee EG", "Social Insurance Employer EG", "Health Insurance Employee EG", "Health Insurance Employer EG"],
+    "Garda Morocco":       ["PAYE MA", "CNSS Employee MA", "CNSS Employer MA", "AMO Employee MA", "AMO Employer MA"],
+    "Garda Ivory Coast":   ["PAYE CI", "CNPS Employee CI", "CNPS Employer CI", "AMU Employee CI", "AMU Employer CI"],
+    "Garda Tunisia":       ["PAYE TN", "CNSS Employee TN", "CNSS Employer TN", "CNAM Employee TN", "CNAM Employer TN"],
+    "Garda Namibia":       ["PAYE NA", "Social Security Employee NA", "Social Security Employer NA", "NEC NA"],
+    "Garda Madagascar":    ["PAYE MG", "CNAPS Employee MG", "CNAPS Employer MG", "OSIE Employee MG", "OSIE Employer MG"],
 }
 
 TAX_SLABS = {
@@ -188,6 +318,16 @@ TAX_SLABS = {
     "Garda Malawi":     "Malawi PAYE 2025",
     "Garda DRC":        "DRC PAYE 2025",
     "Garda Burundi":    "Burundi PAYE 2025",
+    "Garda Ethiopia":      "Ethiopia PAYE 2025",
+    "Garda Botswana":      "Botswana PAYE 2025",
+    "Garda Ghana":         "Ghana PAYE 2025",
+    "Garda South Africa":  "South Africa PAYE 2025",
+    "Garda Egypt":         "Egypt PAYE 2025",
+    "Garda Morocco":       "Morocco PAYE 2025",
+    "Garda Ivory Coast":   "Ivory Coast PAYE 2025",
+    "Garda Tunisia":       "Tunisia PAYE 2025",
+    "Garda Namibia":       "Namibia PAYE 2025",
+    "Garda Madagascar":    "Madagascar PAYE 2025",
 }
 
 INVOICE_MULTIPLIERS = {
@@ -202,6 +342,16 @@ INVOICE_MULTIPLIERS = {
     "MWK": 12,
     "CDF": 20,
     "BIF": 20,
+    "ETB": 55,
+    "BWP": 0.15,
+    "GHS": 0.8,
+    "ZAR": 0.2,
+    "EGP": 0.5,
+    "MAD": 0.1,
+    "XOF": 6,
+    "TND": 0.3,
+    "NAD": 0.15,
+    "MGA": 450,
 }
 
 SALES_BASE_AMOUNTS = [500000, 350000, 200000, 750000, 150000]

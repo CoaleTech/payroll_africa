@@ -13,12 +13,22 @@
   "enable_rwanda",
   "enable_burundi",
   "enable_malawi",
+  "enable_ghana",
+  "enable_ethiopia",
+  "enable_south_africa",
   "column_break_countries",
   "enable_zambia",
   "enable_drc",
   "enable_nigeria",
   "enable_mozambique",
-  "enable_angola"
+  "enable_angola",
+  "enable_egypt",
+  "enable_botswana",
+  "enable_morocco",
+  "enable_ivory_coast",
+  "enable_tunisia",
+  "enable_namibia",
+  "enable_madagascar"
  ],
  "fields": [
   {
@@ -70,6 +80,24 @@
    "default": "1"
   },
   {
+   "fieldname": "enable_ghana",
+   "fieldtype": "Check",
+   "label": "Ghana",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_ethiopia",
+   "fieldtype": "Check",
+   "label": "Ethiopia",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_south_africa",
+   "fieldtype": "Check",
+   "label": "South Africa",
+   "default": "1"
+  },
+  {
    "fieldname": "column_break_countries",
    "fieldtype": "Column Break"
   },
@@ -102,10 +130,52 @@
    "fieldtype": "Check",
    "label": "Angola",
    "default": "1"
+  },
+  {
+   "fieldname": "enable_egypt",
+   "fieldtype": "Check",
+   "label": "Egypt",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_botswana",
+   "fieldtype": "Check",
+   "label": "Botswana",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_morocco",
+   "fieldtype": "Check",
+   "label": "Morocco",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_ivory_coast",
+   "fieldtype": "Check",
+   "label": "Ivory Coast",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_tunisia",
+   "fieldtype": "Check",
+   "label": "Tunisia",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_namibia",
+   "fieldtype": "Check",
+   "label": "Namibia",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_madagascar",
+   "fieldtype": "Check",
+   "label": "Madagascar",
+   "default": "1"
   }
  ],
  "links": [],
- "modified": "2026-03-08 00:00:00.000000",
+ "modified": "2026-06-03 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Payroll Africa",
  "name": "Payroll Africa Settings",

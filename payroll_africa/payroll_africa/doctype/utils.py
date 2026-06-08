@@ -1,5 +1,6 @@
 import frappe
 from frappe import _
+from frappe.model.document import Document
 from frappe.utils import flt
 
 
@@ -22,7 +23,6 @@ def validate_paye_bands(doc):
 				_("Row {0}: To Amount cannot be negative").format(i + 1)
 			)
 
-	# Check bands are ordered by from_amount
 	for i in range(1, len(doc.paye_bands)):
 		prev = doc.paye_bands[i - 1]
 		curr = doc.paye_bands[i]
@@ -30,3 +30,11 @@ def validate_paye_bands(doc):
 			frappe.throw(
 				_("Row {0}: From Amount must be greater than previous band").format(i + 1)
 			)
+
+
+class PayrollSettingsController(Document):
+	def validate(self):
+		validate_paye_bands(self)
+
+	def on_update(self):
+		frappe.clear_cache(doctype=self.doctype)

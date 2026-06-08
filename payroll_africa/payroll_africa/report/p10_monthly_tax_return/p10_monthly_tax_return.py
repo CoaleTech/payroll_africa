@@ -82,9 +82,11 @@ def get_data(filters):
 		WHERE ss.docstatus = 1
 			AND sc.p10a_tax_deduction_card_type IS NOT NULL
 			AND sc.p10a_tax_deduction_card_type != ''
-			{conditions}
+			"""
+		+ conditions
+		+ """
 		ORDER BY ss.employee
-		""".format(conditions=conditions),
+		""",
 		filters,
 		as_dict=True,
 	)

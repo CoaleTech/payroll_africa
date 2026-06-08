@@ -167,6 +167,31 @@ class TestSenegal(unittest.TestCase):
         self.assertIn("AMO Health Employee", r)
         self.assertIn("AMO Health Employer", r)
 
+    def test_zero_gross(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["IPRES Pension Employee"]["amount"], 0, delta=1)
+        self.assertAlmostEqual(r["IPRES Pension Employer"]["amount"], 0, delta=1)
+        self.assertNotIn("Income Tax", r)
+
+    def test_key_components(self):
+        r = self.calc.compute(slip(200000))
+        # gross 200,000 < IPRES ceiling 299,000 so base = 200,000
+        # IPRES emp: 5.6% of 200,000 = 11,200
+        # CSS emp: 3% of 200,000 = 6,000
+        self.assertAlmostEqual(r["IPRES Pension Employee"]["amount"], 11200, delta=1)
+        self.assertAlmostEqual(r["CSS Health Employee"]["amount"], 6000, delta=1)
+
+    def test_employer_only_flag(self):
+        r = self.calc.compute(slip(200000))
+        self.assertTrue(r["IPRES Pension Employer"]["is_employer_only"])
+        self.assertTrue(r["CSS Health Employer"]["is_employer_only"])
+        self.assertFalse(r["IPRES Pension Employee"]["is_employer_only"])
+
+    def test_below_pit_threshold(self):
+        # Monthly gross 52,000 → annual 624,000 ≤ threshold 630,000 → no Income Tax
+        r = self.calc.compute(slip(52000))
+        self.assertNotIn("Income Tax", r)
+
 
 class TestMali(unittest.TestCase):
     def setUp(self):
@@ -182,6 +207,41 @@ class TestMali(unittest.TestCase):
         # Ceiling: 8 x 75,000 = 600,000
         # INSS emp: 3.5% of 600k = 21,000
         self.assertAlmostEqual(r["INSS Pension Employee"]["amount"], 21000, delta=1)
+
+    def test_zero_gross(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["INSS Pension Employee"]["amount"], 0, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 0, delta=1)
+        self.assertNotIn("PIT", r)
+
+    def test_key_components(self):
+        r = self.calc.compute(slip(500000))
+        # Ceiling: 8 x 75,000 = 600,000; gross 500,000 < ceiling so base = 500,000
+        # INSS emp: 3.5% of 500,000 = 17,500
+        # AMO emp: 2% of 500,000 = 10,000
+        self.assertAlmostEqual(r["INSS Pension Employee"]["amount"], 17500, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 10000, delta=1)
+
+    def test_employer_only_flag(self):
+        r = self.calc.compute(slip(300000))
+        self.assertTrue(r["INSS Pension Employer"]["is_employer_only"])
+        self.assertTrue(r["AMO Health Employer"]["is_employer_only"])
+        self.assertFalse(r["INSS Pension Employee"]["is_employer_only"])
+        self.assertFalse(r["AMO Health Employee"]["is_employer_only"])
+
+    def test_ceiling(self):
+        r = self.calc.compute(slip(2000000))
+        # Ceiling = 8 x 75,000 = 600,000
+        # INSS emp capped: 3.5% of 600,000 = 21,000
+        self.assertAlmostEqual(r["INSS Pension Employee"]["amount"], 21000, delta=1)
+        # At twice the gross the result should be the same (ceiling applies)
+        r2 = self.calc.compute(slip(4000000))
+        self.assertAlmostEqual(r2["INSS Pension Employee"]["amount"], 21000, delta=1)
+
+    def test_below_pit_threshold(self):
+        # Monthly gross of 50,000 → annual 600,000 ≤ threshold 650,000 → no PIT
+        r = self.calc.compute(slip(50000))
+        self.assertNotIn("PIT", r)
 
 
 class TestNiger(unittest.TestCase):
@@ -199,6 +259,38 @@ class TestNiger(unittest.TestCase):
         # CNSS emp: 5.25% of 560k = 29,400
         self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 29400, delta=1)
 
+    def test_zero_gross(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 0, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 0, delta=1)
+        self.assertNotIn("PIT", r)
+
+    def test_key_components(self):
+        r = self.calc.compute(slip(400000))
+        # Ceiling: 8 x 70,000 = 560,000; gross 400,000 < ceiling so base = 400,000
+        # CNSS emp: 5.25% of 400,000 = 21,000
+        # AMO emp: 2.5% of 400,000 = 10,000
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 21000, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 10000, delta=1)
+
+    def test_employer_only_flag(self):
+        r = self.calc.compute(slip(300000))
+        self.assertTrue(r["CNSS Pension Employer"]["is_employer_only"])
+        self.assertTrue(r["AMO Health Employer"]["is_employer_only"])
+        self.assertFalse(r["CNSS Pension Employee"]["is_employer_only"])
+        self.assertFalse(r["AMO Health Employee"]["is_employer_only"])
+
+    def test_ceiling(self):
+        r = self.calc.compute(slip(2000000))
+        # Ceiling = 8 x 70,000 = 560,000
+        # CNSS emp capped: 5.25% of 560,000 = 29,400
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 29400, delta=1)
+
+    def test_below_pit_threshold(self):
+        # Monthly gross 40,000 → annual 480,000 ≤ threshold 500,000 → no PIT
+        r = self.calc.compute(slip(40000))
+        self.assertNotIn("PIT", r)
+
 
 class TestBurkinaFaso(unittest.TestCase):
     def setUp(self):
@@ -213,6 +305,38 @@ class TestBurkinaFaso(unittest.TestCase):
         r = self.calc.compute(slip(1000000))
         self.assertGreater(r["CNSS Pension Employee"]["amount"], 0)
         self.assertGreater(r["AMO Health Employee"]["amount"], 0)
+
+    def test_zero_gross(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 0, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 0, delta=1)
+        self.assertNotIn("PIT", r)
+
+    def test_key_components(self):
+        r = self.calc.compute(slip(400000))
+        # Ceiling: 8 x 65,000 = 520,000; gross 400,000 < ceiling so base = 400,000
+        # CNSS emp: 5.5% of 400,000 = 22,000
+        # AMO emp: 3% of 400,000 = 12,000
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 22000, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 12000, delta=1)
+
+    def test_employer_only_flag(self):
+        r = self.calc.compute(slip(300000))
+        self.assertTrue(r["CNSS Pension Employer"]["is_employer_only"])
+        self.assertTrue(r["AMO Health Employer"]["is_employer_only"])
+        self.assertFalse(r["CNSS Pension Employee"]["is_employer_only"])
+        self.assertFalse(r["AMO Health Employee"]["is_employer_only"])
+
+    def test_ceiling(self):
+        r = self.calc.compute(slip(2000000))
+        # Ceiling = 8 x 65,000 = 520,000
+        # CNSS emp capped: 5.5% of 520,000 = 28,600
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 28600, delta=1)
+
+    def test_below_pit_threshold(self):
+        # Monthly gross 40,000 → annual 480,000 ≤ threshold 500,000 → no PIT
+        r = self.calc.compute(slip(40000))
+        self.assertNotIn("PIT", r)
 
 
 class TestBenin(unittest.TestCase):
@@ -229,6 +353,78 @@ class TestBenin(unittest.TestCase):
         # Ceiling: 8 x 65,000 = 520,000
         # CNSS emp: 3.6% of 520k = 18,720
         self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 18720, delta=1)
+
+    def test_zero_gross(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 0, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 0, delta=1)
+        self.assertNotIn("PIT", r)
+
+    def test_key_components(self):
+        r = self.calc.compute(slip(300000))
+        # Ceiling: 8 x 65,000 = 520,000; gross 300,000 < ceiling so base = 300,000
+        # CNSS emp: 3.6% of 300,000 = 10,800
+        # AMO emp: 2% of 300,000 = 6,000
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 10800, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 6000, delta=1)
+
+    def test_employer_only_flag(self):
+        r = self.calc.compute(slip(300000))
+        self.assertTrue(r["CNSS Pension Employer"]["is_employer_only"])
+        self.assertTrue(r["AMO Health Employer"]["is_employer_only"])
+        self.assertFalse(r["CNSS Pension Employee"]["is_employer_only"])
+        self.assertFalse(r["AMO Health Employee"]["is_employer_only"])
+
+    def test_ceiling(self):
+        r = self.calc.compute(slip(2000000))
+        # Ceiling = 8 x 65,000 = 520,000
+        # CNSS emp capped: 3.6% of 520,000 = 18,720
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 18720, delta=1)
+
+    def test_below_pit_threshold(self):
+        # Monthly gross 40,000 → annual 480,000 ≤ threshold 500,000 → no PIT
+        r = self.calc.compute(slip(40000))
+        self.assertNotIn("PIT", r)
+
+
+class TestAlgeria(unittest.TestCase):
+    def setUp(self):
+        from payroll_africa.calculators.algeria import AlgeriaCalculator
+        self.calc = AlgeriaCalculator(MockSettings(
+            cnas_employee_rate=9,
+            cnas_employer_rate=25.5,
+        ))
+
+    def test_zero_gross(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["CNAS Employee"]["amount"], 0, delta=1)
+        self.assertAlmostEqual(r["CNAS Employer"]["amount"], 0, delta=1)
+        self.assertNotIn("PIT", r)
+
+    def test_key_components(self):
+        r = self.calc.compute(slip(50000))
+        # CNAS emp: 9% of 50,000 = 4,500
+        # CNAS empr: 25.5% of 50,000 = 12,750
+        self.assertAlmostEqual(r["CNAS Employee"]["amount"], 4500, delta=1)
+        self.assertAlmostEqual(r["CNAS Employer"]["amount"], 12750, delta=1)
+
+    def test_employer_only_flag(self):
+        r = self.calc.compute(slip(50000))
+        self.assertTrue(r["CNAS Employer"]["is_employer_only"])
+        self.assertFalse(r["CNAS Employee"]["is_employer_only"])
+
+    def test_pit_above_threshold(self):
+        # Monthly 25,000 → annual 300,000 > 240,000 threshold → PIT expected
+        # taxable after CNAS: 25,000 - 2,250 = 22,750/month → annual 273,000
+        # tax: (273,000 - 240,000) x 20% = 6,600 annual → 550 monthly
+        r = self.calc.compute(slip(25000))
+        self.assertIn("PIT", r)
+        self.assertAlmostEqual(r["PIT"]["amount"], 550, delta=5)
+
+    def test_below_pit_threshold(self):
+        # Monthly 19,000 → after CNAS 17,290 → annual 207,480 ≤ 240,000 → no PIT
+        r = self.calc.compute(slip(19000))
+        self.assertNotIn("PIT", r)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,8 @@
   <a href="#installation">Installation</a> &middot;
   <a href="#configuration">Configuration</a> &middot;
   <a href="#reports">Reports</a> &middot;
-  <a href="#api">API</a>
+  <a href="#api">API</a> &middot;
+  <a href="#contributing">Contributing</a>
 </p>
 
 ---
@@ -28,40 +29,39 @@ No manual calculation. No spreadsheets. Change a rate in settings, and the next 
 
 ### Key Features
 
-- **Automatic deduction computation** on Salary Slip save/submit
-- **54 countries** with country-specific calculators, configurable tax bands, and statutory rates
-- **110+ reports** covering PAYE returns, social security remittances, and compliance filings
-- **Country enable/disable** — toggle which countries are active in your deployment
-- **Dynamic workspace** — sidebar and salary component dropdowns filter to show only enabled countries
-- **Rate change tracking** — update statutory rates with effective dates; audit trail included
-- **Template salary structures** — pre-built per country with all statutory components wired up
-- **API for standalone calculations** — compute deductions without creating a Salary Slip
+- **Automatic deduction computation** on every Salary Slip save/submit via `doc_events`
+- **54 countries** — 54 calculators, 54 Settings DocTypes, 54 tax-band child tables
+- **111 reports** — country-specific PAYE returns, social security remittances, and 5 cross-country reports
+- **Country enable/disable** — toggle active countries in a single settings page; sidebar and component dropdowns update automatically (no restart)
+- **Rate change tracking** — update statutory rates with effective dates; audit trail report included
+- **Salary structure templates** — pre-built for the original 21 countries with all statutory components wired up
+- **Standalone deduction API** — calculate deductions for any country without creating a Salary Slip
 - **Bulk recalculation** — recalculate all enabled countries' draft slips in one API call
-- **Yearly rate-review reminder** — automated email to Payroll Managers at year-start
-- **Print format** — "Salary Slip Africa Standard" with country-aware layout
-- **What's New dialog** — styled release notes shown after app updates
+- **Yearly rate-review reminder** — automated email to Payroll Managers each January
+- **What's New dialog** — styled release notes surfaced after app updates
+- **342 unit tests** — all passing, covering every country
 
 ---
 
 ## Supported Countries
 
-### East Africa (15 countries)
+### East Africa (11 countries)
 
 | Country | Currency | Key Statutory Deductions |
 |---------|----------|--------------------------|
-| Kenya | KES | PAYE, NSSF (Tier I & II), SHIF, Housing Levy, NITA |
-| Uganda | UGX | PAYE, NSSF (5%/10%/15% tiers), LST |
-| Tanzania | TZS | PAYE, NSSF, SDL, WCF |
-| Rwanda | RWF | PAYE, Pension, Maternity, CBHI, Occupational Hazards |
-| Burundi | BIF | PAYE, INSS, Work Injury, Health Insurance, Training Fund |
+| Kenya | KES | NSSF (Tier I & II), SHIF, Housing Levy (emp + empr), NITA |
+| Uganda | UGX | NSSF (employee + employer), LST |
+| Tanzania | TZS | NSSF, SDL, WCF — via HRMS PAYE |
+| Rwanda | RWF | Pension, Maternity, CBHI, Occupational Hazards |
+| Burundi | BIF | INSS, Work Injury, Health Insurance, Training Fund |
 | Ethiopia | ETB | PIT (0–35%), Pension (Employee + Employer) |
 | Djibouti | DJF | PIT, CNSS (Pension + Health) |
 | Eritrea | ERN | PIT, NICE Social Insurance |
 | Somalia | SOS | No mandatory statutory deductions |
-| South Sudan | SSP | No standardized statutory framework |
+| South Sudan | SSP | No standardised statutory framework |
 | Sudan | SDG | PIT, NSIF Social Insurance |
 
-### Southern Africa (9 countries)
+### Southern Africa (11 countries)
 
 | Country | Currency | Key Statutory Deductions |
 |---------|----------|--------------------------|
@@ -73,29 +73,29 @@ No manual calculation. No spreadsheets. Change a rate in settings, and the next 
 | South Africa | ZAR | PAYE (18–45%), UIF, SDL |
 | Namibia | NAD | PAYE (0–37%), SSC, VET, ECF |
 | Madagascar | MGA | IRSA (0–30%), CNaPS, OSTIE, FMFP |
-| Zimbabwe | ZiG/USD | PAYE, NSSA, AIDS Levy |
-| Lesotho | LSL | PAYE (annual tax credit) |
-| Eswatini | SZL | PAYE, ENPF, SDL |
+| Zimbabwe | ZiG/USD | PAYE, NSSA (Employee + Employer), AIDS Levy |
+| Lesotho | LSL | PAYE (annual tax credit applied) |
+| Eswatini | SZL | PAYE, ENPF (Employee + Employer), SDL |
 
-### West Africa (14 countries)
+### West Africa (16 countries)
 
 | Country | Currency | Key Statutory Deductions |
 |---------|----------|--------------------------|
-| Nigeria | NGN | PAYE, Pension (PenCom), NHF, NHIS, NSITF, ITF |
-| Ghana | GHS | PAYE (0–35%), SSNIT (Tier 1 & 2) |
-| Ivory Coast | XOF | ITS (0–32%), CNPS (Pension + Family) |
-| Senegal | XOF | IR (0–40%), IPRES, CSS, AMO Health |
-| Mali | XOF | PIT, INSS Pension, AMO Health |
-| Niger | XOF | PIT, CNSS Pension, AMO Health |
-| Burkina Faso | XOF | PIT, CNSS Pension, AMO Health |
-| Benin | XOF | PIT, CNSS Pension, AMO/CRAMI Health |
-| Togo | XOF | PIT/IRPP, CNSS Pension |
-| Guinea | GNF | PIT, INSS (Pension + Family), AMO, Work Injury |
-| Sierra Leone | SLE | PAYE, NASSIT Pension |
-| Liberia | LRD | PAYE, NASSCorp Pension |
-| Gambia | GMD | PIT, SSHFC Provident Fund |
+| Nigeria | NGN | Pension (PenCom), NHF, NHIS, NSITF, ITF — PAYE via HRMS |
+| Ghana | GHS | SSNIT (Tier 1 Employee + Employer, Tier 2), PAYE |
+| Ivory Coast | XOF | ITS (0–32%), CNPS Pension, Family Allowances, Housing, Training, Work Injury |
+| Senegal | XOF | IPRES Pension (emp + empr), CSS Health, AMO Health, Income Tax |
+| Mali | XOF | INSS Pension (emp + empr), AMO Health, PIT |
+| Niger | XOF | CNSS Pension (emp + empr), AMO Health, PIT |
+| Burkina Faso | XOF | CNSS Pension (emp + empr), AMO Health, PIT |
+| Benin | XOF | CNSS Pension (emp + empr), AMO Health, PIT |
+| Togo | XOF | CNSS (Employee + Employer), PIT/IRPP |
+| Guinea | GNF | INSS Pension, Family Allowances, AMO Health, Work Injury, PIT |
+| Sierra Leone | SLE | PAYE, NASSIT Pension (Employee + Employer) |
+| Liberia | LRD | PAYE, NASSCorp Pension (Employee + Employer) |
+| Gambia | GMD | PIT, SSHFC Provident Fund (Employee + Employer) |
 | Guinea-Bissau | XOF | IRPS, INSS Social Insurance |
-| Cabo Verde | CVE | IRPC, INPS, Work Injury |
+| Cabo Verde | CVE | IRPC, INPS (Employee + Employer), Work Injury |
 | Mauritania | MRU | PIT, CNSS, CNAM Health |
 
 ### North Africa (5 countries)
@@ -103,32 +103,32 @@ No manual calculation. No spreadsheets. Change a rate in settings, and the next 
 | Country | Currency | Key Statutory Deductions |
 |---------|----------|--------------------------|
 | Egypt | EGP | PIT (0–27.5%), Social Insurance, Health Insurance, Martyrs Fund |
-| Morocco | MAD | IR (0–37%), CNSS (Pension + AMO) |
+| Morocco | MAD | IR (0–37%), CNSS (Pension + AMO Health) |
 | Tunisia | TND | IRPP (0–40%), CNSS, SSC |
 | Algeria | DZD | PIT (0–35%), CNAS Social Security |
-| Libya | LYD | PIT, SSF, Jehad Tax, Solidarity Fund |
+| Libya | LYD | PIT, SSF (Employee + Employer), Jehad Tax, Solidarity Fund |
 
 ### Central Africa (9 countries)
 
 | Country | Currency | Key Statutory Deductions |
 |---------|----------|--------------------------|
 | DRC | CDF | IPR/PAYE, INSS, INPP, ONEM, Family Benefits |
-| Cameroon | XAF | IRPP, CNPS (Pension + Family), CFC Housing, FNE, Work Injury |
-| Gabon | XAF | IRGP, CNSS (Pension + Health) |
+| Cameroon | XAF | IRPP, CNPS (Pension + Family), CFC Housing, FNE, CRTV, Taxe Communale, Work Injury |
+| Gabon | XAF | IRGP, CNSS (Employee + Employer) |
 | Congo | XAF | PIT, CNSS (Employee + Employer), CNAMGS Health |
-| Central African Republic | XAF | PIT, CNSS Social Insurance |
+| Central African Republic | XAF | PIT, CNSS (Employee + Employer) |
 | Chad | XAF | PIT, CNPS (Pension + Family), Work Injury |
-| Equatorial Guinea | XAF | PIT, CNSS Social Insurance |
-| Sao Tome and Principe | STN | PIT, INSS Social Insurance |
-| Comoros | KMF | PIT, CNSS Social Insurance |
+| Equatorial Guinea | XAF | PIT, CNSS (Employee + Employer) |
+| Sao Tome and Principe | STN | PIT, INSS (Employee + Employer) |
+| Comoros | KMF | PIT, CNSS (Employee + Employer) |
 
 ### Indian Ocean (3 countries)
 
 | Country | Currency | Key Statutory Deductions |
 |---------|----------|--------------------------|
-| Mauritius | MUR | PAYE, NSF, CSG, HRDC, PRGF, Fair Share Contribution |
+| Mauritius | MUR | PAYE, NSF (Employee + Employer), CSG, HRDC, PRGF, Fair Share Contribution |
 | Seychelles | SCR | PAYE, Social Security Employer Levy |
-| Madagascar | MGA | *(see Southern Africa above)* |
+| Madagascar | MGA | *(see Southern Africa)* |
 
 ---
 
@@ -136,9 +136,9 @@ No manual calculation. No spreadsheets. Change a rate in settings, and the next 
 
 | Report | Description |
 |--------|-------------|
-| Statutory Deductions Summary | All deductions by employee and period |
-| Employer Contributions | Employer-only statutory costs |
-| Cost to Company | Total compensation including employer contributions |
+| Statutory Deductions Summary | All employee deductions by period — dynamic columns per component |
+| Employer Contributions | Employer-only statutory costs per employee |
+| Cost to Company | Total compensation including all employer contributions |
 | Multi-Country Payroll Summary | Consolidated view across all enabled countries |
 | Rate Change Audit Trail | History of statutory rate changes with effective dates |
 
@@ -159,19 +159,19 @@ Employee + Salary Structure
   registry.py → get_calculator(country)
         |
         v
-  calculators/{country}.py → compute(doc)
+  calculators/{country}.py → compute(salary_slip)
         |
         v
   Deduction rows auto-populated with correct amounts
 ```
 
-1. **Employee's country is resolved** from `Employee.payroll_country` (custom field), falling back to `Company.country`
-2. **Country calculator is loaded** via the registry, which maps countries to their calculator classes
-3. **Calculator reads current rates** from the country's Settings DocType (e.g., "Kenya Payroll Settings")
-4. **Deductions are computed** using the country's tax bands, caps, and formulas
-5. **Salary Slip rows are updated** — existing deduction rows get overwritten, missing components get appended
+1. **Employee's country is resolved** from `Employee.payroll_country` (custom field added by the app), falling back to `Company.country`
+2. **Country calculator is loaded** via the registry, which maps country names to calculator classes
+3. **Calculator reads current rates** from the country's Settings DocType (e.g., `Kenya Payroll Settings`)
+4. **Deductions are computed** using the country's tax bands, ceilings, and formulas
+5. **Salary Slip rows are updated** — existing deduction rows get overwritten; missing components get appended
 
-If a country's Settings DocType has not been configured, all calculators fall back to hardcoded statutory defaults so payroll can run immediately after installation.
+If a country's Settings DocType has not been configured, all calculators fall back to hardcoded statutory defaults so payroll works immediately after installation.
 
 ---
 
@@ -192,13 +192,16 @@ bench install-app payroll_africa
 bench --site your-site migrate
 ```
 
-The `after_install` hook automatically creates:
-- Country-specific Payroll Settings with current statutory rates
-- Salary Components for each enabled country's deductions
-- Income Tax Slabs with PAYE/PIT bands
-- Template Salary Structures (e.g., "Kenya Payroll Template")
+`after_install` creates the following for the **original 21 countries** (Tier 1):
+- Currency records for all required currencies
+- `Employee.payroll_country` custom Link field
+- Country-specific Salary Components for each deduction type
+- Income Tax Slabs with current PAYE/PIT bands
+- Salary Structure templates (e.g., "Kenya Payroll Template")
 - Workspace sidebar with country sections and reports
 - Desktop icon under Frappe HR
+
+> **Tier 2–4 countries** (the remaining 33) have calculators, Settings DocTypes, and reports installed via `bench migrate`, but do not have pre-built salary structures or income tax slabs. Enable them in Payroll Africa Settings to activate their calculators.
 
 ### Uninstall
 
@@ -206,7 +209,7 @@ The `after_install` hook automatically creates:
 bench uninstall-app payroll_africa
 ```
 
-The `before_uninstall` hook removes all salary structures, salary components, income tax slabs, custom fields, and desktop icons created by the app.
+`before_uninstall` removes all salary structures, salary components, income tax slabs, and custom fields created by the app.
 
 ---
 
@@ -214,58 +217,48 @@ The `before_uninstall` hook removes all salary structures, salary components, in
 
 ### Global Settings
 
-Navigate to **Payroll Africa Settings** from the workspace.
+Navigate to **Payroll Africa Settings** from the workspace sidebar or Home shortcut.
 
 | Setting | Description |
 |---------|-------------|
 | Enable Payroll Africa | Master toggle — disables all computation when off |
-| Country checkboxes | Enable/disable individual countries (grouped by tier/region) |
-
-Countries are grouped into three tiers in the settings page:
-- **Tier 1** (original 21 countries) — fully production-ready with complete reports
-- **Tier 2** (Algeria, Senegal, Cameroon, Mauritius, Zimbabwe, Mali, Niger, Burkina Faso, Benin, Gabon, Congo, Guinea, Togo, Seychelles)
-- **Tier 4** (remaining 19 countries) — calculators functional with statutory defaults
+| Country checkboxes | Enable/disable individual countries (grouped by region and tier) |
 
 When a country is disabled:
-- Its settings and report links are hidden from the workspace sidebar automatically (no restart required)
-- The payroll calculator silently skips employees in that country
-- Its salary components are hidden from Salary Structure dropdowns
+- Its settings links and report links disappear from the workspace sidebar **immediately** (no restart — driven by `payroll_africa_sidebar.js` on page load and `extend_bootinfo`)
+- The engine silently skips employees in that country
+- Its salary components are hidden from Salary Structure component dropdowns
 
 ### Country Settings
 
-Each country has its own Settings DocType accessible from the workspace sidebar. Every settings page includes:
-- Effective date
-- Enabled toggle
-- Country-specific rate fields (contribution percentages, ceilings, etc.)
-- Tax band table (configure progressive brackets without code changes)
+Each country has its own Settings DocType in the sidebar. Every settings page includes:
 
-**East Africa examples:**
-- **Kenya Payroll Settings** — PAYE relief, NSSF tiers, SHIF rate, Housing Levy rate, NITA rate
-- **Ethiopia Payroll Settings** — PIT bands (6 progressive brackets), Pension rates
+- **Effective date** — track when rates last changed
+- **Enabled toggle** — disable a single country without touching the global setting
+- **Country-specific rate fields** — contribution percentages, ceilings, minimum wages
+- **Tax band table** — update progressive tax brackets without code changes or redeployment
 
-**Southern Africa examples:**
-- **South Africa Payroll Settings** — PAYE rebates (primary/secondary/tertiary), UIF rate and annual cap, SDL rate
-- **Zimbabwe Payroll Settings** — PAYE bands (USD or ZiG), NSSA rate and ceiling, AIDS Levy rate, currency mode
-
-**West Africa examples:**
-- **Senegal Payroll Settings** — IPRES rates and ceiling, CSS Health rates, AMO Health toggle, IR bands, family deductions
-- **Mauritius Payroll Settings** — NSF rate and ceiling, CSG rate, HRDC rate, PRGF toggle, Fair Share Contribution toggle
-
-Each settings page includes a Tax Bands table where you can update tax brackets when legislation changes — no code deployment required.
+**Examples:**
+- `Kenya Payroll Settings` — NSSF Tier I/II rates and caps, SHIF rate, Housing Levy rates, NITA amount, personal relief
+- `South Africa Payroll Settings` — PAYE rebates, UIF rate and annual cap, SDL rate
+- `Zimbabwe Payroll Settings` — PAYE bands (USD or ZiG), NSSA rate and annual ceiling, AIDS Levy rate, currency mode
+- `Senegal Payroll Settings` — IPRES rates and ceiling, CSS Health rates, AMO Health toggle, income tax bands, family deductions
+- `Mauritius Payroll Settings` — NSF rate and ceiling, CSG rate, HRDC rate, PRGF toggle, Fair Share Contribution toggle
+- `Cameroon Payroll Settings` — CNPS rates, family allowances, work injury risk class, CFC housing, FNE rate, PIT abatement, CRTV bands, Taxe Communale bands
 
 ### Employee Setup
 
-Set the **Payroll Country** field on each Employee record. If not set, the system falls back to the Employee's Company country.
+Set the **Payroll Country** field on each Employee record. The field is a Link to the standard Frappe Country DocType. If not set, the engine falls back to the Employee's Company country.
 
 ### Salary Structure
 
-Use the pre-built template (e.g., "Kenya Payroll Template") or create your own. The calculator will append missing statutory components automatically during Salary Slip validation.
+Use the pre-built template (e.g., "Kenya Payroll Template") or create your own. The calculator appends any missing statutory components automatically during Salary Slip validation — you do not need to add them manually.
 
 ---
 
 ## Reports
 
-### Reports by Country
+### By Country
 
 | Region | Country | Reports |
 |--------|---------|---------|
@@ -303,7 +296,6 @@ Use the pre-built template (e.g., "Kenya Payroll Template") or create your own. 
 | | Guinea | Guinea PIT Return, Guinea INSS Remittance |
 | | Gambia | Gambia PIT Return, Gambia SSHFC Remittance |
 | | Guinea-Bissau | Guinea-Bissau IRPS Return, Guinea-Bissau INSS Remittance |
-| | Liberia | *(see Southern Africa)* |
 | | Cabo Verde | Cabo Verde IRPC Return, Cabo Verde INPS Remittance |
 | | Mauritania | Mauritania PIT Return, Mauritania CNSS Remittance |
 | North Africa | Egypt | Egypt Income Tax Return, Egypt Social Insurance Remittance |
@@ -327,71 +319,70 @@ Use the pre-built template (e.g., "Kenya Payroll Template") or create your own. 
 
 ## API
 
-### Calculate Deductions (standalone)
+All functions are `@frappe.whitelist()` decorated and accessible via REST.
 
-Compute deductions without creating a Salary Slip — useful for salary simulations and what-if analysis.
+### `calculate_deductions`
+
+Compute deductions for any country without creating a Salary Slip — useful for simulations and what-if analysis.
 
 ```python
 from payroll_africa.api import calculate_deductions
 
 result = calculate_deductions("Kenya", gross_pay=100000)
-# Returns:
 # {
-#     "deductions": [...],
-#     "employee_total": 15234.00,
-#     "employer_total": 8500.00,
-#     "net_pay": 84766.00,
-#     "cost_to_company": 108500.00
+#   "country": "Kenya",
+#   "gross_pay": 100000.0,
+#   "basic_pay": 100000.0,
+#   "deductions": [
+#     {"component": "NSSF Employee", "amount": 2160.0, "is_employer_only": False},
+#     {"component": "NSSF Employer", "amount": 2160.0, "is_employer_only": True},
+#     ...
+#   ],
+#   "employee_total": 6035.0,
+#   "employer_total": 3210.0,
+#   "net_pay": 93965.0,
+#   "cost_to_company": 103210.0
 # }
 ```
 
-### Recalculate Draft Salary Slips (single country)
+### `get_supported_countries`
 
-After updating statutory rates, recalculate all draft Salary Slips in a date range:
+Return sorted list of all 54 supported country names.
+
+### `recalculate_salary_slips`
+
+Recalculate all draft Salary Slips for a single country in a date range:
 
 ```python
 from payroll_africa.api import recalculate_salary_slips
 
-result = recalculate_salary_slips(
-    "Kenya",
-    "2025-01-01",
-    "2025-12-31",
-    company="My Company"  # optional filter
-)
+result = recalculate_salary_slips("Kenya", "2025-01-01", "2025-12-31", company="My Co")
+# {"updated": 42, "errors": [], "message": "42 salary slip(s) recalculated"}
 ```
 
-### Recalculate All Enabled Countries
+### `recalculate_all_countries`
 
-Recalculate draft slips for every country enabled in Payroll Africa Settings in one call:
+Recalculate draft slips for every enabled country in one call:
 
 ```python
 from payroll_africa.api import recalculate_all_countries
 
-result = recalculate_all_countries(
-    "2025-01-01",
-    "2025-12-31",
-    company="My Company"  # optional filter
-)
-# Returns:
+result = recalculate_all_countries("2025-01-01", "2025-12-31")
 # {
-#     "updated": 142,
-#     "errors": [],
-#     "by_country": {"Kenya": {...}, "Uganda": {...}, ...},
-#     "message": "142 salary slip(s) recalculated across 5 countries"
+#   "updated": 142,
+#   "errors": {},
+#   "by_country": {"Kenya": {...}, "Uganda": {...}, ...},
+#   "message": "142 salary slip(s) recalculated across 5 countries"
 # }
 ```
 
-### REST API
-
-All functions are whitelisted and accessible via REST:
+### REST
 
 ```bash
-# Calculate deductions
 curl -X POST /api/method/payroll_africa.api.calculate_deductions \
   -H "Authorization: token <api_key>:<api_secret>" \
   -d '{"country": "Kenya", "gross_pay": 100000}'
 
-# Recalculate all countries at once
 curl -X POST /api/method/payroll_africa.api.recalculate_all_countries \
   -H "Authorization: token <api_key>:<api_secret>" \
   -d '{"from_date": "2025-01-01", "to_date": "2025-12-31"}'
@@ -403,96 +394,98 @@ curl -X POST /api/method/payroll_africa.api.recalculate_all_countries \
 
 ```
 payroll_africa/
-├── calculators/          # Country-specific calculator classes (54 countries)
+├── calculators/          # 54 country calculator classes + base.py
 │   ├── base.py           #   BaseCalculator (abstract)
-│   ├── kenya.py          #   KenyaCalculator
-│   ├── senegal.py        #   SenegalCalculator
-│   └── ...               #   (54 total)
+│   ├── kenya.py          #   KenyaCalculator — compute() → {component: {amount, is_employer_only}}
+│   └── ...               #   one file per country
 ├── engine/
-│   ├── hooks.py          # Salary Slip validate hook
-│   └── registry.py       # Country → Calculator mapping + settings DocType lookup
-├── boot.py               # extend_bootinfo (enabled countries → frappe.boot)
-├── api.py                # Whitelisted API endpoints
-├── tasks.py              # Scheduler tasks (yearly rate-review email)
-├── setup.py              # after_install / after_migrate / before_uninstall
-├── hooks.py              # App hooks, scheduler_events, fixtures config
+│   ├── hooks.py          # Salary Slip.validate doc event handler
+│   └── registry.py       # COUNTRY_MAP, SETTINGS_MAP — country → calculator + DocType lookup
+├── boot.py               # extend_bootinfo: injects enabled countries into frappe.boot
+├── api.py                # 5 whitelisted API endpoints
+├── tasks.py              # Yearly scheduler: notify_rate_review
+├── setup.py              # after_install / before_uninstall lifecycle
+├── hooks.py              # doc_events, scheduler_events, fixtures, boot_session, app_include_js/css
 ├── payroll_africa/
 │   ├── doctype/
-│   │   ├── payroll_africa_settings/   # Global settings (Single DocType, 54 country toggles)
-│   │   ├── kenya_payroll_settings/    # Country settings (×54)
-│   │   └── kenya_paye_band/           # PAYE/tax band child table (×54)
-│   ├── report/                        # 110+ reports (5 cross-country + country-specific)
-│   ├── print_format/                  # Salary Slip Africa Standard
-│   └── workspace/                     # Workspace definition
-├── workspace_sidebar/    # Sidebar template (filtered by enabled countries at runtime)
-├── change_log/           # Release notes (shown in What's New dialog)
-├── fixtures/             # Custom fields + Income Tax Slabs
+│   │   ├── payroll_africa_settings/    # Single DocType — global toggle + 54 country checkboxes
+│   │   ├── {country}_payroll_settings/ # 54 Single DocTypes — configurable rates per country
+│   │   └── {country}_{tax}_band/       # 56 child table DocTypes — progressive tax brackets
+│   ├── report/                         # 111 reports (5 cross-country + 106 country-specific)
+│   └── workspace/                      # Workspace with shortcuts + links
+├── workspace_sidebar/    # 139-item sidebar — dynamically filtered by enabled countries
+├── change_log/           # Release notes (v0.0.1)
+├── fixtures/             # Custom fields + 21 Income Tax Slabs
 ├── public/
-│   ├── css/              # Sidebar icon + change log styling
 │   ├── js/
-│   │   ├── payroll_africa_change_log.js      # What's New dialog renderer
-│   │   ├── payroll_africa_salary_structure.js # Component dropdown filter
-│   │   └── payroll_africa_sidebar.js         # Dynamic sidebar hide/show (54-country aware)
-│   └── icons/            # Africa SVG icon
-├── demo/                 # Demo data setup/teardown
+│   │   ├── payroll_africa_change_log.js       # What's New dialog
+│   │   ├── payroll_africa_salary_structure.js # Hides disabled countries' components
+│   │   └── payroll_africa_sidebar.js          # Hides disabled countries' sidebar links
+│   └── css/
+│       ├── payroll_africa.css
+│       └── payroll_africa_change_log.css
+├── demo/                 # Demo data setup/teardown scripts
 └── tests/                # 342 unit tests — all 54 countries + API + engine + reports
 ```
 
 ### Calculator Pattern
 
-Each country implements a calculator class extending `BaseCalculator`:
+Each country implements `BaseCalculator`:
 
 ```python
 class KenyaCalculator(BaseCalculator):
-    def compute(self, doc):
-        # Read current rates from Kenya Payroll Settings
-        # Apply PAYE bands, NSSF tiers, SHIF, Housing Levy, NITA
-        # Return dict of component_name → {amount, is_employer_only}
-        ...
+    def compute(self, salary_slip) -> dict:
+        gross = self.get_gross_pay(salary_slip)
+        results = {}
+
+        nssf = self._compute_nssf(gross)
+        results["NSSF Employee"] = {"amount": nssf["employee"], "is_employer_only": False}
+        results["NSSF Employer"] = {"amount": nssf["employer"], "is_employer_only": True}
+        # ... SHIF, Housing Levy, NITA ...
+
+        return results
 ```
 
-All calculators use hardcoded statutory defaults when the settings DocType is not yet configured, so payroll works out of the box.
-
-The registry (`engine/registry.py`) maps country names to calculator classes:
+The registry maps country names to calculator classes and loads settings:
 
 ```python
+# engine/registry.py
 COUNTRY_MAP = {
-    "Kenya": "payroll_africa.calculators.kenya.KenyaCalculator",
+    "Kenya":  "payroll_africa.calculators.kenya.KenyaCalculator",
     "Senegal": "payroll_africa.calculators.senegal.SenegalCalculator",
-    # ... 54 countries total
+    # ... 54 entries
 }
+
+def get_calculator(country):
+    settings = get_country_settings(country) or frappe._dict()
+    return CalculatorClass(settings)
 ```
+
+Calculators fall back to hardcoded statutory defaults when the settings DocType is empty, so payroll runs correctly out of the box.
 
 ---
 
 ## Adding a New Country
 
-1. **Create the calculator** — `calculators/newcountry.py` extending `BaseCalculator`, implementing `compute(salary_slip)` returning `{component_name: {amount, is_employer_only}}`
-2. **Create the Settings DocType** — "New Country Payroll Settings" (Single DocType) with rate fields and tax bands table
-3. **Create the Tax Band DocType** — "New Country PAYE Band" (child table with `from_amount`, `to_amount`, `rate`)
-4. **Register in registry.py** — add entries to `COUNTRY_MAP` and `SETTINGS_MAP`
-5. **Register in boot.py** — add entry to `COUNTRY_FIELD_MAP` with field name `enable_newcountry`
-6. **Add checkbox** — add `enable_newcountry` Check field to `payroll_africa_settings.json`
-7. **Add sidebar items** — add settings link and reports section to `workspace_sidebar/payroll_africa.json`
-8. **Create reports** — country-specific tax return and social security remittance reports
-9. **Run `bench migrate`**
+1. **Create the calculator** — `calculators/{snake}.py` extending `BaseCalculator`, implementing `compute()` returning `{component: {amount, is_employer_only}}`
+2. **Create Settings DocType** — `{country}_payroll_settings` (Single DocType) with rate fields and a tax band child table
+3. **Create Band DocType** — `{country}_paye_band` or `{country}_pit_band` (child table: `from_amount`, `to_amount`, `rate`)
+4. **Register** — add entries to `COUNTRY_MAP` and `SETTINGS_MAP` in `engine/registry.py`
+5. **Boot** — add `"Country Name": "enable_{snake}"` to `COUNTRY_FIELD_MAP` in `boot.py`
+6. **Settings toggle** — add `enable_{snake}` Check field to `payroll_africa_settings.json`
+7. **Sidebar** — add settings link to `workspace_sidebar/payroll_africa.json`
+8. **Reports** — create tax return and social security remittance reports in `payroll_africa/report/`
+9. **Tests** — add a test class with zero gross, rate spot-check, employer flag, ceiling, and PIT threshold tests
+10. **Migrate** — `bench --site your-site migrate`
 
 ---
 
 ## Contributing
 
-This app uses `pre-commit` for code formatting and linting:
-
 ```bash
 cd apps/payroll_africa
-pre-commit install
+pre-commit install   # ruff, eslint, prettier, pyupgrade
 ```
-
-Tools configured:
-- **ruff** — Python linting and formatting
-- **eslint** — JavaScript linting
-- **prettier** — Code formatting
-- **pyupgrade** — Python syntax modernization
 
 ### Running Tests
 
@@ -502,29 +495,30 @@ bench --site your-site run-tests --app payroll_africa
 
 **342 tests, all passing.** Coverage spans all 54 countries.
 
-#### Test structure
+#### Test files
 
-| File | Countries | Tests |
-|------|-----------|-------|
-| `test_kenya_calculator.py` | Kenya | 12 |
-| `test_nigeria_calculator.py` | Nigeria | 9 |
-| `test_burundi_calculator.py` | Burundi | 9 |
-| `test_{country}_calculator.py` (×18 more) | One per Tier 1 country | 4–8 each |
+| File | Coverage | Tests |
+|------|----------|-------|
+| `test_kenya_calculator.py` | Kenya — NSSF tiers, Housing Levy, NITA | 12 |
+| `test_nigeria_calculator.py` | Nigeria — PenCom, NHF, NHIS | 9 |
+| `test_burundi_calculator.py` | Burundi — INSS, work injury, health | 9 |
+| `test_{country}_calculator.py` (×18) | One per Tier 1 country | 4–8 each |
 | `test_tier2_calculators.py` | Algeria, Senegal, Cameroon, Mauritius, Zimbabwe, Mali, Niger, Burkina Faso, Benin | 48 |
 | `test_tier3_calculators.py` | Gabon, Congo, Guinea, Chad, Liberia, Sierra Leone, Togo, Eswatini, Seychelles | 48 |
 | `test_tier4_calculators.py` | Cabo Verde, CAR, Comoros, Djibouti, Equatorial Guinea, Eritrea, Gambia, Guinea-Bissau, Lesotho, Libya, Mauritania, Sao Tome, Somalia, South Sudan, Sudan | 78 |
-| `test_reports.py` | Cross-country reports | 16 |
-| `test_api.py` | API endpoints | 11 |
-| `test_engine.py` | Salary Slip hook | 10 |
+| `test_reports.py` | Report column structure and filter conditions | 22 |
+| `test_api.py` | API endpoints — deductions, countries, recalculate | 11 |
+| `test_engine.py` | Salary Slip hook — dispatch, guard, skip logic | 10 |
 
 #### What each calculator test validates
 
-Every country (except Somalia/South Sudan stubs) has:
+Every country (except Somalia/South Sudan stubs) tests:
+
 - **Zero gross** — zero salary returns zero amounts and no PIT/PAYE
 - **Rate spot-check** — deduction amounts verified against published statutory rates
 - **Employer-only flag** — `is_employer_only: True` for employer components, `False` for employee
 - **Ceiling/cap** — contributions correctly capped when gross exceeds the statutory ceiling
-- **PIT threshold** — no income tax below the tax-free threshold; tax present above it
+- **PIT threshold** — no income tax below the tax-free threshold; tax present and non-zero above it
 
 ---
 

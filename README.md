@@ -5,7 +5,7 @@
 <h1 align="center">Payroll Africa</h1>
 
 <p align="center">
-  Statutory payroll deduction automation for 20 African countries.<br/>
+  Statutory payroll deduction automation for <strong>54 African countries</strong>.<br/>
   Built on <a href="https://frappeframework.com">Frappe</a> + <a href="https://frappehr.com">HRMS</a>.
 </p>
 
@@ -22,15 +22,15 @@
 
 ## Overview
 
-Payroll Africa hooks into HRMS Salary Slip validation to automatically compute employee and employer statutory deductions — PAYE, social security, health insurance, housing levies, training funds — using each country's current tax bands and rates.
+Payroll Africa hooks into HRMS Salary Slip validation to automatically compute employee and employer statutory deductions — PAYE, social security, health insurance, housing levies, training funds, pension contributions — using each country's current tax bands and rates.
 
 No manual calculation. No spreadsheets. Change a rate in settings, and the next payroll run picks it up.
 
 ### Key Features
 
 - **Automatic deduction computation** on Salary Slip save/submit
-- **20 countries** with country-specific calculators, tax bands, and statutory rates
-- **51 reports** covering PAYE returns, social security remittances, and compliance filings
+- **54 countries** with country-specific calculators, configurable tax bands, and statutory rates
+- **110+ reports** covering PAYE returns, social security remittances, and compliance filings
 - **Country enable/disable** — toggle which countries are active in your deployment
 - **Dynamic workspace** — sidebar and salary component dropdowns filter to show only enabled countries
 - **Rate change tracking** — update statutory rates with effective dates; audit trail included
@@ -45,56 +45,102 @@ No manual calculation. No spreadsheets. Change a rate in settings, and the next 
 
 ## Supported Countries
 
-**East Africa**
+### East Africa (15 countries)
 
-| Country | Currency | Statutory Deductions | Reports |
-|---------|----------|---------------------|---------|
-| Kenya | KES | PAYE, NSSF (Tier I & II), SHIF, Housing Levy, NITA | P9A, P10, NSSF, SHIF, Housing Levy |
-| Uganda | UGX | PAYE, NSSF (5%/10%/15% tiers), LST | URA PAYE Return, NSSF, LST |
-| Tanzania | TZS | PAYE, NSSF, SDL, WCF | TRA Employment Taxes, NSSF |
-| Rwanda | RWF | PAYE, Pension, Maternity, CBHI, Occupational Hazards | RRA Unified Declaration |
-| Burundi | BIF | PAYE, INSS, Work Injury, Health Insurance, Training Fund | OBR PAYE Return, INSS |
-| Ethiopia | ETB | PIT (5–35%), Pension (Employee + Employer) | Ethiopia PIT Return, Pension Remittance |
+| Country | Currency | Key Statutory Deductions |
+|---------|----------|--------------------------|
+| Kenya | KES | PAYE, NSSF (Tier I & II), SHIF, Housing Levy, NITA |
+| Uganda | UGX | PAYE, NSSF (5%/10%/15% tiers), LST |
+| Tanzania | TZS | PAYE, NSSF, SDL, WCF |
+| Rwanda | RWF | PAYE, Pension, Maternity, CBHI, Occupational Hazards |
+| Burundi | BIF | PAYE, INSS, Work Injury, Health Insurance, Training Fund |
+| Ethiopia | ETB | PIT (0–35%), Pension (Employee + Employer) |
+| Djibouti | DJF | PIT, CNSS (Pension + Health) |
+| Eritrea | ERN | PIT, NICE Social Insurance |
+| Somalia | SOS | No mandatory statutory deductions |
+| South Sudan | SSP | No standardized statutory framework |
+| Sudan | SDG | PIT, NSIF Social Insurance |
 
-**Southern Africa**
+### Southern Africa (9 countries)
 
-| Country | Currency | Statutory Deductions | Reports |
-|---------|----------|---------------------|---------|
-| Malawi | MWK | PAYE, Pension | MRA P12, MRA P9 |
-| Zambia | ZMW | PAYE, NAPSA (capped), NHIMA | ZRA P11, NAPSA, NHIMA |
-| Mozambique | MZN | PAYE/IRPS, INSS | AT IRPS Return, INSS |
-| Angola | AOA | PAYE/IRT, INSS | AGT IRT Return, INSS |
-| Botswana | BWP | PAYE (0–26.5%) | Botswana PAYE Return |
-| South Africa | ZAR | PAYE (18–45%), UIF | PAYE Remittance, UIF Remittance |
-| Namibia | NAD | PAYE (0–37%), SSC | Namibia PAYE Return, SSC Remittance |
-| Madagascar | MGA | IRSA (0–30%), CNAPPS | IRSA Remittance, CNAPPS Remittance |
+| Country | Currency | Key Statutory Deductions |
+|---------|----------|--------------------------|
+| Malawi | MWK | PAYE, Pension |
+| Zambia | ZMW | PAYE, NAPSA (capped), NHIMA |
+| Mozambique | MZN | PAYE/IRPS, INSS |
+| Angola | AOA | PAYE/IRT, INSS |
+| Botswana | BWP | PAYE (0–26.5%) |
+| South Africa | ZAR | PAYE (18–45%), UIF, SDL |
+| Namibia | NAD | PAYE (0–37%), SSC, VET, ECF |
+| Madagascar | MGA | IRSA (0–30%), CNaPS, OSTIE, FMFP |
+| Zimbabwe | ZiG/USD | PAYE, NSSA, AIDS Levy |
+| Lesotho | LSL | PAYE (annual tax credit) |
+| Eswatini | SZL | PAYE, ENPF, SDL |
 
-**West & Central Africa**
+### West Africa (14 countries)
 
-| Country | Currency | Statutory Deductions | Reports |
-|---------|----------|---------------------|---------|
-| Nigeria | NGN | PAYE, Pension (PenCom), NHF, NHIS, NSITF, ITF | PAYE Schedule, PenCom, NHF, NHIS |
-| Ghana | GHS | PAYE (0–35%), SSNIT | Ghana PAYE Schedule, SSNIT Remittance |
-| Ivory Coast | XOF | ITS (0–32%), CNPS | ITS Remittance, CNPS Remittance |
-| DRC | CDF | PAYE/IPR, INSS Pension, Occupational Risks, Family Benefits, INPP, ONEM | DRC Unified Declaration |
+| Country | Currency | Key Statutory Deductions |
+|---------|----------|--------------------------|
+| Nigeria | NGN | PAYE, Pension (PenCom), NHF, NHIS, NSITF, ITF |
+| Ghana | GHS | PAYE (0–35%), SSNIT (Tier 1 & 2) |
+| Ivory Coast | XOF | ITS (0–32%), CNPS (Pension + Family) |
+| Senegal | XOF | IR (0–40%), IPRES, CSS, AMO Health |
+| Mali | XOF | PIT, INSS Pension, AMO Health |
+| Niger | XOF | PIT, CNSS Pension, AMO Health |
+| Burkina Faso | XOF | PIT, CNSS Pension, AMO Health |
+| Benin | XOF | PIT, CNSS Pension, AMO/CRAMI Health |
+| Togo | XOF | PIT/IRPP, CNSS Pension |
+| Guinea | GNF | PIT, INSS (Pension + Family), AMO, Work Injury |
+| Sierra Leone | SLE | PAYE, NASSIT Pension |
+| Liberia | LRD | PAYE, NASSCorp Pension |
+| Gambia | GMD | PIT, SSHFC Provident Fund |
+| Guinea-Bissau | XOF | IRPS, INSS Social Insurance |
+| Cabo Verde | CVE | IRPC, INPS, Work Injury |
+| Mauritania | MRU | PIT, CNSS, CNAM Health |
 
-**North Africa**
+### North Africa (5 countries)
 
-| Country | Currency | Statutory Deductions | Reports |
-|---------|----------|---------------------|---------|
-| Egypt | EGP | Income Tax (0–27.5%), Social Insurance | Income Tax Return, Social Insurance Remittance |
-| Morocco | MAD | IR (0–37%), CNSS | IR Remittance, CNSS Remittance |
-| Tunisia | TND | IRPP (0–40%), CNSS | IRPP Remittance, CNSS Remittance |
+| Country | Currency | Key Statutory Deductions |
+|---------|----------|--------------------------|
+| Egypt | EGP | PIT (0–27.5%), Social Insurance, Health Insurance, Martyrs Fund |
+| Morocco | MAD | IR (0–37%), CNSS (Pension + AMO) |
+| Tunisia | TND | IRPP (0–40%), CNSS, SSC |
+| Algeria | DZD | PIT (0–35%), CNAS Social Security |
+| Libya | LYD | PIT, SSF, Jehad Tax, Solidarity Fund |
 
-**Cross-country reports** (work across all enabled countries):
+### Central Africa (9 countries)
+
+| Country | Currency | Key Statutory Deductions |
+|---------|----------|--------------------------|
+| DRC | CDF | IPR/PAYE, INSS, INPP, ONEM, Family Benefits |
+| Cameroon | XAF | IRPP, CNPS (Pension + Family), CFC Housing, FNE, Work Injury |
+| Gabon | XAF | IRGP, CNSS (Pension + Health) |
+| Congo | XAF | PIT, CNSS (Employee + Employer), CNAMGS Health |
+| Central African Republic | XAF | PIT, CNSS Social Insurance |
+| Chad | XAF | PIT, CNPS (Pension + Family), Work Injury |
+| Equatorial Guinea | XAF | PIT, CNSS Social Insurance |
+| Sao Tome and Principe | STN | PIT, INSS Social Insurance |
+| Comoros | KMF | PIT, CNSS Social Insurance |
+
+### Indian Ocean (3 countries)
+
+| Country | Currency | Key Statutory Deductions |
+|---------|----------|--------------------------|
+| Mauritius | MUR | PAYE, NSF, CSG, HRDC, PRGF, Fair Share Contribution |
+| Seychelles | SCR | PAYE, Social Security Employer Levy |
+| Madagascar | MGA | *(see Southern Africa above)* |
+
+---
+
+### Cross-Country Reports
 
 | Report | Description |
 |--------|-------------|
 | Statutory Deductions Summary | All deductions by employee and period |
 | Employer Contributions | Employer-only statutory costs |
 | Cost to Company | Total compensation including employer contributions |
-| Multi-Country Payroll Summary | Consolidated view across countries |
-| Rate Change Audit Trail | History of statutory rate changes |
+| Multi-Country Payroll Summary | Consolidated view across all enabled countries |
+| Rate Change Audit Trail | History of statutory rate changes with effective dates |
 
 ---
 
@@ -125,6 +171,8 @@ Employee + Salary Structure
 4. **Deductions are computed** using the country's tax bands, caps, and formulas
 5. **Salary Slip rows are updated** — existing deduction rows get overwritten, missing components get appended
 
+If a country's Settings DocType has not been configured, all calculators fall back to hardcoded statutory defaults so payroll can run immediately after installation.
+
 ---
 
 ## Installation
@@ -145,10 +193,9 @@ bench --site your-site migrate
 ```
 
 The `after_install` hook automatically creates:
-- Currency records for all 20 countries (KES, UGX, TZS, RWF, BIF, ETB, ZMW, MWK, MZN, AOA, BWP, ZAR, NAD, MGA, NGN, GHS, XOF, CDF, EGP, MAD, TND)
 - Country-specific Payroll Settings with current statutory rates
-- Salary Components for each country's deductions
-- Income Tax Slabs with PAYE bands for all 20 countries
+- Salary Components for each enabled country's deductions
+- Income Tax Slabs with PAYE/PIT bands
 - Template Salary Structures (e.g., "Kenya Payroll Template")
 - Workspace sidebar with country sections and reports
 - Desktop icon under Frappe HR
@@ -172,47 +219,39 @@ Navigate to **Payroll Africa Settings** from the workspace.
 | Setting | Description |
 |---------|-------------|
 | Enable Payroll Africa | Master toggle — disables all computation when off |
-| Country checkboxes | Enable/disable individual countries |
+| Country checkboxes | Enable/disable individual countries (grouped by tier/region) |
+
+Countries are grouped into three tiers in the settings page:
+- **Tier 1** (original 21 countries) — fully production-ready with complete reports
+- **Tier 2** (Algeria, Senegal, Cameroon, Mauritius, Zimbabwe, Mali, Niger, Burkina Faso, Benin, Gabon, Congo, Guinea, Togo, Seychelles)
+- **Tier 4** (remaining 19 countries) — calculators functional with statutory defaults
 
 When a country is disabled:
-- Its settings and report links are hidden from the workspace sidebar automatically (no restart required — driven by `payroll_africa_sidebar.js` on page load)
+- Its settings and report links are hidden from the workspace sidebar automatically (no restart required)
 - The payroll calculator silently skips employees in that country
 - Its salary components are hidden from Salary Structure dropdowns
 
 ### Country Settings
 
-Each country has its own Settings DocType accessible from the workspace sidebar:
+Each country has its own Settings DocType accessible from the workspace sidebar. Every settings page includes:
+- Effective date
+- Enabled toggle
+- Country-specific rate fields (contribution percentages, ceilings, etc.)
+- Tax band table (configure progressive brackets without code changes)
 
-**East Africa**
+**East Africa examples:**
 - **Kenya Payroll Settings** — PAYE relief, NSSF tiers, SHIF rate, Housing Levy rate, NITA rate
-- **Uganda Payroll Settings** — NSSF tier rates, LST bands
-- **Tanzania Payroll Settings** — NSSF rate, SDL rate, WCF rate
-- **Rwanda Payroll Settings** — Pension rates, Maternity rates, CBHI rate
-- **Burundi Payroll Settings** — INSS rates, Health Insurance rates, Training Fund rates
-- **Ethiopia Payroll Settings** — PIT bands, Pension rates (Employee + Employer)
+- **Ethiopia Payroll Settings** — PIT bands (6 progressive brackets), Pension rates
 
-**Southern Africa**
-- **Malawi Payroll Settings** — Pension rate
-- **Zambia Payroll Settings** — NAPSA rate and cap, NHIMA rate
-- **Mozambique Payroll Settings** — INSS rates
-- **Angola Payroll Settings** — INSS rates
-- **Botswana Payroll Settings** — PAYE bands
-- **South Africa Payroll Settings** — PAYE rebates, UIF rate and annual cap
-- **Namibia Payroll Settings** — PAYE bands, SSC rates
-- **Madagascar Payroll Settings** — IRSA bands, CNAPPS rates
+**Southern Africa examples:**
+- **South Africa Payroll Settings** — PAYE rebates (primary/secondary/tertiary), UIF rate and annual cap, SDL rate
+- **Zimbabwe Payroll Settings** — PAYE bands (USD or ZiG), NSSA rate and ceiling, AIDS Levy rate, currency mode
 
-**West & Central Africa**
-- **Nigeria Payroll Settings** — Pension rate (PenCom), NHF rate, NHIS rate, NSITF rate, ITF rate
-- **Ghana Payroll Settings** — PAYE bands, SSNIT rate
-- **Ivory Coast Payroll Settings** — ITS bands, CNPS rates
-- **DRC Payroll Settings** — INSS rates, INPP rate, ONEM rate
+**West Africa examples:**
+- **Senegal Payroll Settings** — IPRES rates and ceiling, CSS Health rates, AMO Health toggle, IR bands, family deductions
+- **Mauritius Payroll Settings** — NSF rate and ceiling, CSG rate, HRDC rate, PRGF toggle, Fair Share Contribution toggle
 
-**North Africa**
-- **Egypt Payroll Settings** — Income tax bands, Social Insurance rates
-- **Morocco Payroll Settings** — IR bands, CNSS rates
-- **Tunisia Payroll Settings** — IRPP bands, CNSS rates
-
-Each settings page includes a PAYE Bands table where you can update tax brackets when legislation changes.
+Each settings page includes a Tax Bands table where you can update tax brackets when legislation changes — no code deployment required.
 
 ### Employee Setup
 
@@ -226,135 +265,63 @@ Use the pre-built template (e.g., "Kenya Payroll Template") or create your own. 
 
 ## Reports
 
-### Kenya (5 reports)
-| Report | Purpose |
-|--------|---------|
-| P9A Tax Deduction Card | Annual employee tax certificate |
-| P10 Monthly Tax Return | Monthly PAYE filing to KRA |
-| NSSF Remittance | NSSF contribution schedule |
-| SHIF Remittance | Social Health Insurance Fund report |
-| Housing Levy Return | Affordable Housing Levy report |
+### Reports by Country
 
-### Uganda (3 reports)
-| Report | Purpose |
-|--------|---------|
-| URA PAYE Return | Monthly PAYE return for URA |
-| NSSF Uganda Remittance | NSSF contribution schedule |
-| LST Return | Local Service Tax report |
-
-### Tanzania (2 reports)
-| Report | Purpose |
-|--------|---------|
-| TRA Employment Taxes | PAYE + SDL + WCF report for TRA |
-| NSSF Tanzania Remittance | NSSF contribution schedule |
-
-### Rwanda (1 report)
-| Report | Purpose |
-|--------|---------|
-| RRA Unified Declaration | Combined PAYE + social security filing |
-
-### Burundi (2 reports)
-| Report | Purpose |
-|--------|---------|
-| OBR PAYE Return | Monthly PAYE return for OBR |
-| INSS Burundi Remittance | INSS contribution schedule |
-
-### Zambia (3 reports)
-| Report | Purpose |
-|--------|---------|
-| ZRA P11 PAYE Return | Monthly PAYE return for ZRA |
-| NAPSA Remittance | Pension contribution schedule |
-| NHIMA Remittance | Health insurance contribution schedule |
-
-### Malawi (2 reports)
-| Report | Purpose |
-|--------|---------|
-| MRA P12 PAYE Return | Monthly PAYE return for MRA |
-| MRA P9 Deduction Certificate | Annual employee tax certificate |
-
-### DRC (1 report)
-| Report | Purpose |
-|--------|---------|
-| DRC Unified Declaration | Combined IPR + INSS + INPP + ONEM filing |
-
-### Nigeria (4 reports)
-| Report | Purpose |
-|--------|---------|
-| Nigeria PAYE Schedule | Monthly PAYE computation schedule |
-| PenCom Remittance | Pension contribution schedule |
-| NHF Remittance | National Housing Fund report |
-| NHIS Schedule | Health insurance contribution schedule |
-
-### Mozambique (2 reports)
-| Report | Purpose |
-|--------|---------|
-| AT IRPS Return | Monthly PAYE/IRPS return |
-| INSS Mozambique Remittance | INSS contribution schedule |
-
-### Angola (2 reports)
-| Report | Purpose |
-|--------|---------|
-| AGT IRT Return | Monthly PAYE/IRT return |
-| INSS Angola Remittance | INSS contribution schedule |
-
-### Botswana (1 report)
-| Report | Purpose |
-|--------|---------|
-| Botswana PAYE Return | Monthly PAYE return for BURS |
-
-### South Africa (2 reports)
-| Report | Purpose |
-|--------|---------|
-| South Africa PAYE Remittance | Monthly PAYE remittance to SARS |
-| South Africa UIF Remittance | UIF contribution schedule |
-
-### Namibia (2 reports)
-| Report | Purpose |
-|--------|---------|
-| Namibia PAYE Return | Monthly PAYE return for NamRA |
-| Namibia SSC Remittance | Social Security Commission schedule |
-
-### Madagascar (2 reports)
-| Report | Purpose |
-|--------|---------|
-| Madagascar IRSA Remittance | Monthly IRSA salary tax return |
-| Madagascar CNAPPS Remittance | CNAPPS pension contribution schedule |
-
-### Ethiopia (2 reports)
-| Report | Purpose |
-|--------|---------|
-| Ethiopia PIT Remittance | Monthly Personal Income Tax return |
-| Ethiopia Pension Remittance | Pension contribution schedule |
-
-### Ghana (2 reports)
-| Report | Purpose |
-|--------|---------|
-| Ghana PAYE Schedule | Monthly PAYE computation schedule |
-| Ghana SSNIT Remittance | SSNIT pension contribution schedule |
-
-### Ivory Coast (2 reports)
-| Report | Purpose |
-|--------|---------|
-| Ivory Coast ITS Remittance | Monthly ITS salary tax return |
-| Ivory Coast CNPS Remittance | CNPS social security schedule |
-
-### Egypt (2 reports)
-| Report | Purpose |
-|--------|---------|
-| Egypt Income Tax Return | Monthly income tax return |
-| Egypt Social Insurance Remittance | Social insurance contribution schedule |
-
-### Morocco (2 reports)
-| Report | Purpose |
-|--------|---------|
-| Morocco IR Remittance | Monthly IR salary tax return |
-| Morocco CNSS Remittance | CNSS social security schedule |
-
-### Tunisia (2 reports)
-| Report | Purpose |
-|--------|---------|
-| Tunisia IRPP Remittance | Monthly IRPP salary tax return |
-| Tunisia CNSS Remittance | CNSS social security schedule |
+| Region | Country | Reports |
+|--------|---------|---------|
+| East Africa | Kenya | P9A Tax Deduction Card, P10 Monthly Tax Return, NSSF Remittance, SHIF Remittance, Housing Levy Return |
+| | Uganda | URA PAYE Return, NSSF Uganda Remittance, LST Return |
+| | Tanzania | TRA Employment Taxes, NSSF Tanzania Remittance |
+| | Rwanda | RRA Unified Declaration |
+| | Burundi | OBR PAYE Return, INSS Burundi Remittance |
+| | Ethiopia | Ethiopia PIT Remittance, Ethiopia Pension Remittance |
+| | Djibouti | Djibouti IRPP Return, Djibouti CNSS Remittance |
+| | Eritrea | Eritrea PIT Return, Eritrea NICE Remittance |
+| | Sudan | Sudan PIT Return, Sudan NSIF Remittance |
+| Southern Africa | Malawi | MRA P12 PAYE Return, MRA P9 Deduction Certificate |
+| | Zambia | ZRA P11 PAYE Return, NAPSA Remittance, NHIMA Remittance |
+| | Mozambique | AT IRPS Return, INSS Mozambique Remittance |
+| | Angola | AGT IRT Return, INSS Angola Remittance |
+| | Botswana | Botswana PAYE Return |
+| | South Africa | South Africa PAYE Remittance, South Africa UIF Remittance |
+| | Namibia | Namibia PAYE Return, Namibia SSC Remittance |
+| | Madagascar | Madagascar IRSA Remittance, Madagascar CNAPPS Remittance |
+| | Zimbabwe | Zimbabwe PAYE Return, Zimbabwe NSSA Remittance |
+| | Lesotho | Lesotho PAYE Return |
+| | Eswatini | Eswatini PAYE Return, Eswatini ENPF Remittance |
+| | Liberia | Liberia PAYE Return, Liberia NASSCorp Remittance |
+| | Sierra Leone | Sierra Leone PAYE Return, Sierra Leone NASSIT Remittance |
+| West Africa | Nigeria | Nigeria PAYE Schedule, PenCom Remittance, NHF Remittance, NHIS Schedule |
+| | Ghana | Ghana PAYE Schedule, Ghana SSNIT Remittance |
+| | Ivory Coast | Ivory Coast ITS Remittance, Ivory Coast CNPS Remittance |
+| | Senegal | Senegal IR Return, Senegal IPRES Remittance |
+| | Mali | Mali PIT Return, Mali INSS Remittance |
+| | Niger | Niger PIT Return, Niger CNSS Remittance |
+| | Burkina Faso | Burkina Faso PIT Return, Burkina Faso CNSS Remittance |
+| | Benin | Benin PIT Return, Benin CNSS Remittance |
+| | Togo | Togo PIT Return, Togo CNSS Remittance |
+| | Guinea | Guinea PIT Return, Guinea INSS Remittance |
+| | Gambia | Gambia PIT Return, Gambia SSHFC Remittance |
+| | Guinea-Bissau | Guinea-Bissau IRPS Return, Guinea-Bissau INSS Remittance |
+| | Liberia | *(see Southern Africa)* |
+| | Cabo Verde | Cabo Verde IRPC Return, Cabo Verde INPS Remittance |
+| | Mauritania | Mauritania PIT Return, Mauritania CNSS Remittance |
+| North Africa | Egypt | Egypt Income Tax Return, Egypt Social Insurance Remittance |
+| | Morocco | Morocco IR Remittance, Morocco CNSS Remittance |
+| | Tunisia | Tunisia IRPP Remittance, Tunisia CNSS Remittance |
+| | Algeria | Algeria PIT Return, Algeria CNAS Remittance |
+| | Libya | Libya PIT Return, Libya SSF Remittance |
+| Central Africa | DRC | DRC Unified Declaration |
+| | Cameroon | Cameroon IRPP Return, Cameroon CNPS Remittance |
+| | Gabon | Gabon IRGP Return, Gabon CNSS Remittance |
+| | Congo | Congo PIT Return, Congo CNSS Remittance |
+| | CAR | CAR PIT Return, CAR CNSS Remittance |
+| | Chad | Chad PIT Return, Chad CNPS Remittance |
+| | Equatorial Guinea | Equatorial Guinea PIT Return, Equatorial Guinea CNSS Remittance |
+| | Sao Tome | Sao Tome PIT Return, Sao Tome INSS Remittance |
+| | Comoros | Comoros PIT Return, Comoros CNSS Remittance |
+| Indian Ocean | Mauritius | Mauritius PAYE Return, Mauritius NSF Remittance |
+| | Seychelles | Seychelles PAYE Return |
 
 ---
 
@@ -436,14 +403,14 @@ curl -X POST /api/method/payroll_africa.api.recalculate_all_countries \
 
 ```
 payroll_africa/
-├── calculators/          # Country-specific calculator classes
+├── calculators/          # Country-specific calculator classes (54 countries)
 │   ├── base.py           #   BaseCalculator (abstract)
 │   ├── kenya.py          #   KenyaCalculator
-│   ├── uganda.py         #   UgandaCalculator
-│   └── ...               #   (20 countries total)
+│   ├── senegal.py        #   SenegalCalculator
+│   └── ...               #   (54 total)
 ├── engine/
 │   ├── hooks.py          # Salary Slip validate hook
-│   └── registry.py       # Country → Calculator mapping + caching
+│   └── registry.py       # Country → Calculator mapping + settings DocType lookup
 ├── boot.py               # extend_bootinfo (enabled countries → frappe.boot)
 ├── api.py                # Whitelisted API endpoints
 ├── tasks.py              # Scheduler tasks (yearly rate-review email)
@@ -451,24 +418,24 @@ payroll_africa/
 ├── hooks.py              # App hooks, scheduler_events, fixtures config
 ├── payroll_africa/
 │   ├── doctype/
-│   │   ├── payroll_africa_settings/   # Global settings (SingleDocType, 20 country toggles)
-│   │   ├── kenya_payroll_settings/    # Country settings (×20)
-│   │   └── kenya_paye_band/           # PAYE/tax band child table (×20)
-│   ├── report/                        # 51 reports (5 cross-country + 46 country-specific)
+│   │   ├── payroll_africa_settings/   # Global settings (Single DocType, 54 country toggles)
+│   │   ├── kenya_payroll_settings/    # Country settings (×54)
+│   │   └── kenya_paye_band/           # PAYE/tax band child table (×54)
+│   ├── report/                        # 110+ reports (5 cross-country + country-specific)
 │   ├── print_format/                  # Salary Slip Africa Standard
 │   └── workspace/                     # Workspace definition
 ├── workspace_sidebar/    # Sidebar template (filtered by enabled countries at runtime)
 ├── change_log/           # Release notes (shown in What's New dialog)
-├── fixtures/             # Custom fields + Income Tax Slabs (20 countries)
+├── fixtures/             # Custom fields + Income Tax Slabs
 ├── public/
 │   ├── css/              # Sidebar icon + change log styling
 │   ├── js/
 │   │   ├── payroll_africa_change_log.js      # What's New dialog renderer
 │   │   ├── payroll_africa_salary_structure.js # Component dropdown filter
-│   │   └── payroll_africa_sidebar.js         # Dynamic sidebar hide/show
+│   │   └── payroll_africa_sidebar.js         # Dynamic sidebar hide/show (54-country aware)
 │   └── icons/            # Africa SVG icon
 ├── demo/                 # Demo data setup/teardown
-└── tests/                # Calculator unit tests (×20)
+└── tests/                # Calculator unit tests (54 countries)
 ```
 
 ### Calculator Pattern
@@ -484,22 +451,31 @@ class KenyaCalculator(BaseCalculator):
         ...
 ```
 
-The registry (`engine/registry.py`) maps country names to calculator classes and caches instances for performance.
+All calculators use hardcoded statutory defaults when the settings DocType is not yet configured, so payroll works out of the box.
+
+The registry (`engine/registry.py`) maps country names to calculator classes:
+
+```python
+COUNTRY_MAP = {
+    "Kenya": "payroll_africa.calculators.kenya.KenyaCalculator",
+    "Senegal": "payroll_africa.calculators.senegal.SenegalCalculator",
+    # ... 54 countries total
+}
+```
 
 ---
 
 ## Adding a New Country
 
-1. **Create the calculator** — `calculators/newcountry.py` extending `BaseCalculator`
-2. **Create the Settings DocType** — "New Country Payroll Settings" (SingleDocType) with rate fields and PAYE bands table
-3. **Create the PAYE Band DocType** — "New Country PAYE Band" (child table)
-4. **Register in registry.py** — add entries to `_country_map` and `_settings_map`
-5. **Register in boot.py** — add entry to `COUNTRY_FIELD_MAP`
-6. **Add setup function** — in `setup.py`, create settings, salary components, income tax slab, salary structure
-7. **Add checkbox** — add `enable_newcountry` field to `payroll_africa_settings.json`
-8. **Add sidebar items** — add settings link and reports section to `workspace_sidebar/payroll_africa.json`
-9. **Create reports** — country-specific PAYE return and remittance reports
-10. **Run `bench migrate`**
+1. **Create the calculator** — `calculators/newcountry.py` extending `BaseCalculator`, implementing `compute(salary_slip)` returning `{component_name: {amount, is_employer_only}}`
+2. **Create the Settings DocType** — "New Country Payroll Settings" (Single DocType) with rate fields and tax bands table
+3. **Create the Tax Band DocType** — "New Country PAYE Band" (child table with `from_amount`, `to_amount`, `rate`)
+4. **Register in registry.py** — add entries to `COUNTRY_MAP` and `SETTINGS_MAP`
+5. **Register in boot.py** — add entry to `COUNTRY_FIELD_MAP` with field name `enable_newcountry`
+6. **Add checkbox** — add `enable_newcountry` Check field to `payroll_africa_settings.json`
+7. **Add sidebar items** — add settings link and reports section to `workspace_sidebar/payroll_africa.json`
+8. **Create reports** — country-specific tax return and social security remittance reports
+9. **Run `bench migrate`**
 
 ---
 
@@ -524,7 +500,7 @@ Tools configured:
 bench --site your-site run-tests --app payroll_africa
 ```
 
-Each country has its own test file in `tests/` (20 total) that validates the calculator against known inputs and expected outputs.
+Calculator unit tests live in `tests/` — one file per country tier (test_botswana_calculator.py, test_tier2_calculators.py, test_tier3_calculators.py, test_tier4_calculators.py, etc.).
 
 ---
 

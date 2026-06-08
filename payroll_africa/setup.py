@@ -2209,9 +2209,9 @@ def _create_morocco_salary_components():
 
 
 def _create_morocco_income_tax_slab():
-	"""Create Morocco IR Income Tax Slab for 2026."""
+	"""Create Morocco IR Income Tax Slab for 2025."""
 	_create_income_tax_slab(
-		slab_name="Morocco IR 2026",
+		slab_name="Morocco IR 2025",
 		currency="MAD",
 		bands=[
 			{"from_amount": 0, "to_amount": 40000, "rate": 0},
@@ -3009,7 +3009,7 @@ def _remove_income_tax_slabs():
 		"Mozambique PAYE 2025", "Angola PAYE 2025",
 		"Ethiopia PIT 2025", "South Africa PAYE 2025",
 		"Egypt IT 2025", "Ghana PAYE 2025",
-		"Botswana PAYE 2025", "Morocco IR 2026",
+		"Botswana PAYE 2025", "Morocco IR 2025",
 		"Tunisia IRPP 2025", "Namibia PAYE 2025",
 		"Madagascar IRSA 2025", "Ivory Coast ITS 2025",
 	]

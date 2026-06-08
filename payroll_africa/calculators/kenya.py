@@ -24,10 +24,19 @@ class KenyaCalculator(BaseCalculator):
 		emp_ahl = gross * (flt(self.settings.ahl_employee_rate) / 100)
 		results["Housing Levy"] = {"amount": emp_ahl, "is_employer_only": False}
 
-		# 4. PAYE - computed using monthly progressive bands with personal relief as tax credit
-		allowable_deductions = nssf["employee"] + shif + emp_ahl
-		paye = self._compute_paye(gross, allowable_deductions)
-		results["PAYE"] = {"amount": paye, "is_employer_only": False}
+		# Note: PAYE is NOT computed here — it is handled by HRMS via Income Tax Slab.
+		# The NSSF, SHIF, and Housing Levy amounts above are deducted before PAYE
+		# by configuring them as pre-tax deductions in the Salary Structure.
+
+		# Employer-only components
+		results["NSSF Employer"] = {"amount": nssf["employer"], "is_employer_only": True}
+
+		empr_ahl = gross * (flt(self.settings.ahl_employer_rate) / 100)
+		results["Employer Housing Levy"] = {"amount": empr_ahl, "is_employer_only": True}
+
+		nita = flt(self.settings.nita_amount)
+		if nita > 0:
+			results["NITA"] = {"amount": nita, "is_employer_only": True}
 
 		return results
 
@@ -66,26 +75,28 @@ class KenyaCalculator(BaseCalculator):
 	def _compute_nssf(self, gross):
 		"""Compute NSSF Tier I + Tier II per NSSF Act 2013 (2025 rates).
 
-		Tier I: rate% of pensionable earnings up to Lower Earnings Limit (LEL).
-		Tier II: rate% of pensionable earnings between LEL and Upper Earnings Limit (UEL).
-		Employer matches employee contribution in both tiers.
+		Tier I: rate% of gross up to LEL, capped at nssf_tier1_cap.
+		Tier II: rate% of gross above LEL, capped at nssf_tier2_cap.
+		Employer contribution mirrors employee in both tiers.
 		"""
 		s = self.settings
 
 		tier1_rate = flt(s.nssf_tier1_rate) / 100
 		tier2_rate = flt(s.nssf_tier2_rate) / 100
-		lower_limit = flt(s.nssf_tier1_upper_limit)  # LEL (e.g. 8,000)
-		upper_limit = flt(s.nssf_tier2_cap)           # UEL (e.g. 72,000)
+		lel = flt(s.nssf_tier1_upper_limit)   # Lower Earnings Limit
+		tier1_cap = flt(s.nssf_tier1_cap)     # Max Tier I contribution
+		tier2_cap = flt(s.nssf_tier2_cap)     # Max Tier II contribution
 
-		# Tier I: rate of pensionable earnings up to LEL
-		tier1_pensionable = min(gross, lower_limit)
-		tier1_emp = tier1_pensionable * tier1_rate
+		# Tier I: rate of earnings up to LEL, subject to cap
+		tier1_base = min(gross, lel) if gross > 0 else 0
+		tier1 = min(tier1_base * tier1_rate, tier1_cap) if tier1_cap else tier1_base * tier1_rate
 
-		# Tier II: rate of pensionable earnings between LEL and UEL
-		tier2_pensionable = max(min(gross, upper_limit) - lower_limit, 0)
-		tier2_emp = tier2_pensionable * tier2_rate
+		# Tier II: rate of earnings above LEL, subject to cap
+		tier2_base = max(gross - lel, 0) if gross > 0 else 0
+		tier2 = min(tier2_base * tier2_rate, tier2_cap) if tier2_cap else tier2_base * tier2_rate
 
+		total = tier1 + tier2
 		return {
-			"employee": tier1_emp + tier2_emp,
-			"employer": tier1_emp + tier2_emp,
+			"employee": total,
+			"employer": total,  # employer matches employee
 		}

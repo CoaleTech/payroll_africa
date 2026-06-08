@@ -23,6 +23,10 @@ class UgandaCalculator(BaseCalculator):
 		paye = self._compute_paye(gross, nssf_emp)
 		results["PAYE UG"] = {"amount": paye, "is_employer_only": False}
 
+		# 4. NSSF Employer (10% of gross — double the employee 5%)
+		nssf_employer_rate = flt(self.settings.nssf_employer_rate) / 100
+		results["NSSF Employer UG"] = {"amount": gross * nssf_employer_rate, "is_employer_only": True}
+
 		return results
 
 	def _compute_lst(self, monthly_gross):
@@ -32,14 +36,19 @@ class UgandaCalculator(BaseCalculator):
 		- from_amount / to_amount = monthly income range
 		- rate = annual LST amount (not a percentage)
 		Bands are checked highest-first; first match wins.
+
+		Falls back to lst_annual_amount (flat) when no bands configured.
 		"""
-		bands = self.settings.lst_bands or []
-		# Sort descending by from_amount so highest bracket matches first
-		sorted_bands = sorted(bands, key=lambda b: flt(b.from_amount), reverse=True)
-		for band in sorted_bands:
-			if monthly_gross >= flt(band.from_amount):
-				return flt(band.rate)
-		return 0
+		bands = list(self.settings.lst_bands or [])
+		if bands:
+			sorted_bands = sorted(bands, key=lambda b: flt(b.from_amount), reverse=True)
+			for band in sorted_bands:
+				if monthly_gross >= flt(band.from_amount):
+					return flt(band.rate)
+			return 0
+
+		# Flat annual LST amount (no band breakdown)
+		return flt(self.settings.lst_annual_amount or 0)
 
 	def _compute_paye(self, gross, nssf_employee):
 		"""Compute PAYE using monthly progressive bands.

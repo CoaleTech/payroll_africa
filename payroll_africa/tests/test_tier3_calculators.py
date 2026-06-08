@@ -71,6 +71,7 @@ class TestCongo(unittest.TestCase):
         from payroll_africa.calculators.congo import CongoCalculator
         self.calc = CongoCalculator(MockSettings(
             cnss_rate=16, cnamgs_rate=4.1, cnss_ceiling=1500000,
+            cnss_employee_rate=4,
         ))
 
     def test_employer_contributions(self):

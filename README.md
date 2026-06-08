@@ -435,7 +435,7 @@ payroll_africa/
 │   │   └── payroll_africa_sidebar.js         # Dynamic sidebar hide/show (54-country aware)
 │   └── icons/            # Africa SVG icon
 ├── demo/                 # Demo data setup/teardown
-└── tests/                # Calculator unit tests (54 countries)
+└── tests/                # 342 unit tests — all 54 countries + API + engine + reports
 ```
 
 ### Calculator Pattern
@@ -500,7 +500,31 @@ Tools configured:
 bench --site your-site run-tests --app payroll_africa
 ```
 
-Calculator unit tests live in `tests/` — one file per country tier (test_botswana_calculator.py, test_tier2_calculators.py, test_tier3_calculators.py, test_tier4_calculators.py, etc.).
+**342 tests, all passing.** Coverage spans all 54 countries.
+
+#### Test structure
+
+| File | Countries | Tests |
+|------|-----------|-------|
+| `test_kenya_calculator.py` | Kenya | 12 |
+| `test_nigeria_calculator.py` | Nigeria | 9 |
+| `test_burundi_calculator.py` | Burundi | 9 |
+| `test_{country}_calculator.py` (×18 more) | One per Tier 1 country | 4–8 each |
+| `test_tier2_calculators.py` | Algeria, Senegal, Cameroon, Mauritius, Zimbabwe, Mali, Niger, Burkina Faso, Benin | 48 |
+| `test_tier3_calculators.py` | Gabon, Congo, Guinea, Chad, Liberia, Sierra Leone, Togo, Eswatini, Seychelles | 48 |
+| `test_tier4_calculators.py` | Cabo Verde, CAR, Comoros, Djibouti, Equatorial Guinea, Eritrea, Gambia, Guinea-Bissau, Lesotho, Libya, Mauritania, Sao Tome, Somalia, South Sudan, Sudan | 78 |
+| `test_reports.py` | Cross-country reports | 16 |
+| `test_api.py` | API endpoints | 11 |
+| `test_engine.py` | Salary Slip hook | 10 |
+
+#### What each calculator test validates
+
+Every country (except Somalia/South Sudan stubs) has:
+- **Zero gross** — zero salary returns zero amounts and no PIT/PAYE
+- **Rate spot-check** — deduction amounts verified against published statutory rates
+- **Employer-only flag** — `is_employer_only: True` for employer components, `False` for employee
+- **Ceiling/cap** — contributions correctly capped when gross exceeds the statutory ceiling
+- **PIT threshold** — no income tax below the tax-free threshold; tax present above it
 
 ---
 

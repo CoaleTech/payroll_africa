@@ -1,5 +1,5 @@
 from frappe.model.document import Document
 
 
-class MadagascarIRSBand(Document):
+class MadagascarIRSABand(Document):
 	pass

@@ -20,10 +20,10 @@ REQUIRED_CURRENCIES = {
 	"GHS": {"currency_name": "Ghanaian Cedi", "symbol": "GH₵", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Pesewa", "fraction_units": 100},
 	"BWP": {"currency_name": "Botswana Pula", "symbol": "P", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Thebe", "fraction_units": 100},
 	"MAD": {"currency_name": "Moroccan Dirham", "symbol": "DH", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Centime", "fraction_units": 100},
-	"XOF": {"currency_name": "West African CFA Franc", "symbol": "CFA", "number_format": "# ###", "smallest_currency_fraction_value": 1, "fraction": "Centime", "fraction_units": 100},
+	"XOF": {"currency_name": "West African CFA Franc", "symbol": "CFA", "number_format": "# ###.##", "smallest_currency_fraction_value": 1, "fraction": "Centime", "fraction_units": 100},
 	"TND": {"currency_name": "Tunisian Dinar", "symbol": "DT", "number_format": "# ###.###", "smallest_currency_fraction_value": 0.001, "fraction": "Millime", "fraction_units": 1000},
 	"NAD": {"currency_name": "Namibian Dollar", "symbol": "N$", "number_format": "# ###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Cent", "fraction_units": 100},
-	"MGA": {"currency_name": "Malagasy Ariary", "symbol": "Ar", "number_format": "# ###", "smallest_currency_fraction_value": 1, "fraction": "Iraimbilanja", "fraction_units": 5},
+	"MGA": {"currency_name": "Malagasy Ariary", "symbol": "Ar", "number_format": "# ###.##", "smallest_currency_fraction_value": 1, "fraction": "Iraimbilanja", "fraction_units": 5},
 }
 
 
@@ -35,17 +35,22 @@ def _ensure_currencies():
 	currency referenced by the country setups is present before we try to link
 	to it.
 	"""
-	existing = set(frappe.get_all(
-		"Currency",
-		filters={"name": ["in", list(REQUIRED_CURRENCIES.keys())]},
-		pluck="name",
-	))
+	# Currency is autonamed by `currency_name` (the record's primary key equals
+	# its currency_name).  Every country setup links currencies by ISO code, so
+	# each Currency must be named by code.  We therefore set currency_name = code
+	# and heal any record a previous run created under the full descriptive name.
 	for code, meta in REQUIRED_CURRENCIES.items():
-		if code in existing:
+		full_name = meta["currency_name"]
+		if not frappe.db.exists("Currency", code) and full_name != code \
+				and frappe.db.exists("Currency", full_name):
+			frappe.rename_doc("Currency", full_name, code, force=True)
+			frappe.db.set_value("Currency", code, "currency_name", code)
+
+		if frappe.db.exists("Currency", code):
 			continue
+
 		doc = frappe.new_doc("Currency")
-		doc.name = code
-		doc.currency_name = meta["currency_name"]
+		doc.currency_name = code  # autoname -> primary key == ISO code
 		doc.symbol = meta.get("symbol", "")
 		doc.number_format = meta.get("number_format", "#,###.##")
 		doc.smallest_currency_fraction_value = meta.get("smallest_currency_fraction_value", 0.01)
@@ -244,8 +249,6 @@ def setup_kenya():
 
 def _create_kenya_settings():
 	"""Create Kenya Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Kenya Payroll Settings"):
-		return
 	doc = frappe.get_doc("Kenya Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -407,8 +410,6 @@ def setup_uganda():
 
 def _create_uganda_settings():
 	"""Create Uganda Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Uganda Payroll Settings"):
-		return
 	doc = frappe.get_doc("Uganda Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -512,8 +513,6 @@ def setup_tanzania():
 
 def _create_tanzania_settings():
 	"""Create Tanzania Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Tanzania Payroll Settings"):
-		return
 	doc = frappe.get_doc("Tanzania Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -631,8 +630,6 @@ def setup_rwanda():
 
 def _create_rwanda_settings():
 	"""Create Rwanda Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Rwanda Payroll Settings"):
-		return
 	doc = frappe.get_doc("Rwanda Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -772,8 +769,6 @@ def setup_burundi():
 
 def _create_burundi_settings():
 	"""Create Burundi Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Burundi Payroll Settings"):
-		return
 	doc = frappe.get_doc("Burundi Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -924,8 +919,6 @@ def setup_zambia():
 
 def _create_zambia_settings():
 	"""Create Zambia Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Zambia Payroll Settings"):
-		return
 	doc = frappe.get_doc("Zambia Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1040,8 +1033,6 @@ def setup_malawi():
 
 def _create_malawi_settings():
 	"""Create Malawi Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Malawi Payroll Settings"):
-		return
 	doc = frappe.get_doc("Malawi Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1133,8 +1124,6 @@ def setup_drc():
 
 def _create_drc_settings():
 	"""Create DRC Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("DRC Payroll Settings"):
-		return
 	doc = frappe.get_doc("DRC Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1274,8 +1263,6 @@ def setup_nigeria():
 
 def _create_nigeria_settings():
 	"""Create Nigeria Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Nigeria Payroll Settings"):
-		return
 	doc = frappe.get_doc("Nigeria Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1429,8 +1416,6 @@ def setup_mozambique():
 
 def _create_mozambique_settings():
 	"""Create Mozambique Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Mozambique Payroll Settings"):
-		return
 	doc = frappe.get_doc("Mozambique Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1522,8 +1507,6 @@ def setup_angola():
 
 def _create_angola_settings():
 	"""Create Angola Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Angola Payroll Settings"):
-		return
 	doc = frappe.get_doc("Angola Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1629,8 +1612,6 @@ def setup_ethiopia():
 
 def _create_ethiopia_settings():
 	"""Create Ethiopia Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Ethiopia Payroll Settings"):
-		return
 	doc = frappe.get_doc("Ethiopia Payroll Settings")
 	if doc.pit_bands:
 		return
@@ -1725,8 +1706,6 @@ def setup_south_africa():
 
 def _create_south_africa_settings():
 	"""Create South Africa Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("South Africa Payroll Settings"):
-		return
 	doc = frappe.get_doc("South Africa Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -1842,8 +1821,6 @@ def setup_egypt():
 
 def _create_egypt_settings():
 	"""Create Egypt Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Egypt Payroll Settings"):
-		return
 	doc = frappe.get_doc("Egypt Payroll Settings")
 	if doc.income_tax_bands:
 		return
@@ -1979,8 +1956,6 @@ def setup_ghana():
 
 def _create_ghana_settings():
 	"""Create Ghana Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Ghana Payroll Settings"):
-		return
 	doc = frappe.get_doc("Ghana Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -2089,8 +2064,6 @@ def setup_botswana():
 
 def _create_botswana_settings():
 	"""Create Botswana Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Botswana Payroll Settings"):
-		return
 	doc = frappe.get_doc("Botswana Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -2161,8 +2134,6 @@ def setup_morocco():
 
 def _create_morocco_settings():
 	"""Create Morocco Payroll Settings with 2026 default rates."""
-	if not frappe.db.exists("Morocco Payroll Settings"):
-		return
 	doc = frappe.get_doc("Morocco Payroll Settings")
 	if doc.ir_bands:
 		return
@@ -2265,8 +2236,6 @@ def setup_tunisia():
 
 def _create_tunisia_settings():
 	"""Create Tunisia Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Tunisia Payroll Settings"):
-		return
 	doc = frappe.get_doc("Tunisia Payroll Settings")
 	if doc.irpp_bands:
 		return
@@ -2380,8 +2349,6 @@ def setup_namibia():
 
 def _create_namibia_settings():
 	"""Create Namibia Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Namibia Payroll Settings"):
-		return
 	doc = frappe.get_doc("Namibia Payroll Settings")
 	if doc.paye_bands:
 		return
@@ -2503,8 +2470,6 @@ def setup_madagascar():
 
 def _create_madagascar_settings():
 	"""Create Madagascar Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Madagascar Payroll Settings"):
-		return
 	doc = frappe.get_doc("Madagascar Payroll Settings")
 	if doc.irsa_bands:
 		return
@@ -2641,8 +2606,6 @@ def setup_ivory_coast():
 
 def _create_ivory_coast_settings():
 	"""Create Ivory Coast Payroll Settings with 2025 default rates."""
-	if not frappe.db.exists("Ivory Coast Payroll Settings"):
-		return
 	doc = frappe.get_doc("Ivory Coast Payroll Settings")
 	if doc.its_bands:
 		return

@@ -4,7 +4,7 @@ authors = [
     { name = "Kimco", email = "dev@kimco.co.ke"}
 ]
 description = "Statutory payroll deduction automation for African countries"
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [

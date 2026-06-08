@@ -1930,7 +1930,7 @@ def _create_egypt_salary_components():
 def _create_egypt_income_tax_slab():
 	"""Create Egypt Income Tax Slab for 2025."""
 	_create_income_tax_slab(
-		slab_name="Egypt Income Tax 2025",
+		slab_name="Egypt IT 2025",
 		currency="EGP",
 		bands=[
 			{"from_amount": 0, "to_amount": 40000, "rate": 0},
@@ -3008,7 +3008,7 @@ def _remove_income_tax_slabs():
 		"Malawi PAYE 2025", "DRC PAYE 2025", "Nigeria PAYE 2025",
 		"Mozambique PAYE 2025", "Angola PAYE 2025",
 		"Ethiopia PIT 2025", "South Africa PAYE 2025",
-		"Egypt Income Tax 2025", "Ghana PAYE 2025",
+		"Egypt IT 2025", "Ghana PAYE 2025",
 		"Botswana PAYE 2025", "Morocco IR 2026",
 		"Tunisia IRPP 2025", "Namibia PAYE 2025",
 		"Madagascar IRSA 2025", "Ivory Coast ITS 2025",

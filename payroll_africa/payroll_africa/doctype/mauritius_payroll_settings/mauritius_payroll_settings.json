@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "creation": "2026-06-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "nsf_section",
+  "nsf_employee_rate",
+  "nsf_employer_rate",
+  "nsf_ceiling",
+  "col_break_nsf",
+  "csg_rate",
+  "hrdc_rate",
+  "paye_section",
+  "exempt_threshold_monthly",
+  "paye_bands_section",
+  "paye_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "nsf_section",
+   "fieldtype": "Section Break",
+   "label": "NSF"
+  },
+  {
+   "fieldname": "nsf_employee_rate",
+   "fieldtype": "Percent",
+   "label": "NSF Employee Rate",
+   "default": "1"
+  },
+  {
+   "fieldname": "nsf_employer_rate",
+   "fieldtype": "Percent",
+   "label": "NSF Employer Rate",
+   "default": "2.5"
+  },
+  {
+   "fieldname": "nsf_ceiling",
+   "fieldtype": "Currency",
+   "label": "NSF Ceiling (MUR)",
+   "default": "25475"
+  },
+  {
+   "fieldname": "col_break_nsf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "csg_rate",
+   "fieldtype": "Percent",
+   "label": "CSG Rate",
+   "default": "1.5"
+  },
+  {
+   "fieldname": "hrdc_rate",
+   "fieldtype": "Percent",
+   "label": "HRDC Levy Rate",
+   "default": "1.5"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "exempt_threshold_monthly",
+   "fieldtype": "Currency",
+   "label": "Exempt Monthly Threshold (MUR)",
+   "default": "38462"
+  },
+  {
+   "fieldname": "paye_bands_section",
+   "fieldtype": "Section Break",
+   "label": "Mauritius Tax Bands"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "Mauritius Tax Bands",
+   "options": "Mauritius PAYE Band"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Mauritius Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

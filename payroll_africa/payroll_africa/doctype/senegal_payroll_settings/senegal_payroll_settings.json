@@ -1,0 +1,150 @@
+{
+ "actions": [],
+ "creation": "2026-06-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "ipres_section",
+  "ipres_employee_rate",
+  "ipres_employer_rate",
+  "ipres_ceiling",
+  "col_break_ipres",
+  "css_employee_rate",
+  "css_employer_rate",
+  "css_ceiling",
+  "it_section",
+  "tax_free_threshold_annual",
+  "number_of_dependent_children",
+  "child_deduction",
+  "income_tax_bands_section",
+  "income_tax_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "ipres_section",
+   "fieldtype": "Section Break",
+   "label": "IPRES Pension"
+  },
+  {
+   "fieldname": "ipres_employee_rate",
+   "fieldtype": "Percent",
+   "label": "IPRES Employee Rate",
+   "default": "5.6"
+  },
+  {
+   "fieldname": "ipres_employer_rate",
+   "fieldtype": "Percent",
+   "label": "IPRES Employer Rate",
+   "default": "8.4"
+  },
+  {
+   "fieldname": "ipres_ceiling",
+   "fieldtype": "Currency",
+   "label": "IPRES Ceiling (XOF)",
+   "default": "299000"
+  },
+  {
+   "fieldname": "col_break_ipres",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "css_employee_rate",
+   "fieldtype": "Percent",
+   "label": "CSS Health Employee Rate",
+   "default": "3"
+  },
+  {
+   "fieldname": "css_employer_rate",
+   "fieldtype": "Percent",
+   "label": "CSS Health Employer Rate",
+   "default": "5"
+  },
+  {
+   "fieldname": "css_ceiling",
+   "fieldtype": "Currency",
+   "label": "CSS Ceiling (XOF)",
+   "default": "299000"
+  },
+  {
+   "fieldname": "it_section",
+   "fieldtype": "Section Break",
+   "label": "Income Tax"
+  },
+  {
+   "fieldname": "tax_free_threshold_annual",
+   "fieldtype": "Currency",
+   "label": "Annual Tax-Free Threshold (XOF)",
+   "default": "630000"
+  },
+  {
+   "fieldname": "number_of_dependent_children",
+   "fieldtype": "Int",
+   "label": "Dependent Children",
+   "default": "0"
+  },
+  {
+   "fieldname": "child_deduction",
+   "fieldtype": "Currency",
+   "label": "Deduction per Child (XOF)",
+   "default": "100000"
+  },
+  {
+   "fieldname": "income_tax_bands_section",
+   "fieldtype": "Section Break",
+   "label": "Senegal Tax Bands"
+  },
+  {
+   "fieldname": "income_tax_bands",
+   "fieldtype": "Table",
+   "label": "Senegal Tax Bands",
+   "options": "Senegal Income Tax Band"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Senegal Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

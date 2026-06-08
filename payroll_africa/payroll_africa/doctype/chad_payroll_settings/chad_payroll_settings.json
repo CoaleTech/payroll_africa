@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "creation": "2026-06-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "cnps_section",
+  "cnps_pension_employee_rate",
+  "cnps_pension_employer_rate",
+  "cnps_ceiling",
+  "col_break_cnps",
+  "family_allowances_rate",
+  "work_injury_risk_class",
+  "pit_section",
+  "tax_free_threshold",
+  "pit_bands_section",
+  "pit_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "cnps_section",
+   "fieldtype": "Section Break",
+   "label": "CNPS"
+  },
+  {
+   "fieldname": "cnps_pension_employee_rate",
+   "fieldtype": "Percent",
+   "label": "CNPS Employee Rate",
+   "default": "3.5"
+  },
+  {
+   "fieldname": "cnps_pension_employer_rate",
+   "fieldtype": "Percent",
+   "label": "CNPS Employer Rate",
+   "default": "7.5"
+  },
+  {
+   "fieldname": "cnps_ceiling",
+   "fieldtype": "Currency",
+   "label": "CNPS Ceiling (XAF)",
+   "default": "0"
+  },
+  {
+   "fieldname": "col_break_cnps",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "family_allowances_rate",
+   "fieldtype": "Percent",
+   "label": "Family Allowances Rate",
+   "default": "6"
+  },
+  {
+   "fieldname": "work_injury_risk_class",
+   "fieldtype": "Int",
+   "label": "Work Injury Risk Class (1-3)",
+   "default": "1"
+  },
+  {
+   "fieldname": "pit_section",
+   "fieldtype": "Section Break",
+   "label": "PIT"
+  },
+  {
+   "fieldname": "tax_free_threshold",
+   "fieldtype": "Currency",
+   "label": "Tax-Free Threshold (XAF)",
+   "default": "0"
+  },
+  {
+   "fieldname": "pit_bands_section",
+   "fieldtype": "Section Break",
+   "label": "Chad Tax Bands"
+  },
+  {
+   "fieldname": "pit_bands",
+   "fieldtype": "Table",
+   "label": "Chad Tax Bands",
+   "options": "Chad PIT Band"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Chad Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

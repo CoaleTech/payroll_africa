@@ -1,0 +1,122 @@
+{
+ "actions": [],
+ "creation": "2026-06-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "inps_section",
+  "inps_employee_rate",
+  "inps_employer_rate",
+  "inps_ceiling",
+  "col_break_inps",
+  "work_injury_rate",
+  "pit_section",
+  "tax_free_threshold",
+  "pit_bands_section",
+  "pit_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "inps_section",
+   "fieldtype": "Section Break",
+   "label": "INPS"
+  },
+  {
+   "fieldname": "inps_employee_rate",
+   "fieldtype": "Percent",
+   "label": "INPS Employee Rate",
+   "default": "8"
+  },
+  {
+   "fieldname": "inps_employer_rate",
+   "fieldtype": "Percent",
+   "label": "INPS Employer Rate",
+   "default": "16"
+  },
+  {
+   "fieldname": "inps_ceiling",
+   "fieldtype": "Currency",
+   "label": "INPS Ceiling (CVE)",
+   "default": "0"
+  },
+  {
+   "fieldname": "col_break_inps",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "work_injury_rate",
+   "fieldtype": "Percent",
+   "label": "Work Injury Rate",
+   "default": "1"
+  },
+  {
+   "fieldname": "pit_section",
+   "fieldtype": "Section Break",
+   "label": "IRPC"
+  },
+  {
+   "fieldname": "tax_free_threshold",
+   "fieldtype": "Currency",
+   "label": "Tax-Free Threshold (CVE)",
+   "default": "0"
+  },
+  {
+   "fieldname": "pit_bands_section",
+   "fieldtype": "Section Break",
+   "label": "Cabo Verde Tax Bands"
+  },
+  {
+   "fieldname": "pit_bands",
+   "fieldtype": "Table",
+   "label": "Cabo Verde Tax Bands",
+   "options": "Cabo Verde IRPC Band"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Cabo Verde Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

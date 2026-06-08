@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "creation": "2026-06-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "ssf_section",
+  "ssf_employee_rate",
+  "ssf_employer_rate",
+  "ssf_ceiling",
+  "col_break_ssf",
+  "jehad_tax_rate",
+  "solidarity_fund_rate",
+  "pit_section",
+  "tax_free_threshold",
+  "pit_bands_section",
+  "pit_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "ssf_section",
+   "fieldtype": "Section Break",
+   "label": "Social Security Fund"
+  },
+  {
+   "fieldname": "ssf_employee_rate",
+   "fieldtype": "Percent",
+   "label": "SSF Employee Rate",
+   "default": "3.75"
+  },
+  {
+   "fieldname": "ssf_employer_rate",
+   "fieldtype": "Percent",
+   "label": "SSF Employer Rate",
+   "default": "11.25"
+  },
+  {
+   "fieldname": "ssf_ceiling",
+   "fieldtype": "Currency",
+   "label": "SSF Ceiling (LYD)",
+   "default": "0"
+  },
+  {
+   "fieldname": "col_break_ssf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "jehad_tax_rate",
+   "fieldtype": "Percent",
+   "label": "Jehad Tax Rate",
+   "default": "4"
+  },
+  {
+   "fieldname": "solidarity_fund_rate",
+   "fieldtype": "Percent",
+   "label": "Solidarity Fund Rate",
+   "default": "3"
+  },
+  {
+   "fieldname": "pit_section",
+   "fieldtype": "Section Break",
+   "label": "PIT"
+  },
+  {
+   "fieldname": "tax_free_threshold",
+   "fieldtype": "Currency",
+   "label": "Tax-Free Threshold (LYD)",
+   "default": "0"
+  },
+  {
+   "fieldname": "pit_bands_section",
+   "fieldtype": "Section Break",
+   "label": "Libya Tax Bands"
+  },
+  {
+   "fieldname": "pit_bands",
+   "fieldtype": "Table",
+   "label": "Libya Tax Bands",
+   "options": "Libya PIT Band"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Libya Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

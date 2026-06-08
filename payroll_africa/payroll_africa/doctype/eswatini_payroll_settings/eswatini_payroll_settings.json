@@ -1,0 +1,115 @@
+{
+ "actions": [],
+ "creation": "2026-06-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "paye_section",
+  "tax_free_threshold",
+  "enpf_section",
+  "enpf_employee_rate",
+  "enpf_employer_rate",
+  "col_break_enpf",
+  "sdl_rate",
+  "paye_bands_section",
+  "paye_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "paye_section",
+   "fieldtype": "Section Break",
+   "label": "PAYE"
+  },
+  {
+   "fieldname": "tax_free_threshold",
+   "fieldtype": "Currency",
+   "label": "Tax-Free Threshold (SZL)",
+   "default": "41000"
+  },
+  {
+   "fieldname": "enpf_section",
+   "fieldtype": "Section Break",
+   "label": "ENPF Pension"
+  },
+  {
+   "fieldname": "enpf_employee_rate",
+   "fieldtype": "Percent",
+   "label": "ENPF Employee Rate",
+   "default": "5"
+  },
+  {
+   "fieldname": "enpf_employer_rate",
+   "fieldtype": "Percent",
+   "label": "ENPF Employer Rate",
+   "default": "10"
+  },
+  {
+   "fieldname": "col_break_enpf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sdl_rate",
+   "fieldtype": "Percent",
+   "label": "Skills Development Levy Rate",
+   "default": "0.2"
+  },
+  {
+   "fieldname": "paye_bands_section",
+   "fieldtype": "Section Break",
+   "label": "Eswatini Tax Bands"
+  },
+  {
+   "fieldname": "paye_bands",
+   "fieldtype": "Table",
+   "label": "Eswatini Tax Bands",
+   "options": "Eswatini PAYE Band"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Eswatini Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

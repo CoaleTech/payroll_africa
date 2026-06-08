@@ -1,0 +1,109 @@
+{
+ "actions": [],
+ "creation": "2026-06-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "effective_from",
+  "column_break_1",
+  "enabled",
+  "cnas_section",
+  "cnas_employee_rate",
+  "cnas_employer_rate",
+  "cnas_ceiling",
+  "col_break_cnas",
+  "training_tax_rate",
+  "pit_bands_section",
+  "pit_bands"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "default": "2025-01-01"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "cnas_section",
+   "fieldtype": "Section Break",
+   "label": "CNAS Social Security"
+  },
+  {
+   "fieldname": "cnas_employee_rate",
+   "fieldtype": "Percent",
+   "label": "CNAS Employee Rate",
+   "default": "9"
+  },
+  {
+   "fieldname": "cnas_employer_rate",
+   "fieldtype": "Percent",
+   "label": "CNAS Employer Rate",
+   "default": "25.5"
+  },
+  {
+   "fieldname": "cnas_ceiling",
+   "fieldtype": "Currency",
+   "label": "CNAS Ceiling (DZD)",
+   "default": "0"
+  },
+  {
+   "fieldname": "col_break_cnas",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "training_tax_rate",
+   "fieldtype": "Percent",
+   "label": "Training Tax Rate",
+   "default": "1"
+  },
+  {
+   "fieldname": "pit_bands_section",
+   "fieldtype": "Section Break",
+   "label": "Algeria Tax Bands"
+  },
+  {
+   "fieldname": "pit_bands",
+   "fieldtype": "Table",
+   "label": "Algeria Tax Bands",
+   "options": "Algeria PIT Band"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll Africa",
+ "name": "Algeria Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "HR Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

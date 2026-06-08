@@ -185,14 +185,9 @@ If a country's Settings DocType has not been configured, all calculators fall ba
 
 ### Install
 
-```bash
-cd /path/to/your/bench
-bench get-app <repo-url> --branch main
-bench install-app payroll_africa
-bench --site your-site migrate
-```
+Add **Payroll Africa** to your bench from the Frappe Cloud Marketplace. ERPNext and HRMS are provisioned automatically as dependencies.
 
-`after_install` creates the following for the **original 21 countries** (Tier 1):
+On installation, the app provisions the following for the **original 21 countries** (Tier 1):
 - Currency records for all required currencies
 - `Employee.payroll_country` custom Link field
 - Country-specific Salary Components for each deduction type
@@ -201,15 +196,11 @@ bench --site your-site migrate
 - Workspace sidebar with country sections and reports
 - Desktop icon under Frappe HR
 
-> **Tier 2–4 countries** (the remaining 33) have calculators, Settings DocTypes, and reports installed via `bench migrate`, but do not have pre-built salary structures or income tax slabs. Enable them in Payroll Africa Settings to activate their calculators.
+> **Tier 2–4 countries** (the remaining 33) have their calculators, Settings DocTypes, and reports provisioned automatically, but do not include pre-built salary structures or income tax slabs. Enable them in Payroll Africa Settings to activate their calculators.
 
 ### Uninstall
 
-```bash
-bench uninstall-app payroll_africa
-```
-
-`before_uninstall` removes all salary structures, salary components, income tax slabs, and custom fields created by the app.
+When the app is removed, its `before_uninstall` step cleans up all salary structures, salary components, income tax slabs, and custom fields it created.
 
 ---
 

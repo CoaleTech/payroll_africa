@@ -30,34 +30,41 @@
 (function () {
 	"use strict";
 
+	// Workspace sidebar display labels (may differ from Frappe ISO country names).
 	const ALL_COUNTRIES = [
-		"Kenya",
-		"Uganda",
-		"Tanzania",
-		"Rwanda",
-		"Burundi",
-		"Ethiopia",
-		"Malawi",
-		"Zambia",
-		"Mozambique",
-		"Angola",
-		"Botswana",
-		"South Africa",
-		"Namibia",
-		"Madagascar",
-		"Nigeria",
-		"Ghana",
-		"Ivory Coast",
-		"DRC",
-		"Egypt",
-		"Morocco",
-		"Tunisia",
+		// East Africa
+		"Kenya", "Uganda", "Tanzania", "Rwanda", "Burundi", "Ethiopia", "Malawi",
+		"Zambia", "Mozambique", "Angola", "Djibouti", "Eritrea", "South Sudan", "Sudan",
+		"Somalia",
+		// Southern Africa
+		"Botswana", "South Africa", "Namibia", "Madagascar", "Zimbabwe",
+		"Lesotho", "Eswatini",
+		// West Africa
+		"Nigeria", "Ghana", "Ivory Coast", "Senegal", "Mali", "Niger", "Burkina Faso",
+		"Benin", "Togo", "Guinea", "Sierra Leone", "Liberia", "Gambia", "Guinea-Bissau",
+		"Cabo Verde", "Mauritania",
+		// North Africa
+		"Egypt", "Morocco", "Tunisia", "Algeria", "Libya",
+		// Central Africa (DRC uses short label in workspace)
+		"DRC", "Cameroon", "Gabon", "Congo",
+		"Central African Republic", "Chad", "Equatorial Guinea",
+		"Sao Tome and Principe",
+		// Indian Ocean
+		"Mauritius", "Seychelles", "Comoros",
 	];
 
+	// Maps workspace sidebar label → Frappe ISO country name for countries that differ.
+	const COUNTRY_ALIASES = {
+		"DRC": "Congo, The Democratic Republic of the",
+	};
+
 	/**
-	 * Returns the set of country names that should be hidden, based on
+	 * Returns the set of sidebar display labels that should be hidden, based on
 	 * frappe.boot.payroll_africa_enabled_countries.  If the list is absent or
 	 * empty, returns an empty set (nothing hidden).
+	 *
+	 * Resolves COUNTRY_ALIASES so that workspace labels like "DRC" are correctly
+	 * treated as enabled when "Congo, The Democratic Republic of the" is enabled.
 	 */
 	function getDisabledCountries() {
 		const enabled = frappe &&
@@ -70,8 +77,15 @@
 			return new Set();
 		}
 
-		const enabledSet = new Set(enabled);
-		return new Set(ALL_COUNTRIES.filter((c) => !enabledSet.has(c)));
+		const enabledIso = new Set(enabled);
+		// Build a set of enabled sidebar labels, resolving aliases in reverse.
+		const enabledLabels = new Set(enabled);
+		for (const [label, iso] of Object.entries(COUNTRY_ALIASES)) {
+			if (enabledIso.has(iso)) {
+				enabledLabels.add(label);
+			}
+		}
+		return new Set(ALL_COUNTRIES.filter((c) => !enabledLabels.has(c)));
 	}
 
 	/**

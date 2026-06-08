@@ -1,0 +1,40 @@
+"""Central African Republic statutory deduction calculator.
+
+Reference: CNSS CAR (limited data availability)
+- CNSS: Employee ~3%, Employer ~15% (capped)
+- Very limited formal employment sector due to ongoing conflict
+- PIT: Progressive tax system with limited enforcement
+"""
+from frappe.utils import flt
+from payroll_africa.calculators.base import BaseCalculator
+
+class CentralAfricanRepublicCalculator(BaseCalculator):
+    def compute(self, salary_slip):
+        gross = self.get_gross_pay(salary_slip)
+        results = {}
+        min_wage = flt(self.settings.minimum_wage or 50000)
+        ceiling = min_wage * 8
+        base = min(gross, ceiling) if gross > 0 else 0
+
+        cnss_emp = base * (flt(self.settings.cnss_employee_rate or 3) / 100)
+        cnss_empr = base * (flt(self.settings.cnss_employer_rate or 15) / 100)
+        results["CNSS Employee"] = {"amount": cnss_emp, "is_employer_only": False}
+        results["CNSS Employer"] = {"amount": cnss_empr, "is_employer_only": True}
+
+        taxable = max(gross - cnss_emp, 0)
+        pit = self._compute_pit(taxable)
+        if pit > 0:
+            results["PIT"] = {"amount": pit, "is_employer_only": False}
+        return results
+
+    def _compute_pit(self, taxable_income):
+        if taxable_income <= 0: return 0
+        annual = taxable_income * 12
+        if annual <= 600000: return 0
+        tax = 0
+        for lower, upper, rate in [(600000, 1800000, 0.10), (1800000, 3600000, 0.20),
+                                    (3600000, 0, 0.30)]:
+            if annual <= lower: break
+            amount = min(annual, upper if upper > 0 else annual) - lower
+            if amount > 0: tax += amount * rate
+        return tax / 12

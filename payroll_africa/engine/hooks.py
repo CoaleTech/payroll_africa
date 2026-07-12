@@ -1,71 +1,28 @@
 import frappe
-from frappe.utils import flt
 
-from payroll_africa.engine.registry import get_calculator
-
-
-def on_salary_slip_validate(doc, method):
-	"""Hook into Salary Slip validate to compute statutory deductions."""
-	country = get_employee_country(doc.employee, doc.company)
-	if not country:
-		return
-
-	if not frappe.db.exists("Payroll Africa Settings"):
-		return
-
-	settings = frappe.get_cached_doc("Payroll Africa Settings")
-	if not settings.enabled:
-		return
-
-	from payroll_africa.boot import COUNTRY_FIELD_MAP
-	field = COUNTRY_FIELD_MAP.get(country)
-	if field and not settings.get(field):
-		return
-
-	calculator = get_calculator(country)
-	if not calculator:
-		return
-
-	results = calculator.compute(doc)
-
-	for component_name, data in results.items():
-		_set_component_amount(doc, component_name, data["amount"], data["is_employer_only"])
-
-	# Recalculate net pay after overriding deduction amounts
-	doc.set_net_pay()
+from payroll_africa.engine.utils import get_effective_ssa_values
 
 
-def get_employee_country(employee, company):
-	"""Get payroll country from Employee, falling back to Company country."""
+def get_employee_country(employee, company, salary_structure=None, on_date=None):
+	"""Resolve payroll country for an employee.
+
+	Preference order:
+	1. ``Salary Structure Assignment.payroll_country`` for the active assignment.
+	2. ``Employee.payroll_country``.
+	3. ``Company.country``.
+	"""
+	if salary_structure and on_date:
+		ssa = get_effective_ssa_values(
+			employee,
+			company,
+			salary_structure,
+			on_date,
+			["payroll_country"],
+		)
+		if ssa.get("payroll_country"):
+			return ssa.get("payroll_country")
+
 	country = frappe.db.get_value("Employee", employee, "payroll_country")
 	if not country:
 		country = frappe.db.get_value("Company", company, "country")
 	return country
-
-
-def _set_component_amount(doc, component_name, amount, is_employer_only):
-	"""Set amount on an existing deduction row, or append if missing."""
-	for row in doc.deductions:
-		if row.salary_component == component_name:
-			precision = row.precision("amount") if hasattr(row, "precision") else None
-			row.amount = flt(amount, precision)
-			row.default_amount = row.amount
-			return
-
-	if not frappe.db.exists("Salary Component", component_name):
-		frappe.log_error(
-			title="Payroll Africa: Missing Salary Component",
-			message=f"Salary Component '{component_name}' not found. Run Setup Wizard or bench migrate.",
-		)
-		return
-
-	component_doc = frappe.get_cached_doc("Salary Component", component_name)
-	doc.append("deductions", {
-		"salary_component": component_name,
-		"abbr": component_doc.salary_component_abbr,
-		"amount": flt(amount),
-		"default_amount": flt(amount),
-		"do_not_include_in_total": 1 if is_employer_only else 0,
-		"statistical_component": 1 if is_employer_only else 0,
-		"exempted_from_income_tax": component_doc.exempted_from_income_tax or 0,
-	})

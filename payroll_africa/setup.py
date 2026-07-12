@@ -1,6 +1,5 @@
 import frappe
 
-
 # ── Currency codes required by each country setup ──────────────────────
 REQUIRED_CURRENCIES = {
 	"KES": {"currency_name": "Kenyan Shilling", "symbol": "KSh", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Cent", "fraction_units": 100},
@@ -76,6 +75,31 @@ def _setup_custom_fields():
 				"module": "Payroll Africa",
 			}
 		],
+		"Salary Structure Assignment": [
+			{
+				"fieldname": "payroll_country",
+				"fieldtype": "Link",
+				"label": "Payroll Country",
+				"options": "Country",
+				"insert_after": "employee",
+				"description": "Date-effective payroll country for this assignment. Overrides Employee and Company country.",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "payroll_africa_section",
+				"fieldtype": "Section Break",
+				"label": "Payroll Africa",
+				"insert_after": "payroll_cost_centers",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "payroll_africa_notes",
+				"fieldtype": "Small Text",
+				"label": "Payroll Africa Notes",
+				"insert_after": "payroll_africa_section",
+				"module": "Payroll Africa",
+			},
+		],
 		"Salary Component": [
 			{
 				"fieldname": "payroll_africa_section",
@@ -106,7 +130,7 @@ def _setup_custom_fields():
 
 
 def _upsert_salary_component(comp_data: dict):
-	"""Insert a Salary Component or update its p9a/p10a tags if it already exists."""
+	"""Insert a Salary Component or update its setup-driven fields if it already exists."""
 	name = comp_data["salary_component"]
 	if frappe.db.exists("Salary Component", name):
 		updates = {}
@@ -114,6 +138,9 @@ def _upsert_salary_component(comp_data: dict):
 			tag_key = tag_field.replace("_tax_deduction_card_type", "_tag")
 			if comp_data.get(tag_key):
 				updates[tag_field] = comp_data[tag_key]
+		for setup_field in ("type", "statistical_component", "do_not_include_in_total"):
+			if setup_field in comp_data:
+				updates[setup_field] = comp_data[setup_field]
 		if updates:
 			frappe.db.set_value("Salary Component", name, updates)
 		return
@@ -195,7 +222,7 @@ def _create_salary_structure(name, currency, deductions):
 	Args:
 		name: Salary Structure name, e.g. "Kenya Payroll Template"
 		currency: Currency code, e.g. "KES"
-		deductions: List of salary component names to add as deductions
+		deductions: List of salary component names to add as deductions or employer contributions
 	"""
 	if frappe.db.exists("Salary Structure", name):
 		return
@@ -227,10 +254,16 @@ def _create_salary_structure(name, currency, deductions):
 	})
 
 	for component in deductions:
-		doc.append("deductions", {
-			"salary_component": component,
-			"amount": 0,
-		})
+		if frappe.db.get_value("Salary Component", component, "type") == "Employer Contribution":
+			doc.append("employer_contributions", {
+				"salary_component": component,
+				"amount": 0,
+			})
+		else:
+			doc.append("deductions", {
+				"salary_component": component,
+				"amount": 0,
+			})
 
 	doc.flags.ignore_permissions = True
 	doc.insert()
@@ -314,11 +347,9 @@ def _create_kenya_salary_components():
 		{
 			"salary_component": "NSSF Employer",
 			"salary_component_abbr": "NSSFr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 			"p9a_tag": "",
@@ -353,11 +384,9 @@ def _create_kenya_salary_components():
 		{
 			"salary_component": "Employer Housing Levy",
 			"salary_component_abbr": "AHLr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 			"p9a_tag": "",
@@ -366,11 +395,9 @@ def _create_kenya_salary_components():
 		{
 			"salary_component": "NITA",
 			"salary_component_abbr": "NITA",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 			"p9a_tag": "",
@@ -461,11 +488,9 @@ def _create_uganda_salary_components():
 		{
 			"salary_component": "NSSF Employer UG",
 			"salary_component_abbr": "NSSFrUG",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -565,33 +590,27 @@ def _create_tanzania_salary_components():
 		{
 			"salary_component": "NSSF Employer TZ",
 			"salary_component_abbr": "NSSFrTZ",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "SDL",
 			"salary_component_abbr": "SDL",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "WCF",
 			"salary_component_abbr": "WCF",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -683,11 +702,9 @@ def _create_rwanda_salary_components():
 		{
 			"salary_component": "Pension Employer RW",
 			"salary_component_abbr": "PENSrRW",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -705,11 +722,9 @@ def _create_rwanda_salary_components():
 		{
 			"salary_component": "Maternity Employer RW",
 			"salary_component_abbr": "MATrRW",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -727,11 +742,9 @@ def _create_rwanda_salary_components():
 		{
 			"salary_component": "Occupational Hazards RW",
 			"salary_component_abbr": "OCCHRW",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -823,22 +836,18 @@ def _create_burundi_salary_components():
 		{
 			"salary_component": "INSS Employer BI",
 			"salary_component_abbr": "INSSrBI",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "Work Injury BI",
 			"salary_component_abbr": "WINJBI",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -856,11 +865,9 @@ def _create_burundi_salary_components():
 		{
 			"salary_component": "Health Insurance Employer BI",
 			"salary_component_abbr": "HIrBI",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -878,11 +885,9 @@ def _create_burundi_salary_components():
 		{
 			"salary_component": "Training Fund Employer BI",
 			"salary_component_abbr": "TFrBI",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -971,11 +976,9 @@ def _create_zambia_salary_components():
 		{
 			"salary_component": "NAPSA Employer ZM",
 			"salary_component_abbr": "NAPSArZM",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -993,11 +996,9 @@ def _create_zambia_salary_components():
 		{
 			"salary_component": "NHIMA Employer ZM",
 			"salary_component_abbr": "NHIMArZM",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1082,11 +1083,9 @@ def _create_malawi_salary_components():
 		{
 			"salary_component": "Pension Employer MW",
 			"salary_component_abbr": "PENSrMW",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1177,55 +1176,45 @@ def _create_drc_salary_components():
 		{
 			"salary_component": "INSS Pension Employer CD",
 			"salary_component_abbr": "INSSrCD",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "INSS Occupational Risks CD",
 			"salary_component_abbr": "INSSORCD",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "INSS Family Benefits CD",
 			"salary_component_abbr": "INSSFBCD",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "INPP CD",
 			"salary_component_abbr": "INPPCD",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "ONEM CD",
 			"salary_component_abbr": "ONEMCD",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1319,11 +1308,9 @@ def _create_nigeria_salary_components():
 		{
 			"salary_component": "Pension Employer NG",
 			"salary_component_abbr": "PENSrNG",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1352,33 +1339,27 @@ def _create_nigeria_salary_components():
 		{
 			"salary_component": "NHIS Employer NG",
 			"salary_component_abbr": "NHISrNG",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "NSITF NG",
 			"salary_component_abbr": "NSITFNG",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "ITF NG",
 			"salary_component_abbr": "ITFNG",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1466,11 +1447,9 @@ def _create_mozambique_salary_components():
 		{
 			"salary_component": "INSS Employer MZ",
 			"salary_component_abbr": "INSSrMZ",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1564,11 +1543,9 @@ def _create_angola_salary_components():
 		{
 			"salary_component": "INSS Employer AO",
 			"salary_component_abbr": "INSSrAO",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1664,11 +1641,9 @@ def _create_ethiopia_salary_components():
 		{
 			"salary_component": "Pension Employer",
 			"salary_component_abbr": "PENSr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1766,22 +1741,18 @@ def _create_south_africa_salary_components():
 		{
 			"salary_component": "UIF Employer",
 			"salary_component_abbr": "UIFr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "SDL",
 			"salary_component_abbr": "SDL",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1880,11 +1851,9 @@ def _create_egypt_salary_components():
 		{
 			"salary_component": "Social Insurance Employer",
 			"salary_component_abbr": "SICr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -1902,11 +1871,9 @@ def _create_egypt_salary_components():
 		{
 			"salary_component": "Health Insurance Employer",
 			"salary_component_abbr": "HIr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -2010,22 +1977,18 @@ def _create_ghana_salary_components():
 		{
 			"salary_component": "SSNIT Employer",
 			"salary_component_abbr": "SSNITr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "Tier 2 Pension Employer",
 			"salary_component_abbr": "T2PENSr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -2194,11 +2157,9 @@ def _create_morocco_salary_components():
 		{
 			"salary_component": "CNSS Employer",
 			"salary_component_abbr": "CNSSr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -2293,11 +2254,9 @@ def _create_tunisia_salary_components():
 		{
 			"salary_component": "CNSS Employer",
 			"salary_component_abbr": "CNSSr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -2404,33 +2363,27 @@ def _create_namibia_salary_components():
 		{
 			"salary_component": "Social Security Employer",
 			"salary_component_abbr": "SSCr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "VET Levy",
 			"salary_component_abbr": "VET",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "Employees Compensation",
 			"salary_component_abbr": "ECF",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -2528,11 +2481,9 @@ def _create_madagascar_salary_components():
 		{
 			"salary_component": "CNaPS Employer",
 			"salary_component_abbr": "CNaPSr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -2550,22 +2501,18 @@ def _create_madagascar_salary_components():
 		{
 			"salary_component": "Health Insurance Employer",
 			"salary_component_abbr": "HIr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "FMFP Training Fund",
 			"salary_component_abbr": "FMFP",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -2666,55 +2613,45 @@ def _create_ivory_coast_salary_components():
 		{
 			"salary_component": "CNPS Retirement Employer",
 			"salary_component_abbr": "CNPSr",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "CNPS Family Allowances",
 			"salary_component_abbr": "FA",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "Work Injury Insurance",
 			"salary_component_abbr": "WII",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "Vocational Training Tax",
 			"salary_component_abbr": "VTT",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
 		{
 			"salary_component": "Housing Construction Fund",
 			"salary_component_abbr": "HCF",
-			"type": "Deduction",
+			"type": "Employer Contribution",
 			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
-			"statistical_component": 1,
-			"do_not_include_in_total": 1,
 			"remove_if_zero_valued": 0,
 			"depends_on_payment_days": 0,
 		},
@@ -2769,7 +2706,7 @@ def setup_workspace_sidebar():
 	template_path = frappe.get_app_path("payroll_africa", "workspace_sidebar", "payroll_africa.json")
 	if not os.path.exists(template_path):
 		return
-	with open(template_path, "r") as f:  # nosemgrep: frappe-security-file-traversal
+	with open(template_path) as f:  # nosemgrep: frappe-security-file-traversal
 		template = json.load(f)
 
 	enabled = get_enabled_countries()

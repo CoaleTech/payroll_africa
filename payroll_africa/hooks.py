@@ -27,11 +27,15 @@ scheduler_events = {
 	],
 }
 
-# Document Events
-doc_events = {
-	"Salary Slip": {
-		"validate": "payroll_africa.engine.hooks.on_salary_slip_validate",
-	}
+# Regional overrides for the HRMS apply_regional_deductions hook.
+from payroll_africa.engine.registry import COUNTRY_MAP
+
+_APPLY_REGIONAL_DEDUCTIONS = "hrms.payroll.doctype.salary_slip.salary_slip.apply_regional_deductions"
+_PAYROLL_AFRICA_DEDUCTIONS = "payroll_africa.engine.salary_slip.apply_regional_deductions"
+
+regional_overrides = {
+	country: {_APPLY_REGIONAL_DEDUCTIONS: _PAYROLL_AFRICA_DEDUCTIONS}
+	for country in COUNTRY_MAP
 }
 
 # Installation

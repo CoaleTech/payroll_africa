@@ -29,7 +29,7 @@ No manual calculation. No spreadsheets. Change a rate in settings, and the next 
 
 ### Key Features
 
-- **Automatic deduction computation** on every Salary Slip save/submit via `doc_events`
+- **Automatic deduction computation** on every Salary Slip save/submit via the HRMS `apply_regional_deductions` regional override
 - **54 countries** — 54 calculators, 54 Settings DocTypes, 54 tax-band child tables
 - **111 reports** — country-specific PAYE returns, social security remittances, and 5 cross-country reports
 - **Country enable/disable** — toggle active countries in a single settings page; sidebar and component dropdowns update automatically (no restart)
@@ -153,7 +153,7 @@ Employee + Salary Structure
   Salary Slip (save/submit)
         |
         v
-  engine/hooks.py → on_salary_slip_validate()
+  HRMS regional override → payroll_africa.engine.salary_slip.apply_regional_deductions()
         |
         v
   registry.py → get_calculator(country)
@@ -162,14 +162,14 @@ Employee + Salary Structure
   calculators/{country}.py → compute(salary_slip)
         |
         v
-  Deduction rows auto-populated with correct amounts
+  Deduction / employer-contribution rows auto-populated with correct amounts
 ```
 
-1. **Employee's country is resolved** from `Employee.payroll_country` (custom field added by the app), falling back to `Company.country`
+1. **Employee's country is resolved** from `Salary Structure Assignment.payroll_country`, falling back to `Employee.payroll_country`, then `Company.country`
 2. **Country calculator is loaded** via the registry, which maps country names to calculator classes
 3. **Calculator reads current rates** from the country's Settings DocType (e.g., `Kenya Payroll Settings`)
-4. **Deductions are computed** using the country's tax bands, ceilings, and formulas
-5. **Salary Slip rows are updated** — existing deduction rows get overwritten; missing components get appended
+4. **Deductions / employer contributions are computed** using the country's tax bands, ceilings, and formulas
+5. **Salary Slip rows are updated** — employee deductions go to `deductions`; employer-only contributions go to `employer_contributions` when the child table exists
 
 If a country's Settings DocType has not been configured, all calculators fall back to hardcoded statutory defaults so payroll works immediately after installation.
 
@@ -390,13 +390,15 @@ payroll_africa/
 │   ├── kenya.py          #   KenyaCalculator — compute() → {component: {amount, is_employer_only}}
 │   └── ...               #   one file per country
 ├── engine/
-│   ├── hooks.py          # Salary Slip.validate doc event handler
+│   ├── hooks.py          # Employee country resolution helper
+│   ├── salary_slip.py    # HRMS apply_regional_deductions override
+│   ├── utils.py          # Effective Salary Structure Assignment helpers
 │   └── registry.py       # COUNTRY_MAP, SETTINGS_MAP — country → calculator + DocType lookup
 ├── boot.py               # extend_bootinfo: injects enabled countries into frappe.boot
 ├── api.py                # 5 whitelisted API endpoints
 ├── tasks.py              # Yearly scheduler: notify_rate_review
 ├── setup.py              # after_install / before_uninstall lifecycle
-├── hooks.py              # doc_events, scheduler_events, fixtures, boot_session, app_include_js/css
+├── hooks.py              # regional_overrides, scheduler_events, fixtures, boot_session, app_include_js/css
 ├── payroll_africa/
 │   ├── doctype/
 │   │   ├── payroll_africa_settings/    # Single DocType — global toggle + 54 country checkboxes

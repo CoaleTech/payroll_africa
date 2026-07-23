@@ -16,7 +16,7 @@ class EritreaCalculator(BaseCalculator):
 
         # National insurance: ~6% employee, ~12% employer (estimated)
         nice_emp = gross * (flt(self.settings.nice_employee_rate or 6) / 100) if gross > 0 else 0
-        nice_empr = gross * (flt(self.settings.nice_employer_rate or 12) / 100) if gross > 0 else 0
+        nice_empr = gross * (flt(self.settings.nice_employer_rate or 6) / 100) if gross > 0 else 0
         results["NICE Employee"] = {"amount": nice_emp, "is_employer_only": False}
         results["NICE Employer"] = {"amount": nice_empr, "is_employer_only": True}
 
@@ -28,13 +28,18 @@ class EritreaCalculator(BaseCalculator):
         return results
 
     def _compute_pit(self, taxable_income):
-        if taxable_income <= 0: return 0
-        annual = taxable_income * 12
-        if annual <= 12000: return 0
+        # Monthly PAYE bands (Inland Revenue / PAYE tables 2024-25)
+        if taxable_income <= 0:
+            return 0
+        if taxable_income <= 800:
+            return 0
         tax = 0
-        for lower, upper, rate in [(12000, 24000, 0.05), (24000, 48000, 0.10),
-                                    (48000, 96000, 0.15), (96000, 0, 0.20)]:
-            if annual <= lower: break
-            amount = min(annual, upper if upper > 0 else annual) - lower
-            if amount > 0: tax += amount * rate
-        return tax / 12
+        for lower, upper, rate in [(800, 1000, 0.05), (1000, 1500, 0.10),
+                                    (1500, 2000, 0.15), (2000, 3000, 0.20),
+                                    (3000, 0, 0.30)]:
+            if taxable_income <= lower:
+                break
+            amount = min(taxable_income, upper if upper > 0 else taxable_income) - lower
+            if amount > 0:
+                tax += amount * rate
+        return tax

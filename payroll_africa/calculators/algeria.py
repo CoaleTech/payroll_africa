@@ -1,10 +1,10 @@
 """Algeria statutory deduction calculator.
 
 Reference: CNAS, DGI
-- CNAS Social Security: Employee 9%, Employer ~25.5%
+- CNAS Social Security: Employee 9%, Employer 26%
   (Health, maternity, work injury, pension, family allowances)
-- PIT (IRG): Progressive 0-35%
-  Annual: 0-240k@0%, 240k-480k@20%, 480k-960k@30%, 960k+@35%
+- PIT (IRG): Progressive 0-35% (6 brackets)
+  Annual: 0-240k@0%, 240k-480k@23%, 480k-960k@27%, 960k-1920k@30%, 1920k-3840k@33%, 3840k+@35%
 - Professional expense deduction: 40% of gross (capped at DZD 24,000/year)
 - Tax year: January 1 - December 31
 """
@@ -27,7 +27,7 @@ class AlgeriaCalculator(BaseCalculator):
         }
 
         # CNAS Employer (~25.5%)
-        cnas_empr = gross * (flt(self.settings.cnas_employer_rate or 25.5) / 100) if gross > 0 else 0
+        cnas_empr = gross * (flt(self.settings.cnas_employer_rate or 26) / 100) if gross > 0 else 0
         results["CNAS Employer"] = {
             "amount": cnas_empr, "is_employer_only": True,
         }
@@ -46,10 +46,12 @@ class AlgeriaCalculator(BaseCalculator):
         """PIT progressive annual bands.
 
         Annual bands (DZD):
-        0 - 240,000      : 0%
-        240,001 - 480,000: 20%
-        480,001 - 960,000: 30%
-        Over 960,000     : 35%
+        0 - 240,000        : 0%
+        240,001 - 480,000  : 23%
+        480,001 - 960,000  : 27%
+        960,001 - 1,920,000: 30%
+        1,920,001 - 3,840,000: 33%
+        Over 3,840,000     : 35%
         """
         if taxable_income <= 0:
             return 0
@@ -59,9 +61,11 @@ class AlgeriaCalculator(BaseCalculator):
 
         tax = 0
         brackets = [
-            (240000, 480000, 0.20),
-            (480000, 960000, 0.30),
-            (960000, 0, 0.35),
+            (240000, 480000, 0.23),
+            (480000, 960000, 0.27),
+            (960000, 1920000, 0.30),
+            (1920000, 3840000, 0.33),
+            (3840000, 0, 0.35),
         ]
         for lower, upper, rate in brackets:
             if annual <= lower:

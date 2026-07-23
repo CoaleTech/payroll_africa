@@ -75,17 +75,16 @@ class ChadCalculator(BaseCalculator):
         if taxable_income <= 0:
             return 0
         annual = taxable_income * 12
-        if annual <= 900000:
+        if annual <= 800000:
             return 0
 
         tax = 0
         brackets = [
-            (900000, 2400000, 0.05),
-            (2400000, 6000000, 0.10),
-            (6000000, 12000000, 0.15),
-            (12000000, 24000000, 0.20),
-            (24000000, 48000000, 0.25),
-            (48000000, 0, 0.30),
+            (800000, 6000000, 0.105),
+            (6000000, 7500000, 0.15),
+            (7500000, 9000000, 0.20),
+            (9000000, 12000000, 0.25),
+            (12000000, 0, 0.30),
         ]
         for lower, upper, rate in brackets:
             if annual <= lower:

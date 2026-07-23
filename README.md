@@ -34,12 +34,12 @@ No manual calculation. No spreadsheets. Change a rate in settings, and the next 
 - **111 reports** — country-specific PAYE returns, social security remittances, and 5 cross-country reports
 - **Country enable/disable** — toggle active countries in a single settings page; sidebar and component dropdowns update automatically (no restart)
 - **Rate change tracking** — update statutory rates with effective dates; audit trail report included
-- **Salary structure templates** — pre-built for the original 21 countries with all statutory components wired up
+- **Salary structure templates & income tax slabs** — pre-built for every country with statutory deductions (44 countries), with all statutory components wired up
 - **Standalone deduction API** — calculate deductions for any country without creating a Salary Slip
 - **Bulk recalculation** — recalculate all enabled countries' draft slips in one API call
 - **Yearly rate-review reminder** — automated email to Payroll Managers each January
 - **What's New dialog** — styled release notes surfaced after app updates
-- **342 unit tests** — all passing, covering every country
+- **347 unit tests** — all passing, covering every country
 
 ---
 
@@ -187,16 +187,15 @@ If a country's Settings DocType has not been configured, all calculators fall ba
 
 Add **Payroll Africa** to your bench from the Frappe Cloud Marketplace. ERPNext and HRMS are provisioned automatically as dependencies.
 
-On installation, the app provisions the following for the **original 21 countries** (Tier 1):
+On installation, the app provisions:
 - Currency records for all required currencies
 - `Employee.payroll_country` custom Link field
 - Country-specific Salary Components for each deduction type
-- Income Tax Slabs with current PAYE/PIT bands
-- Salary Structure templates (e.g., "Kenya Payroll Template")
-- Workspace sidebar with country sections and reports
-- Desktop icon under Frappe HR
+- Configurable Settings DocTypes with current statutory tax bands for all **54 countries**
+- Income Tax Slabs and Salary Structure templates for every country with statutory deductions (**44 countries**)
+- Workspace sidebar with country sections and reports, plus a Desktop icon under Frappe HR
 
-> **Tier 2–4 countries** (the remaining 33) have their calculators, Settings DocTypes, and reports provisioned automatically, but do not include pre-built salary structures or income tax slabs. Enable them in Payroll Africa Settings to activate their calculators.
+> Somalia and South Sudan have no mandatory statutory deductions (documented no-ops), and Zimbabwe uses hardcoded PAYE bands — every other country exposes fully configurable rates and tax bands. Enable or disable any country in Payroll Africa Settings.
 
 ### Uninstall
 
@@ -407,7 +406,7 @@ payroll_africa/
 │   ├── report/                         # 111 reports (5 cross-country + 106 country-specific)
 │   └── workspace/                      # Workspace with shortcuts + links
 ├── workspace_sidebar/    # 139-item sidebar — dynamically filtered by enabled countries
-├── change_log/           # Release notes (v0.0.1)
+├── change_log/           # Release notes (v0.0.3)
 ├── fixtures/             # Custom fields + 21 Income Tax Slabs
 ├── public/
 │   ├── js/
@@ -418,7 +417,7 @@ payroll_africa/
 │       ├── payroll_africa.css
 │       └── payroll_africa_change_log.css
 ├── demo/                 # Demo data setup/teardown scripts
-└── tests/                # 342 unit tests — all 54 countries + API + engine + reports
+└── tests/                # 347 unit tests — all 54 countries + API + engine + reports
 ```
 
 ### Calculator Pattern
@@ -469,7 +468,7 @@ Calculators fall back to hardcoded statutory defaults when the settings DocType 
 7. **Sidebar** — add settings link to `workspace_sidebar/payroll_africa.json`
 8. **Reports** — create tax return and social security remittance reports in `payroll_africa/report/`
 9. **Tests** — add a test class with zero gross, rate spot-check, employer flag, ceiling, and PIT threshold tests
-10. **Migrate** — `bench --site your-site migrate`
+10. **Migrate** — run a site database migration to install the new DocTypes
 
 ---
 
@@ -486,7 +485,7 @@ pre-commit install   # ruff, eslint, prettier, pyupgrade
 bench --site your-site run-tests --app payroll_africa
 ```
 
-**342 tests, all passing.** Coverage spans all 54 countries.
+**347 tests, all passing.** Coverage spans all 54 countries.
 
 #### Test files
 

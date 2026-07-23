@@ -58,7 +58,7 @@ class ZimbabweCalculator(BaseCalculator):
         """NSSA pension: 4.5% of gross, capped.
         Ceiling: ZiG 1,914,360/year = ZiG 159,530/month (as of 2025)
         """
-        ceiling_annual = flt(self.settings.nssa_annual_ceiling or 1914360)
+        ceiling_annual = flt(self.settings.nssa_annual_ceiling or 8400)   # USD 700/mo x 12 (NSSA 2025)
         ceiling_monthly = ceiling_annual / 12
         rate = flt(self.settings.nssa_rate or 4.5) / 100
         base = min(gross, ceiling_monthly) if gross > 0 else 0

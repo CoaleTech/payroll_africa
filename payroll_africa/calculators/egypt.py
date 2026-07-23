@@ -57,7 +57,7 @@ class EgyptCalculator(BaseCalculator):
 
         # 4. Income Tax - progressive
         annual_deductions = (social_insurance_emp + health_emp + martyrs) * 12
-        personal_exemption = flt(self.settings.personal_exemption or 15000)
+        personal_exemption = flt(self.settings.personal_exemption or 20000)   # PwC 2024 (Law 7/2024)
         dependent_deduction = self._get_dependent_deduction()
 
         taxable_annual = max(gross * 12 - annual_deductions - personal_exemption - dependent_deduction, 0)

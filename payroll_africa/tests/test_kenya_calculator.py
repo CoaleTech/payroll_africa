@@ -5,17 +5,17 @@ from payroll_africa.calculators.kenya import KenyaCalculator
 
 
 def make_settings():
-	"""Create mock Kenya Payroll Settings with 2025 rates."""
+	"""Create mock Kenya Payroll Settings (SHIF/AHL/PAYE 2025; NSSF Year 4, Feb 2026)."""
 	settings = MagicMock()
 	settings.shif_rate = 2.75
 	settings.shif_minimum = 300
 	settings.ahl_employee_rate = 1.5
 	settings.ahl_employer_rate = 1.5
 	settings.nssf_tier1_rate = 6
-	settings.nssf_tier1_cap = 1080
-	settings.nssf_tier1_upper_limit = 18000
+	settings.nssf_tier1_cap = 540
+	settings.nssf_tier1_upper_limit = 9000
 	settings.nssf_tier2_rate = 6
-	settings.nssf_tier2_cap = 1080
+	settings.nssf_tier2_cap = 5940
 	settings.nita_amount = 50
 	return settings
 
@@ -43,46 +43,43 @@ class TestKenyaCalculator(unittest.TestCase):
 		self.settings = make_settings()
 		self.calculator = KenyaCalculator(self.settings)
 
-	def test_nssf_below_tier1_limit(self):
-		"""Gross 15,000 - below Tier I upper limit, no Tier II."""
-		slip = make_salary_slip(15000)
+	def test_nssf_tier1_only(self):
+		"""Gross 9,000 - all within Tier I (LEL)."""
+		slip = make_salary_slip(9000)
 		results = self.calculator.compute(slip)
 
-		# Tier I: 15000 * 6% = 900 (below cap of 1080)
-		self.assertEqual(get_amount(results, "NSSF Employee"), 900.0)
-		self.assertEqual(get_amount(results, "NSSF Employer"), 900.0)
+		# Tier I: 9000 * 6% = 540 (at cap); Tier II: 0
+		self.assertEqual(get_amount(results, "NSSF Employee"), 540.0)
+		self.assertEqual(get_amount(results, "NSSF Employer"), 540.0)
 		self.assertFalse(results["NSSF Employee"]["is_employer_only"])
 		self.assertTrue(results["NSSF Employer"]["is_employer_only"])
 
-	def test_nssf_at_tier1_cap(self):
-		"""Gross 18,000 - exactly at Tier I upper limit."""
-		slip = make_salary_slip(18000)
-		results = self.calculator.compute(slip)
-
-		# Tier I: 18000 * 6% = 1080 (at cap)
-		# Tier II: (18000 - 18000) * 6% = 0
-		self.assertEqual(get_amount(results, "NSSF Employee"), 1080.0)
-		self.assertEqual(get_amount(results, "NSSF Employer"), 1080.0)
-
 	def test_nssf_with_tier2(self):
-		"""Gross 30,000 - triggers Tier II."""
+		"""Gross 30,000 - Tier I capped + partial Tier II."""
 		slip = make_salary_slip(30000)
 		results = self.calculator.compute(slip)
 
-		# Tier I: 30000 * 6% = 1800, capped at 1080
-		# Tier II: (30000 - 18000) * 6% = 720 (below cap of 1080)
+		# Tier I: 540 (cap); Tier II: (30000 - 9000) * 6% = 1260 (below cap 5940)
 		self.assertEqual(get_amount(results, "NSSF Employee"), 1800.0)
 		self.assertEqual(get_amount(results, "NSSF Employer"), 1800.0)
 
-	def test_nssf_both_tiers_capped(self):
-		"""Gross 50,000 - both tiers hit their caps."""
+	def test_nssf_mid_band(self):
+		"""Gross 50,000 - Tier II accruing, below its cap."""
 		slip = make_salary_slip(50000)
 		results = self.calculator.compute(slip)
 
-		# Tier I: 50000 * 6% = 3000, capped at 1080
-		# Tier II: (50000 - 18000) * 6% = 1920, capped at 1080
-		self.assertEqual(get_amount(results, "NSSF Employee"), 2160.0)
-		self.assertEqual(get_amount(results, "NSSF Employer"), 2160.0)
+		# Tier I: 540 (cap); Tier II: (50000 - 9000) * 6% = 2460 (below cap 5940)
+		self.assertEqual(get_amount(results, "NSSF Employee"), 3000.0)
+		self.assertEqual(get_amount(results, "NSSF Employer"), 3000.0)
+
+	def test_nssf_both_tiers_capped(self):
+		"""Gross 150,000 - both tiers at their caps (max NSSF 6,480)."""
+		slip = make_salary_slip(150000)
+		results = self.calculator.compute(slip)
+
+		# Tier I: 540 (cap); Tier II: capped at 5940 -> total 6480
+		self.assertEqual(get_amount(results, "NSSF Employee"), 6480.0)
+		self.assertEqual(get_amount(results, "NSSF Employer"), 6480.0)
 
 	def test_shif_normal(self):
 		"""SHIF at 2.75% of gross."""
@@ -131,8 +128,8 @@ class TestKenyaCalculator(unittest.TestCase):
 		slip = make_salary_slip(50000)
 		results = self.calculator.compute(slip)
 
-		# NSSF: Tier I cap 1080 + Tier II (50000-18000)*6%=1920 capped at 1080 = 2160
-		self.assertEqual(get_amount(results, "NSSF Employee"), 2160.0)
+		# NSSF: Tier I 540 (cap) + Tier II (50000-9000)*6%=2460 = 3000
+		self.assertEqual(get_amount(results, "NSSF Employee"), 3000.0)
 
 		# SHIF: 50000 * 2.75% = 1375
 		self.assertEqual(get_amount(results, "SHIF"), 1375.0)
@@ -144,11 +141,11 @@ class TestKenyaCalculator(unittest.TestCase):
 		# NITA: 50
 		self.assertEqual(get_amount(results, "NITA"), 50.0)
 
-		# Total employee deductions (before PAYE): 2160 + 1375 + 750 = 4285
+		# Total employee deductions (before PAYE): 3000 + 1375 + 750 = 5125
 		employee_deductions = sum(
 			v["amount"] for k, v in results.items() if not v["is_employer_only"]
 		)
-		self.assertEqual(round(employee_deductions, 2), 4285.0)
+		self.assertEqual(round(employee_deductions, 2), 5125.0)
 
 	def test_paye_not_computed(self):
 		"""PAYE should NOT be in results (handled by HRMS)."""

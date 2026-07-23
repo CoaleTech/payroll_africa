@@ -48,11 +48,11 @@ class TestAlgeria(unittest.TestCase):
 class TestLibya(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.libya import LibyaCalculator
-        self.calc = LibyaCalculator(MockSettings(ssf_employee_rate=3.75, ssf_employer_rate=14.35))
+        self.calc = LibyaCalculator(MockSettings(ssf_employee_rate=5.125, ssf_employer_rate=14.35))
 
     def test_ssf_solidarity_jehad(self):
         r = self.calc.compute(slip(2000))
-        self.assertAlmostEqual(r["SSF Employee"]["amount"], 75, delta=1)
+        self.assertAlmostEqual(r["SSF Employee"]["amount"], 102.5, delta=1)
         self.assertAlmostEqual(r["Solidarity Fund"]["amount"], 20, delta=1)
         self.assertAlmostEqual(r["Jehad Tax"]["amount"], 60, delta=1)  # 3% of 2000
 
@@ -65,10 +65,10 @@ class TestLibya(unittest.TestCase):
         self.assertNotIn("Jehad Tax", r)
 
     def test_key_components(self):
-        # gross=2000: ssf_emp=3.75%*2000=75, ssf_empr=14.35%*2000=287
+        # gross=2000: ssf_emp=5.125%*2000=102.5, ssf_empr=14.35%*2000=287
         # solidarity=1%*2000=20, jehad=3%*2000=60
         r = self.calc.compute(slip(2000))
-        self.assertAlmostEqual(r["SSF Employee"]["amount"], 75, delta=1)
+        self.assertAlmostEqual(r["SSF Employee"]["amount"], 102.5, delta=1)
         self.assertAlmostEqual(r["SSF Employer"]["amount"], 287, delta=1)
         self.assertAlmostEqual(r["Solidarity Fund"]["amount"], 20, delta=1)
         self.assertAlmostEqual(r["Jehad Tax"]["amount"], 60, delta=1)
@@ -108,7 +108,7 @@ class TestSouthSudan(unittest.TestCase):
 class TestEquatorialGuinea(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.equatorial_guinea import EquatorialGuineaCalculator
-        self.calc = EquatorialGuineaCalculator(MockSettings(minimum_wage=150000, cnss_employee_rate=4.5, cnss_employer_rate=21.5))
+        self.calc = EquatorialGuineaCalculator(MockSettings(minimum_wage=150000, cnss_employee_rate=4.5, cnss_employer_rate=21.5, wpf_employee_rate=0.5, wpf_employer_rate=1))
 
     def test_cnss(self):
         r = self.calc.compute(slip(2000000))
@@ -233,7 +233,7 @@ class TestCAR(unittest.TestCase):
 class TestDjibouti(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.djibouti import DjiboutiCalculator
-        self.calc = DjiboutiCalculator(MockSettings(minimum_wage=45000, cnss_employee_rate=4, cnss_employer_rate=12))
+        self.calc = DjiboutiCalculator(MockSettings(minimum_wage=40000, cnss_ceiling=400000, cnss_employee_rate=2, cnss_employer_rate=5))
 
     def test_cnss(self):
         r = self.calc.compute(slip(400000))
@@ -246,11 +246,10 @@ class TestDjibouti(unittest.TestCase):
         self.assertNotIn("PIT", r)
 
     def test_key_components(self):
-        # ceiling = 45000 * 8 = 360000; gross 200000 below ceiling
-        # CNSS emp: 200000 * 4% = 8,000; empr: 200000 * 12% = 24,000
+        # ceiling 400000; gross 200000 below ceiling; CNSS emp 2%=4000, empr 5%=10000
         r = self.calc.compute(slip(200000))
-        self.assertAlmostEqual(r["CNSS Employee"]["amount"], 8000, delta=1)
-        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 24000, delta=1)
+        self.assertAlmostEqual(r["CNSS Employee"]["amount"], 4000, delta=1)
+        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 10000, delta=1)
 
     def test_employer_only_flag(self):
         r = self.calc.compute(slip(200000))
@@ -258,14 +257,14 @@ class TestDjibouti(unittest.TestCase):
         self.assertTrue(r["CNSS Employer"]["is_employer_only"])
 
     def test_ceiling(self):
-        # gross 500000 > ceiling 360000; CNSS emp = 360000 * 4% = 14,400
+        # gross 500000 > ceiling 400000; CNSS emp = 400000 * 2% = 8,000
         r = self.calc.compute(slip(500000))
-        self.assertAlmostEqual(r["CNSS Employee"]["amount"], 14400, delta=1)
-        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 43200, delta=1)
+        self.assertAlmostEqual(r["CNSS Employee"]["amount"], 8000, delta=1)
+        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 20000, delta=1)
 
     def test_below_pit_threshold(self):
-        # annual PIT threshold 600,000; gross 40000: taxable ~38400, annual ~460800 < 600000
-        r = self.calc.compute(slip(40000))
+        # annual PIT threshold 240,000; gross 20000: taxable ~19600, annual ~235200 < 240000
+        r = self.calc.compute(slip(20000))
         self.assertNotIn("PIT", r)
 
 
@@ -377,8 +376,8 @@ class TestGambia(unittest.TestCase):
         self.assertAlmostEqual(r["SSHFC Employer"]["amount"], 2500, delta=1)
 
     def test_below_pit_threshold(self):
-        # annual PIT threshold 18,000; gross 1000: taxable ~950, annual ~11400 < 18000
-        r = self.calc.compute(slip(1000))
+        # annual PIT threshold 7,500; gross 600: taxable ~570, annual ~6,840 < 7,500
+        r = self.calc.compute(slip(600))
         self.assertNotIn("PIT", r)
 
 
@@ -532,8 +531,8 @@ class TestCaboVerde(unittest.TestCase):
         self.assertAlmostEqual(r["INPS Employer"]["amount"], 12800, delta=1)
 
     def test_below_pit_threshold(self):
-        # annual taxable ~274,500 < 300,000 threshold: no PIT
-        r = self.calc.compute(slip(25000))
+        # annual PIT threshold 220,000; gross 20000: taxable ~18,300, annual ~219,600 < 220,000
+        r = self.calc.compute(slip(20000))
         self.assertNotIn("PIT", r)
 
 

@@ -63,9 +63,9 @@ class TestBotswanaCalculator(unittest.TestCase):
 		results = self.calculator.compute(slip)
 
 		# Taxable = 180,000 - 48,000 = 132,000
-		# 48,000@5% = 2,400 + 48,000@12.5% = 6,000 + 36,000@18.75% = 6,750
-		# Annual tax = 15,150; Monthly = 1,262.50
-		expected_monthly = 15150 / 12
+		# 36000@5%=1800 + 36000@12.5%=4500 + 36000@18.75%=6750 + 24000@25%=6000
+		# Annual tax = 19,050; Monthly = 1,587.50
+		expected_monthly = 19050 / 12
 		self.assertAlmostEqual(results["PAYE"]["amount"], expected_monthly, places=2)
 
 	def test_paye_above_threshold(self):
@@ -74,9 +74,9 @@ class TestBotswanaCalculator(unittest.TestCase):
 		results = self.calculator.compute(slip)
 
 		# Taxable = 300,000 - 48,000 = 252,000
-		# 48,000@5% + 48,000@12.5% + 48,000@18.75% + 48,000@25% + 60,000@26.5%
-		# = 2,400 + 6,000 + 9,000 + 12,000 + 15,900 = 45,300
-		expected_monthly = 45300 / 12
+		# 36000@5% + 36000@12.5% + 36000@18.75% + 36000@25% + 108000@26.5%
+		# = 1,800 + 4,500 + 6,750 + 9,000 + 28,620 = 50,670
+		expected_monthly = 50670 / 12
 		self.assertAlmostEqual(results["PAYE"]["amount"], expected_monthly, places=2)
 
 	def test_zero_salary(self):

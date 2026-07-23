@@ -34,8 +34,14 @@ class TogoCalculator(BaseCalculator):
             "amount": cnss_empr, "is_employer_only": True,
         }
 
+        # 2b. INAM health (employee 5%, employer 5%) - decree 2023-096/PR
+        inam_emp = base * (flt(self.settings.inam_employee_rate or 5) / 100)
+        inam_empr = base * (flt(self.settings.inam_employer_rate or 5) / 100)
+        results["INAM Employee"] = {"amount": inam_emp, "is_employer_only": False}
+        results["INAM Employer"] = {"amount": inam_empr, "is_employer_only": True}
+
         # 3. PIT
-        taxable = max(gross - cnss_emp, 0)
+        taxable = max(gross - cnss_emp - inam_emp, 0)
         pit = self._compute_pit(taxable)
         if pit > 0:
             results["PIT"] = {
@@ -45,34 +51,25 @@ class TogoCalculator(BaseCalculator):
         return results
 
     def _get_contribution_base(self, gross):
-        min_wage = flt(self.settings.minimum_wage or 65000)
-        ceiling = min_wage * 8
+        ceiling = flt(self.settings.cnss_ceiling or 500000)
         return min(gross, ceiling) if gross > 0 else 0
 
     def _compute_pit(self, taxable_income):
-        """PIT progressive (Togo IRPP).
-
-        Annual bands (XOF):
-        0 - 900,000      : 0%
-        900,001 - 2,400,000: 6%
-        2,400,001 - 5,400,000: 15%
-        5,400,001 - 9,600,000: 25%
-        9,600,001 - 18,000,000: 30%
-        Over 18,000,000  : 40%
-        """
+        """IRPP progressive (annual bands, CGI Togo Art.74, 2026)."""
         if taxable_income <= 0:
             return 0
         annual = taxable_income * 12
         if annual <= 900000:
             return 0
-
         tax = 0
         brackets = [
-            (900000, 2400000, 0.06),
-            (2400000, 5400000, 0.15),
-            (5400000, 9600000, 0.25),
-            (9600000, 18000000, 0.30),
-            (18000000, 0, 0.40),
+            (900000, 3000000, 0.03),
+            (3000000, 6000000, 0.10),
+            (6000000, 9000000, 0.15),
+            (9000000, 12000000, 0.20),
+            (12000000, 15000000, 0.25),
+            (15000000, 20000000, 0.30),
+            (20000000, 0, 0.35),
         ]
         for lower, upper, rate in brackets:
             if annual <= lower:

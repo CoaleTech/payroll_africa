@@ -39,11 +39,10 @@ class CaboVerdeCalculator(BaseCalculator):
     def _compute_pit(self, taxable_income):
         if taxable_income <= 0: return 0
         annual = taxable_income * 12
-        if annual <= 300000: return 0
+        if annual <= 220000: return 0
         tax = 0
-        for lower, upper, rate in [(300000, 600000, 0.10), (600000, 1200000, 0.15),
-                                    (1200000, 2400000, 0.20), (2400000, 4800000, 0.25),
-                                    (4800000, 0, 0.275)]:
+        for lower, upper, rate in [(220000, 960000, 0.165), (960000, 1800000, 0.231),
+                                    (1800000, 0, 0.275)]:
             if annual <= lower: break
             amount = min(annual, upper if upper > 0 else annual) - lower
             if amount > 0: tax += amount * rate

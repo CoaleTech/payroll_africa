@@ -19,8 +19,8 @@ class LiberiaCalculator(BaseCalculator):
 
         # 1. NASSCorp
         base = self._get_contribution_base(gross)
-        nassc_emp = base * (flt(self.settings.nasscorp_employee_rate or 3) / 100)
-        nassc_empr = base * (flt(self.settings.nasscorp_employer_rate or 4.75) / 100)
+        nassc_emp = base * (flt(self.settings.nasscorp_employee_rate or 4) / 100)
+        nassc_empr = base * (flt(self.settings.nasscorp_employer_rate or 6) / 100)
         results["NASSCorp Employee"] = {
             "amount": nassc_emp, "is_employer_only": False,
         }
@@ -39,8 +39,10 @@ class LiberiaCalculator(BaseCalculator):
         return results
 
     def _get_contribution_base(self, gross):
-        ceiling = flt(self.settings.nasscorp_ceiling or 500000)
-        return min(gross, ceiling) if gross > 0 else 0
+        ceiling = flt(self.settings.nasscorp_ceiling or 0)
+        if ceiling > 0:
+            return min(gross, ceiling) if gross > 0 else 0
+        return gross if gross > 0 else 0
 
     def _compute_paye(self, taxable_income):
         """PAYE progressive.
@@ -56,16 +58,14 @@ class LiberiaCalculator(BaseCalculator):
         if taxable_income <= 0:
             return 0
         annual = taxable_income * 12
-        if annual <= 72000:
+        if annual <= 70000:
             return 0
 
         tax = 0
         brackets = [
-            (72000, 180000, 0.05),
-            (180000, 360000, 0.10),
-            (360000, 720000, 0.15),
-            (720000, 1200000, 0.20),
-            (1200000, 0, 0.25),
+            (70000, 200000, 0.05),
+            (200000, 800000, 0.15),
+            (800000, 0, 0.25),
         ]
         for lower, upper, rate in brackets:
             if annual <= lower:

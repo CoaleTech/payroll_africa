@@ -56,20 +56,18 @@ class MaliCalculator(BaseCalculator):
         return results
 
     def _get_contribution_base(self, gross):
-        """Get capped contribution base (XOF 8x minimum wage)."""
-        min_wage = flt(self.settings.minimum_wage or 75000)
-        ceiling = min_wage * 8
-        return min(gross, ceiling) if gross > 0 else 0
+        """Mali social contributions are uncapped (INPS on total salary)."""
+        return gross if gross > 0 else 0
 
     def _compute_inss_employee(self, gross):
         """INSS employee: 3.5% of capped base."""
-        rate = flt(self.settings.inss_employee_rate or 3.5) / 100
+        rate = flt(self.settings.inss_employee_rate or 3.6) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_inss_employer(self, gross):
         """INSS employer: 8.4% of capped base."""
-        rate = flt(self.settings.inss_employer_rate or 8.4) / 100
+        rate = flt(self.settings.inss_employer_rate or 5.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
@@ -86,36 +84,41 @@ class MaliCalculator(BaseCalculator):
         return base * rate
 
     def _compute_pit(self, taxable_income):
-        """PIT progressive computation.
-
-        Annual bands (XOF):
-        0 - 650,000     : 0%
-        650,001 - 1,800,000: 13%
-        1,800,001 - 4,500,000: 25%
-        Over 4,500,000  : 35%
-        """
+        """ITS progressive computation (monthly barème, DGI Mali 2025)."""
         if taxable_income <= 0:
             return 0
-
-        annual_income = taxable_income * 12
-        threshold = flt(self.settings.pit_threshold or 650000)
-
-        if annual_income <= threshold:
+        monthly = taxable_income
+        bands = self.settings.pit_bands or []
+        if bands:
+            tax = 0
+            for band in bands:
+                lower = flt(band.from_amount)
+                upper = flt(band.to_amount)
+                rate = flt(band.rate) / 100
+                if monthly <= lower:
+                    break
+                top = upper if upper > 0 else monthly
+                amount = min(monthly, top) - lower
+                if amount > 0:
+                    tax += amount * rate
+            return tax
+        threshold = flt(self.settings.pit_threshold or 175000)
+        if monthly <= threshold:
             return 0
-
         tax = 0
         brackets = [
-            (650000, 1800000, 0.13),
-            (1800000, 4500000, 0.25),
-            (4500000, 0, 0.35),
+            (175000, 600000, 0.05),
+            (600000, 1200000, 0.13),
+            (1200000, 1800000, 0.20),
+            (1800000, 2400000, 0.28),
+            (2400000, 3500000, 0.34),
+            (3500000, 0, 0.40),
         ]
-
         for lower, upper, rate in brackets:
-            if annual_income <= lower:
+            if monthly <= lower:
                 break
-            top = upper if upper > 0 else annual_income
-            amount = min(annual_income, top) - lower
+            top = upper if upper > 0 else monthly
+            amount = min(monthly, top) - lower
             if amount > 0:
                 tax += amount * rate
-
-        return tax / 12
+        return tax

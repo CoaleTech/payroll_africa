@@ -84,28 +84,28 @@ class SenegalCalculator(BaseCalculator):
 
     def _compute_ipres_employee(self, gross):
         """IPRES employee: 5.6% of gross, capped."""
-        ceiling = flt(self.settings.ipres_ceiling or 299000)
+        ceiling = flt(self.settings.ipres_ceiling or 432000)
         rate = flt(self.settings.ipres_employee_rate or 5.6) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_ipres_employer(self, gross):
         """IPRES employer: 8.4% of gross, capped."""
-        ceiling = flt(self.settings.ipres_ceiling or 299000)
+        ceiling = flt(self.settings.ipres_ceiling or 432000)
         rate = flt(self.settings.ipres_employer_rate or 8.4) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_css_employee(self, gross):
         """CSS health employee: ~3% of gross, capped."""
-        ceiling = flt(self.settings.css_ceiling or 299000)
+        ceiling = flt(self.settings.css_ceiling or 432000)
         rate = flt(self.settings.css_employee_rate or 3) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_css_employer(self, gross):
         """CSS health employer: ~5% of gross, capped."""
-        ceiling = flt(self.settings.css_ceiling or 299000)
+        ceiling = flt(self.settings.css_ceiling or 432000)
         rate = flt(self.settings.css_employer_rate or 5) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
@@ -115,7 +115,7 @@ class SenegalCalculator(BaseCalculator):
         if not self.settings.get("amo_applicable"):
             return 0
         rate = flt(self.settings.amo_employee_rate or 3) / 100
-        ceiling = flt(self.settings.amo_ceiling or 299000)
+        ceiling = flt(self.settings.amo_ceiling or 432000)
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
@@ -124,7 +124,7 @@ class SenegalCalculator(BaseCalculator):
         if not self.settings.get("amo_applicable"):
             return 0
         rate = flt(self.settings.amo_employer_rate or 3) / 100
-        ceiling = flt(self.settings.amo_ceiling or 299000)
+        ceiling = flt(self.settings.amo_ceiling or 432000)
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
@@ -188,7 +188,8 @@ class SenegalCalculator(BaseCalculator):
             (1500000, 4000000, 0.30),
             (4000000, 8000000, 0.35),
             (8000000, 13500000, 0.37),
-            (13500000, 0, 0.40),
+            (13500000, 50000000, 0.40),
+            (50000000, 0, 0.43),
         ]
 
         for lower, upper, rate in brackets:

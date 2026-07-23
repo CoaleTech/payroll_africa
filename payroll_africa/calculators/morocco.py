@@ -110,7 +110,7 @@ class MoroccoCalculator(BaseCalculator):
         # Step 5: Family allowance
         num_dependents = flt(self.settings.number_of_dependents or 0)
         max_dependents = flt(self.settings.max_dependents_for_allowance or 6)
-        allowance_per_dependent = flt(self.settings.dependent_allowance or 500)
+        allowance_per_dependent = flt(self.settings.dependent_allowance or 600)   # PwC 2026 (LF 50-25)
         actual_dependents = min(num_dependents, max_dependents)
         family_allowance = actual_dependents * allowance_per_dependent * 12
 
@@ -160,8 +160,8 @@ class MoroccoCalculator(BaseCalculator):
             (40000, 60000, 0.10),
             (60000, 80000, 0.20),
             (80000, 100000, 0.30),
-            (100000, 150000, 0.34),
-            (150000, 0, 0.37),
+            (100000, 180000, 0.34),
+            (180000, 0, 0.37),
         ]
 
         for lower, upper, rate in brackets:

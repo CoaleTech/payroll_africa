@@ -12,7 +12,7 @@ class TestDRCCalculator(unittest.TestCase):
 		self.settings.inss_occupational_risks_rate = 1.5
 		self.settings.inss_family_benefits_rate = 6.5
 		self.settings.inpp_rate = 3
-		self.settings.onem_rate = 0.2
+		self.settings.onem_rate = 0.5  # Ministerial Order, Aug 2025
 		self.calculator = DRCCalculator(self.settings)
 
 	def _make_slip(self, gross):
@@ -48,7 +48,7 @@ class TestDRCCalculator(unittest.TestCase):
 
 	def test_onem(self):
 		result = self.calculator.compute(self._make_slip(2000000))
-		self.assertAlmostEqual(result["ONEM CD"]["amount"], 4000)
+		self.assertAlmostEqual(result["ONEM CD"]["amount"], 10000)
 		self.assertTrue(result["ONEM CD"]["is_employer_only"])
 
 	def test_zero_gross(self):

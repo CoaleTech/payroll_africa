@@ -24,14 +24,14 @@ class LibyaCalculator(BaseCalculator):
         gross = self.get_gross_pay(salary_slip)
         results = {}
 
-        # 1. SSF Employee (3.75%)
-        ssf_emp = gross * (flt(self.settings.ssf_employee_rate or 3.75) / 100) if gross > 0 else 0
+        # 1. SSF Employee (5.125%, PwC 2026)
+        ssf_emp = gross * (flt(self.settings.ssf_employee_rate or 5.125) / 100) if gross > 0 else 0
         results["SSF Employee"] = {
             "amount": ssf_emp, "is_employer_only": False,
         }
 
-        # SSF Employer (11.25%)
-        ssf_empr = gross * (flt(self.settings.ssf_employer_rate or 11.25) / 100) if gross > 0 else 0
+        # SSF Employer (14.35%, Libyan entity, PwC 2026)
+        ssf_empr = gross * (flt(self.settings.ssf_employer_rate or 14.35) / 100) if gross > 0 else 0
         results["SSF Employer"] = {
             "amount": ssf_empr, "is_employer_only": True,
         }

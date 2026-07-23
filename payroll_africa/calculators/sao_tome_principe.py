@@ -14,8 +14,8 @@ class SaoTomePrincipeCalculator(BaseCalculator):
         ceiling = flt(self.settings.inss_ceiling or 500000)
         base = min(gross, ceiling) if gross > 0 else 0
 
-        inss_emp = base * (flt(self.settings.inss_employee_rate or 8) / 100)
-        inss_empr = base * (flt(self.settings.inss_employer_rate or 12) / 100)
+        inss_emp = base * (flt(self.settings.inss_employee_rate or 5) / 100)
+        inss_empr = base * (flt(self.settings.inss_employer_rate or 7) / 100)
         results["INSS Employee"] = {"amount": inss_emp, "is_employer_only": False}
         results["INSS Employer"] = {"amount": inss_empr, "is_employer_only": True}
 

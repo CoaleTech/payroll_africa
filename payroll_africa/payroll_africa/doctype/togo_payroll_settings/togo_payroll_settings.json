@@ -13,6 +13,9 @@
   "cnss_employer_rate",
   "cnss_ceiling",
   "minimum_wage",
+  "inam_section",
+  "inam_employee_rate",
+  "inam_employer_rate",
   "col_break_cnss",
   "pit_section",
   "pit_threshold",
@@ -64,6 +67,23 @@
    "fieldtype": "Currency",
    "label": "Monthly Minimum Wage (XOF)",
    "default": "52955"
+  },
+  {
+   "fieldname": "inam_section",
+   "fieldtype": "Section Break",
+   "label": "INAM (Health)"
+  },
+  {
+   "fieldname": "inam_employee_rate",
+   "fieldtype": "Percent",
+   "label": "INAM Employee Rate",
+   "default": "5"
+  },
+  {
+   "fieldname": "inam_employer_rate",
+   "fieldtype": "Percent",
+   "label": "INAM Employer Rate",
+   "default": "5"
   },
   {
    "fieldname": "col_break_cnss",

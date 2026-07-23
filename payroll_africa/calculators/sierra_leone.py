@@ -39,8 +39,10 @@ class SierraLeoneCalculator(BaseCalculator):
         return results
 
     def _get_contribution_base(self, gross):
-        ceiling = flt(self.settings.nassit_ceiling or 3000000)
-        return min(gross, ceiling) if gross > 0 else 0
+        ceiling = flt(self.settings.nassit_ceiling or 0)
+        if ceiling > 0:
+            return min(gross, ceiling) if gross > 0 else 0
+        return gross if gross > 0 else 0
 
     def _compute_paye(self, taxable_income):
         """PAYE progressive.
@@ -54,14 +56,15 @@ class SierraLeoneCalculator(BaseCalculator):
         if taxable_income <= 0:
             return 0
         annual = taxable_income * 12
-        if annual <= 36000000:
+        if annual <= 6000:
             return 0
 
         tax = 0
         brackets = [
-            (36000000, 60000000, 0.15),
-            (60000000, 120000000, 0.20),
-            (120000000, 0, 0.30),
+            (6000, 12000, 0.15),
+            (12000, 18000, 0.20),
+            (18000, 24000, 0.25),
+            (24000, 0, 0.30),
         ]
         for lower, upper, rate in brackets:
             if annual <= lower:

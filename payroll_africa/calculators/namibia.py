@@ -59,7 +59,7 @@ class NamibiaCalculator(BaseCalculator):
 
     def _compute_ssc(self, gross):
         """SSC: 0.9% of gross, capped at NAD 108,000/year (NAD 9,000/month)."""
-        ceiling_annual = flt(self.settings.ssc_annual_ceiling or 108000)
+        ceiling_annual = flt(self.settings.ssc_annual_ceiling or 132000)   # SSC GN 8461, Mar 2025
         ceiling_monthly = ceiling_annual / 12
         rate = flt(self.settings.ssc_rate or 0.9) / 100
         base = min(gross, ceiling_monthly) if gross > 0 else 0

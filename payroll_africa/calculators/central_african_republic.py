@@ -17,7 +17,7 @@ class CentralAfricanRepublicCalculator(BaseCalculator):
         base = min(gross, ceiling) if gross > 0 else 0
 
         cnss_emp = base * (flt(self.settings.cnss_employee_rate or 3) / 100)
-        cnss_empr = base * (flt(self.settings.cnss_employer_rate or 15) / 100)
+        cnss_empr = base * (flt(self.settings.cnss_employer_rate or 19) / 100)
         results["CNSS Employee"] = {"amount": cnss_emp, "is_employer_only": False}
         results["CNSS Employer"] = {"amount": cnss_empr, "is_employer_only": True}
 

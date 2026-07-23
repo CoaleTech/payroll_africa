@@ -4,10 +4,15 @@
 {%- set country = employee.payroll_country or company.country or "" -%}
 
 <style>
+	/* Payslip print styles. Hardcoded to Espresso's exact palette hexes (gray
+	 * ramp: #f8f8f8/#f3f3f3/#ededed/#e2e2e2/#999999/#7c7c7c/#525252/#383838/#171717)
+	 * and the Inter font, matching the Desk Espresso look. Values are literal (not
+	 * `var(--*)` tokens) because the PDF renderer (wkhtmltopdf) does not resolve
+	 * CSS custom properties; monospace is kept for tabular figures. */
 	.payslip-container {
-		font-family: Arial, Helvetica, sans-serif;
+		font-family: "Inter", Arial, Helvetica, sans-serif;
 		font-size: 10pt;
-		color: #333;
+		color: #383838;
 		line-height: 1.4;
 	}
 	.payslip-container table {
@@ -15,18 +20,18 @@
 		border-collapse: collapse;
 	}
 	.payslip-header {
-		border-bottom: 3px solid #333;
+		border-bottom: 3px solid #383838;
 		padding-bottom: 10px;
 		margin-bottom: 10px;
 	}
 	.payslip-header .company-name {
 		font-size: 16pt;
 		font-weight: bold;
-		color: #222;
+		color: #171717;
 	}
 	.payslip-header .company-details {
 		font-size: 8pt;
-		color: #666;
+		color: #7c7c7c;
 	}
 	.payslip-header .slip-title {
 		font-size: 13pt;
@@ -38,52 +43,52 @@
 	.payslip-header .slip-id {
 		text-align: right;
 		font-size: 9pt;
-		color: #666;
+		color: #7c7c7c;
 	}
 	.info-section {
 		margin: 8px 0;
-		border: 1px solid #ddd;
-		border-radius: 3px;
+		border: 1px solid #e2e2e2;
+		border-radius: 4px;
 	}
 	.info-section td {
 		padding: 4px 8px;
 		font-size: 9pt;
 	}
 	.info-section .label {
-		color: #666;
+		color: #7c7c7c;
 		width: 140px;
 		white-space: nowrap;
 	}
 	.info-section .value {
 		font-weight: 600;
-		color: #222;
+		color: #171717;
 	}
 	.info-section .section-head {
-		background-color: #f5f5f5;
+		background-color: #f3f3f3;
 		font-weight: bold;
 		font-size: 9pt;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 		padding: 5px 8px;
-		color: #444;
-		border-bottom: 1px solid #ddd;
+		color: #525252;
+		border-bottom: 1px solid #e2e2e2;
 	}
 	.earnings-deductions {
 		margin: 8px 0;
 	}
 	.earnings-deductions table {
-		border: 1px solid #ddd;
-		border-radius: 3px;
+		border: 1px solid #e2e2e2;
+		border-radius: 4px;
 	}
 	.earnings-deductions th {
-		background-color: #f5f5f5;
+		background-color: #f3f3f3;
 		font-size: 9pt;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 		padding: 6px 8px;
 		text-align: left;
-		border-bottom: 1px solid #ddd;
-		color: #444;
+		border-bottom: 1px solid #e2e2e2;
+		color: #525252;
 	}
 	.earnings-deductions th.amount-col {
 		text-align: right;
@@ -91,7 +96,7 @@
 	.earnings-deductions td {
 		padding: 4px 8px;
 		font-size: 9pt;
-		border-bottom: 1px solid #eee;
+		border-bottom: 1px solid #ededed;
 	}
 	.earnings-deductions td.amount {
 		text-align: right;
@@ -100,15 +105,15 @@
 	}
 	.earnings-deductions tr.subtotal-row td {
 		font-weight: bold;
-		border-top: 2px solid #999;
-		background-color: #fafafa;
+		border-top: 2px solid #999999;
+		background-color: #f8f8f8;
 		padding: 6px 8px;
 	}
 	.net-pay-section {
 		margin: 10px 0;
-		border: 2px solid #333;
-		border-radius: 3px;
-		background-color: #f9f9f9;
+		border: 2px solid #383838;
+		border-radius: 4px;
+		background-color: #f8f8f8;
 	}
 	.net-pay-section td {
 		padding: 8px 12px;
@@ -123,27 +128,27 @@
 		font-weight: bold;
 		text-align: right;
 		font-family: 'Courier New', monospace;
-		color: #111;
+		color: #171717;
 	}
 	.net-pay-words {
 		font-size: 8pt;
-		color: #666;
+		color: #7c7c7c;
 		font-style: italic;
 		padding: 2px 12px 8px;
 	}
 	.ytd-section {
 		margin-top: 8px;
-		border: 1px solid #ddd;
-		border-radius: 3px;
+		border: 1px solid #e2e2e2;
+		border-radius: 4px;
 	}
 	.ytd-section th {
-		background-color: #f5f5f5;
+		background-color: #f3f3f3;
 		font-size: 8pt;
 		text-transform: uppercase;
 		padding: 5px 8px;
 		text-align: right;
-		border-bottom: 1px solid #ddd;
-		color: #444;
+		border-bottom: 1px solid #e2e2e2;
+		color: #525252;
 	}
 	.ytd-section th:first-child {
 		text-align: left;
@@ -156,14 +161,14 @@
 	}
 	.ytd-section td:first-child {
 		text-align: left;
-		font-family: Arial, Helvetica, sans-serif;
+		font-family: "Inter", Arial, Helvetica, sans-serif;
 	}
 	.footer-note {
 		margin-top: 15px;
 		font-size: 7pt;
-		color: #999;
+		color: #999999;
 		text-align: center;
-		border-top: 1px solid #ddd;
+		border-top: 1px solid #e2e2e2;
 		padding-top: 8px;
 	}
 </style>

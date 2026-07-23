@@ -75,15 +75,15 @@ class TestZimbabwe(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.zimbabwe import ZimbabweCalculator
         self.calc = ZimbabweCalculator(MockSettings(
-            nssa_annual_ceiling=1914360, nssa_rate=4.5,
+            nssa_annual_ceiling=8400, nssa_rate=4.5,
             aids_levy_rate=3, tax_free_threshold=100,
             currency_mode="USD",
         ))
 
     def test_nssa_capped(self):
         r = self.calc.compute(slip(200000))
-        # Ceiling: 1,914,360/12 = 159,530; 4.5% = 7,178.85
-        self.assertAlmostEqual(r["NSSA Pension Employee"]["amount"], 7178.85, delta=1)
+        # Ceiling: 8,400/12 = 700/month; 4.5% = 31.50
+        self.assertAlmostEqual(r["NSSA Pension Employee"]["amount"], 31.50, delta=1)
 
     def test_paye_formula(self):
         r = self.calc.compute(slip(2000))
@@ -204,9 +204,8 @@ class TestMali(unittest.TestCase):
 
     def test_inss_amo(self):
         r = self.calc.compute(slip(1000000))
-        # Ceiling: 8 x 75,000 = 600,000
-        # INSS emp: 3.5% of 600k = 21,000
-        self.assertAlmostEqual(r["INSS Pension Employee"]["amount"], 21000, delta=1)
+        # No ceiling (INPS on total salary); INSS emp: 3.5% of 1,000,000 = 35,000
+        self.assertAlmostEqual(r["INSS Pension Employee"]["amount"], 35000, delta=1)
 
     def test_zero_gross(self):
         r = self.calc.compute(slip(0))
@@ -231,12 +230,11 @@ class TestMali(unittest.TestCase):
 
     def test_ceiling(self):
         r = self.calc.compute(slip(2000000))
-        # Ceiling = 8 x 75,000 = 600,000
-        # INSS emp capped: 3.5% of 600,000 = 21,000
-        self.assertAlmostEqual(r["INSS Pension Employee"]["amount"], 21000, delta=1)
-        # At twice the gross the result should be the same (ceiling applies)
+        # No ceiling; INSS emp: 3.5% of 2,000,000 = 70,000
+        self.assertAlmostEqual(r["INSS Pension Employee"]["amount"], 70000, delta=1)
+        # At twice the gross the result doubles (no ceiling)
         r2 = self.calc.compute(slip(4000000))
-        self.assertAlmostEqual(r2["INSS Pension Employee"]["amount"], 21000, delta=1)
+        self.assertAlmostEqual(r2["INSS Pension Employee"]["amount"], 140000, delta=1)
 
     def test_below_pit_threshold(self):
         # Monthly gross of 50,000 → annual 600,000 ≤ threshold 650,000 → no PIT
@@ -296,9 +294,9 @@ class TestBurkinaFaso(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.burkina_faso import BurkinaFasoCalculator
         self.calc = BurkinaFasoCalculator(MockSettings(
-            minimum_wage=65000, cnss_employee_rate=5.5,
-            cnss_employer_rate=9.5, amo_employee_rate=3,
-            amo_employer_rate=5, pit_threshold=500000,
+            minimum_wage=45000, cnss_ceiling=800000, cnss_employee_rate=8,
+            cnss_employer_rate=17.5, amo_employee_rate=2.5,
+            amo_employer_rate=2.5, pit_threshold=30000,
         ))
 
     def test_cnss_amo_pit(self):
@@ -314,11 +312,9 @@ class TestBurkinaFaso(unittest.TestCase):
 
     def test_key_components(self):
         r = self.calc.compute(slip(400000))
-        # Ceiling: 8 x 65,000 = 520,000; gross 400,000 < ceiling so base = 400,000
-        # CNSS emp: 5.5% of 400,000 = 22,000
-        # AMO emp: 3% of 400,000 = 12,000
-        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 22000, delta=1)
-        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 12000, delta=1)
+        # ceiling 800,000; base 400,000; CNSS emp 8%=32,000; AMO emp 2.5%=10,000
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 32000, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 10000, delta=1)
 
     def test_employer_only_flag(self):
         r = self.calc.compute(slip(300000))
@@ -329,13 +325,12 @@ class TestBurkinaFaso(unittest.TestCase):
 
     def test_ceiling(self):
         r = self.calc.compute(slip(2000000))
-        # Ceiling = 8 x 65,000 = 520,000
-        # CNSS emp capped: 5.5% of 520,000 = 28,600
-        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 28600, delta=1)
+        # Ceiling 800,000; CNSS emp 8% of 800,000 = 64,000
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 64000, delta=1)
 
     def test_below_pit_threshold(self):
-        # Monthly gross 40,000 → annual 480,000 ≤ threshold 500,000 → no PIT
-        r = self.calc.compute(slip(40000))
+        # Monthly IUTS threshold 30,000; gross 30,000: taxable ~26,850 < 30,000 -> no PIT
+        r = self.calc.compute(slip(30000))
         self.assertNotIn("PIT", r)
 
 
@@ -343,16 +338,15 @@ class TestBenin(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.benin import BeninCalculator
         self.calc = BeninCalculator(MockSettings(
-            minimum_wage=65000, cnss_employee_rate=3.6,
-            cnss_employer_rate=6.4, amo_employee_rate=2,
-            amo_employer_rate=4, pit_threshold=500000,
+            minimum_wage=52000, cnss_ceiling=0, cnss_employee_rate=3.6,
+            cnss_employer_rate=15.4, amo_employee_rate=0,
+            amo_employer_rate=0, pit_threshold=60000,
         ))
 
     def test_cnss_amo(self):
         r = self.calc.compute(slip(800000))
-        # Ceiling: 8 x 65,000 = 520,000
-        # CNSS emp: 3.6% of 520k = 18,720
-        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 18720, delta=1)
+        # No ceiling; CNSS emp 3.6% of 800,000 = 28,800
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 28800, delta=1)
 
     def test_zero_gross(self):
         r = self.calc.compute(slip(0))
@@ -362,11 +356,9 @@ class TestBenin(unittest.TestCase):
 
     def test_key_components(self):
         r = self.calc.compute(slip(300000))
-        # Ceiling: 8 x 65,000 = 520,000; gross 300,000 < ceiling so base = 300,000
-        # CNSS emp: 3.6% of 300,000 = 10,800
-        # AMO emp: 2% of 300,000 = 6,000
+        # No ceiling; CNSS emp 3.6% of 300,000 = 10,800; AMO 0 (no separate AMU)
         self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 10800, delta=1)
-        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 6000, delta=1)
+        self.assertAlmostEqual(r["AMO Health Employee"]["amount"], 0, delta=1)
 
     def test_employer_only_flag(self):
         r = self.calc.compute(slip(300000))
@@ -377,9 +369,8 @@ class TestBenin(unittest.TestCase):
 
     def test_ceiling(self):
         r = self.calc.compute(slip(2000000))
-        # Ceiling = 8 x 65,000 = 520,000
-        # CNSS emp capped: 3.6% of 520,000 = 18,720
-        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 18720, delta=1)
+        # No ceiling; CNSS emp 3.6% of 2,000,000 = 72,000
+        self.assertAlmostEqual(r["CNSS Pension Employee"]["amount"], 72000, delta=1)
 
     def test_below_pit_threshold(self):
         # Monthly gross 40,000 → annual 480,000 ≤ threshold 500,000 → no PIT
@@ -414,12 +405,12 @@ class TestAlgeria(unittest.TestCase):
         self.assertFalse(r["CNAS Employee"]["is_employer_only"])
 
     def test_pit_above_threshold(self):
-        # Monthly 25,000 → annual 300,000 > 240,000 threshold → PIT expected
-        # taxable after CNAS: 25,000 - 2,250 = 22,750/month → annual 273,000
-        # tax: (273,000 - 240,000) x 20% = 6,600 annual → 550 monthly
+        # Monthly 25,000 -> annual 300,000 > 240,000 threshold -> PIT expected
+        # taxable after CNAS: 22,750/mo -> annual 273,000
+        # tax: (273,000 - 240,000) x 23% = 7,590 annual -> 632.5 monthly
         r = self.calc.compute(slip(25000))
         self.assertIn("PIT", r)
-        self.assertAlmostEqual(r["PIT"]["amount"], 550, delta=5)
+        self.assertAlmostEqual(r["PIT"]["amount"], 632.5, delta=5)
 
     def test_below_pit_threshold(self):
         # Monthly 19,000 → after CNAS 17,290 → annual 207,480 ≤ 240,000 → no PIT

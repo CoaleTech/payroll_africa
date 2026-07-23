@@ -9,7 +9,7 @@ class TestZambiaCalculator(unittest.TestCase):
 		self.settings = MagicMock()
 		self.settings.napsa_employee_rate = 5
 		self.settings.napsa_employer_rate = 5
-		self.settings.napsa_cap = 8541
+		self.settings.napsa_cap = 37236
 		self.settings.nhima_employee_rate = 1
 		self.settings.nhima_employer_rate = 1
 		self.calculator = ZambiaCalculator(self.settings)
@@ -26,13 +26,13 @@ class TestZambiaCalculator(unittest.TestCase):
 		self.assertFalse(result["NAPSA Employee ZM"]["is_employer_only"])
 
 	def test_napsa_employee_over_cap(self):
-		result = self.calculator.compute(self._make_slip(20000))
-		self.assertAlmostEqual(result["NAPSA Employee ZM"]["amount"], 427.05)  # 8541 * 5%
+		result = self.calculator.compute(self._make_slip(50000))
+		self.assertAlmostEqual(result["NAPSA Employee ZM"]["amount"], 1861.80)  # 37236 * 5%
 		self.assertFalse(result["NAPSA Employee ZM"]["is_employer_only"])
 
 	def test_napsa_employer_over_cap(self):
-		result = self.calculator.compute(self._make_slip(20000))
-		self.assertAlmostEqual(result["NAPSA Employer ZM"]["amount"], 427.05)  # 8541 * 5%
+		result = self.calculator.compute(self._make_slip(50000))
+		self.assertAlmostEqual(result["NAPSA Employer ZM"]["amount"], 1861.80)  # 37236 * 5%
 		self.assertTrue(result["NAPSA Employer ZM"]["is_employer_only"])
 
 	def test_nhima_employee_no_cap(self):

@@ -38,10 +38,10 @@ class MauritaniaCalculator(BaseCalculator):
     def _compute_pit(self, taxable_income):
         if taxable_income <= 0: return 0
         annual = taxable_income * 12
-        if annual <= 120000: return 0
+        if annual <= 72000: return 0
         tax = 0
-        for lower, upper, rate in [(120000, 360000, 0.15), (360000, 840000, 0.25),
-                                    (840000, 1800000, 0.35), (1800000, 0, 0.40)]:
+        for lower, upper, rate in [(72000, 108000, 0.15), (108000, 252000, 0.25),
+                                    (252000, 0, 0.40)]:
             if annual <= lower: break
             amount = min(annual, upper if upper > 0 else annual) - lower
             if amount > 0: tax += amount * rate

@@ -2,7 +2,7 @@
 
 Reference: DGI (Direction Generale des Impots), CNSS
 - IRPP: Progressive 0-40% (8 brackets, effective Jan 1, 2025)
-- CNSS Employee: 9.18% of gross salary
+- CNSS Employee: 9.68% of gross salary (LF2025, Law 48/2024)
 - CNSS Employer: 17.07% (16.57% for wholly exporting industrial companies)
 - Social Solidarity Contribution (SSC): 0.5% (2023-2026)
 - Professional expense deduction: 10% of gross (capped at TND 2,000/year)
@@ -51,8 +51,8 @@ class TunisiaCalculator(BaseCalculator):
         return results
 
     def _compute_cnss_employee(self, gross):
-        """CNSS employee: 9.18% of gross salary."""
-        rate = flt(self.settings.cnss_employee_rate or 9.18) / 100
+        """CNSS employee: 9.68% of gross salary (LF2025, Law 48/2024)."""
+        rate = flt(self.settings.cnss_employee_rate or 9.68) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_cnss_employer(self, gross):

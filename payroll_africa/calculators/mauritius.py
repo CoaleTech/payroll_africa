@@ -39,12 +39,20 @@ class MauritiusCalculator(BaseCalculator):
             "is_employer_only": True,
         }
 
-        # 2. CSG - Employee (1.5%)
+        # 2. CSG - Employee (tiered: 1.5% <= 50k, 3% > 50k)
         csg = self._compute_csg(gross)
         if csg > 0:
             results["CSG"] = {
                 "amount": csg,
                 "is_employer_only": False,
+            }
+
+        # 2b. CSG - Employer (tiered: 3% <= 50k, 6% > 50k)
+        csg_empr = self._compute_csg_employer(gross)
+        if csg_empr > 0:
+            results["CSG Employer"] = {
+                "amount": csg_empr,
+                "is_employer_only": True,
             }
 
         # 3. HRDC Levy - Employer (1.5%)
@@ -83,15 +91,32 @@ class MauritiusCalculator(BaseCalculator):
 
     def _compute_nsf(self, gross, employer=False):
         """NSF: Employee 1%, Employer 2.5%, capped at MUR 25,475/month."""
-        ceiling = flt(self.settings.nsf_ceiling or 25475)
+        ceiling = flt(self.settings.nsf_ceiling or 28570)
         rate = flt(self.settings.nsf_employer_rate or 2.5) / 100 if employer else flt(self.settings.nsf_employee_rate or 1) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_csg(self, gross):
-        """CSG: 1.5% of gross (employee only)."""
-        rate = flt(self.settings.csg_rate or 1.5) / 100
-        return gross * rate if gross > 0 else 0
+        """CSG Employee: 1.5% up to MUR 50,000/month, 3% above (PwC/MRA)."""
+        if gross <= 0:
+            return 0
+        threshold = flt(self.settings.get("csg_high_threshold") or 50000)
+        if gross <= threshold:
+            rate = flt(self.settings.csg_rate or 1.5) / 100
+        else:
+            rate = flt(self.settings.get("csg_employee_high_rate") or 3) / 100
+        return gross * rate
+
+    def _compute_csg_employer(self, gross):
+        """CSG Employer: 3% up to MUR 50,000/month, 6% above (PwC/MRA)."""
+        if gross <= 0:
+            return 0
+        threshold = flt(self.settings.get("csg_high_threshold") or 50000)
+        if gross <= threshold:
+            rate = flt(self.settings.get("csg_employer_rate") or 3) / 100
+        else:
+            rate = flt(self.settings.get("csg_employer_high_rate") or 6) / 100
+        return gross * rate
 
     def _compute_hrdc(self, gross):
         """HRDC Levy: 1.5% of gross (employer only, no cap)."""
@@ -102,7 +127,7 @@ class MauritiusCalculator(BaseCalculator):
         """PRGF: 2.5% of gross (employer only, for qualifying employees)."""
         if not self.settings.get("prgf_applicable"):
             return 0
-        rate = flt(self.settings.prgf_rate or 2.5) / 100
+        rate = flt(self.settings.prgf_rate or 4.5) / 100
         # Exempt if basic > MUR 200,000/month
         basic = gross  # Use gross as proxy for basic pay
         if basic > flt(self.settings.prgf_exemption_threshold or 200000):

@@ -28,10 +28,10 @@ class GambiaCalculator(BaseCalculator):
     def _compute_pit(self, taxable_income):
         if taxable_income <= 0: return 0
         annual = taxable_income * 12
-        if annual <= 18000: return 0
+        if annual <= 7500: return 0
         tax = 0
-        for lower, upper, rate in [(18000, 28000, 0.05), (28000, 38000, 0.10),
-                                    (38000, 48000, 0.15), (48000, 58000, 0.20), (58000, 0, 0.25)]:
+        for lower, upper, rate in [(7500, 17500, 0.10), (17500, 27500, 0.15),
+                                    (27500, 37500, 0.20), (37500, 47500, 0.25), (47500, 0, 0.35)]:
             if annual <= lower: break
             amount = min(annual, upper if upper > 0 else annual) - lower
             if amount > 0: tax += amount * rate

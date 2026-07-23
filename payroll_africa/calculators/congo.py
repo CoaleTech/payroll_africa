@@ -21,8 +21,8 @@ class CongoCalculator(BaseCalculator):
         results = {}
 
         # 1. CNSS - Employer only (16%)
-        cnss_rate = flt(self.settings.cnss_rate or 16) / 100
-        cnss_ceiling = flt(self.settings.cnss_ceiling or 1500000)
+        cnss_rate = flt(self.settings.cnss_rate or 20.285) / 100
+        cnss_ceiling = flt(self.settings.cnss_ceiling or 1200000)
         cnss_base = min(gross, cnss_ceiling) if gross > 0 else 0
         cnss_empr = cnss_base * cnss_rate
         results["CNSS Employer"] = {
@@ -37,12 +37,12 @@ class CongoCalculator(BaseCalculator):
             "is_employer_only": False,
         }
 
-        # 3. CNAMGS Health - Employer only (4.1%)
-        cnamgs_rate = flt(self.settings.cnamgs_rate or 4.1) / 100
-        cnamgs_base = min(gross, cnss_ceiling) if gross > 0 else 0
-        cnamgs_empr = cnamgs_base * cnamgs_rate
-        results["CNAMGS Health Employer"] = {
-            "amount": cnamgs_empr,
+        # 3. CAMU Health - Employer only (0.5% on income > 500,000)
+        camu_rate = flt(self.settings.cnamgs_rate or 0.5) / 100
+        camu_base = max(gross - 500000, 0) if gross > 0 else 0
+        camu_empr = camu_base * camu_rate
+        results["CAMU Health Employer"] = {
+            "amount": camu_empr,
             "is_employer_only": True,
         }
 

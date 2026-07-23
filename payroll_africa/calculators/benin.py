@@ -56,9 +56,10 @@ class BeninCalculator(BaseCalculator):
 
     def _get_contribution_base(self, gross):
         """Get capped contribution base."""
-        min_wage = flt(self.settings.minimum_wage or 65000)
-        ceiling = min_wage * 8
-        return min(gross, ceiling) if gross > 0 else 0
+        ceiling = flt(self.settings.cnss_ceiling or 0)
+        if ceiling > 0:
+            return min(gross, ceiling) if gross > 0 else 0
+        return gross if gross > 0 else 0
 
     def _compute_cnss_employee(self, gross):
         rate = flt(self.settings.cnss_employee_rate or 3.6) / 100
@@ -66,57 +67,40 @@ class BeninCalculator(BaseCalculator):
         return base * rate
 
     def _compute_cnss_employer(self, gross):
-        rate = flt(self.settings.cnss_employer_rate or 6.4) / 100
+        rate = flt(self.settings.cnss_employer_rate or 15.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employee(self, gross):
-        rate = flt(self.settings.amo_employee_rate or 2) / 100
+        rate = flt(self.settings.amo_employee_rate or 0) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employer(self, gross):
-        rate = flt(self.settings.amo_employer_rate or 4) / 100
+        rate = flt(self.settings.amo_employer_rate or 0) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_pit(self, taxable_income):
-        """PIT progressive.
-
-        Annual bands (XOF):
-        0 - 500,000     : 0%
-        500,001 - 1,300,000: 10%
-        1,300,001 - 3,000,000: 15%
-        3,000,001 - 5,000,000: 20%
-        5,000,001 - 8,000,000: 25%
-        8,000,001 - 12,000,000: 30%
-        Over 12,000,000 : 35%
-        """
+        """ITS progressive (monthly bands, CGI Benin 2026)."""
         if taxable_income <= 0:
             return 0
-
-        annual_income = taxable_income * 12
-        threshold = flt(self.settings.pit_threshold or 500000)
-
-        if annual_income <= threshold:
+        threshold = flt(self.settings.pit_threshold or 60000)
+        if taxable_income <= threshold:
             return 0
-
         tax = 0
         brackets = [
-            (500000, 1300000, 0.10),
-            (1300000, 3000000, 0.15),
-            (3000000, 5000000, 0.20),
-            (5000000, 8000000, 0.25),
-            (8000000, 12000000, 0.30),
-            (12000000, 0, 0.35),
+            (60000, 150000, 0.10),
+            (150000, 250000, 0.15),
+            (250000, 500000, 0.19),
+            (500000, 1000000, 0.30),
+            (1000000, 0, 0.40),
         ]
-
         for lower, upper, rate in brackets:
-            if annual_income <= lower:
+            if taxable_income <= lower:
                 break
-            top = upper if upper > 0 else annual_income
-            amount = min(annual_income, top) - lower
+            top = upper if upper > 0 else taxable_income
+            amount = min(taxable_income, top) - lower
             if amount > 0:
                 tax += amount * rate
-
-        return tax / 12
+        return tax

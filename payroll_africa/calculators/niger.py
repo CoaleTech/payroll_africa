@@ -67,7 +67,7 @@ class NigerCalculator(BaseCalculator):
         return base * rate
 
     def _compute_cnss_employer(self, gross):
-        rate = flt(self.settings.cnss_employer_rate or 8.5) / 100
+        rate = flt(self.settings.cnss_employer_rate or 16.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
@@ -82,36 +82,43 @@ class NigerCalculator(BaseCalculator):
         return base * rate
 
     def _compute_pit(self, taxable_income):
-        """PIT progressive.
-
-        Annual bands (XOF):
-        0 - 500,000     : 0%
-        500,001 - 1,600,000: 12%
-        1,600,001 - 4,000,000: 24%
-        Over 4,000,000  : 35%
-        """
+        """ITS progressive computation (monthly barème, Ordonnance N°2025-44)."""
         if taxable_income <= 0:
             return 0
-
-        annual_income = taxable_income * 12
-        threshold = flt(self.settings.pit_threshold or 500000)
-
-        if annual_income <= threshold:
+        monthly = taxable_income
+        bands = self.settings.pit_bands or []
+        if bands:
+            tax = 0
+            for band in bands:
+                lower = flt(band.from_amount)
+                upper = flt(band.to_amount)
+                rate = flt(band.rate) / 100
+                if monthly <= lower:
+                    break
+                top = upper if upper > 0 else monthly
+                amount = min(monthly, top) - lower
+                if amount > 0:
+                    tax += amount * rate
+            return tax
+        threshold = flt(self.settings.pit_threshold or 25000)
+        if monthly <= threshold:
             return 0
-
         tax = 0
         brackets = [
-            (500000, 1600000, 0.12),
-            (1600000, 4000000, 0.24),
-            (4000000, 0, 0.35),
+            (25000, 50000, 0.02),
+            (50000, 100000, 0.06),
+            (100000, 150000, 0.13),
+            (150000, 300000, 0.25),
+            (300000, 400000, 0.30),
+            (400000, 700000, 0.32),
+            (700000, 1000000, 0.34),
+            (1000000, 0, 0.35),
         ]
-
         for lower, upper, rate in brackets:
-            if annual_income <= lower:
+            if monthly <= lower:
                 break
-            top = upper if upper > 0 else annual_income
-            amount = min(annual_income, top) - lower
+            top = upper if upper > 0 else monthly
+            amount = min(monthly, top) - lower
             if amount > 0:
                 tax += amount * rate
-
-        return tax / 12
+        return tax

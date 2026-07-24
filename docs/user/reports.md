@@ -33,6 +33,10 @@ Each enabled country provides its own statutory returns and remittance reports. 
 2. Set the filters — typically **Company** and a **date range** (and country, for cross-country reports).
 3. The report renders once Salary Slips exist in the selected period. Export to Excel or CSV from the report menu.
 
+**Example — Statutory Deductions Summary**, filtered to a company and month. Columns are generated dynamically per statutory component, with a totals row:
+
+![Statutory Deductions Summary report](screenshots/report-statutory-summary.png)
+
 ## Next Steps
 
 Continue to the [API Reference](api.md).

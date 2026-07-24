@@ -30,6 +30,10 @@ For example, Kenya's PAYE bands and NSSF tiers, SHIF rate, Housing Levy, NITA, a
 | Mauritius | NSF rate and ceiling, CSG rate, HRDC rate, PRGF toggle, Fair Share Contribution toggle |
 | Cameroon | CNPS rates, family allowances, work-injury risk class, CFC housing, FNE rate, PIT abatement, CRTV bands, Taxe Communale bands |
 
+Each country exposes only the fields that apply to it. **South Africa Payroll Settings**, for instance, uses age-based tax thresholds and rebates (Primary/Secondary/Tertiary) and a medical tax credit rather than a personal relief:
+
+![South Africa Payroll Settings](screenshots/south-africa-payroll-settings.png)
+
 ## Fallback defaults
 
 If a country's Settings page has not been customized, its calculator falls back to current statutory defaults, so payroll works correctly immediately after installation. Configure the page to override those defaults with your organization's exact figures.

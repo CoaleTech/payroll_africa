@@ -20,6 +20,10 @@ Set the **Payroll Country** field on the Employee (or on the Salary Structure As
 
 You do not need to add statutory components manually; the calculator appends any missing ones during Salary Slip validation.
 
+The pre-built template already contains the country's statutory components. For example, the **Kenya Payroll Template** carries Basic Salary as an earning plus PAYE, NSSF Employee, SHIF, and Housing Levy as deductions:
+
+![Kenya Payroll Template — earnings and deductions](screenshots/salary-structure-template.png)
+
 ## Create a Salary Slip
 
 Create and save a Salary Slip for the employee as usual. Payroll Africa runs during computation and populates:

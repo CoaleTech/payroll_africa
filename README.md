@@ -19,6 +19,14 @@
   <a href="#contributing">Contributing</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/CoaleTech/payroll_africa/actions/workflows/ci.yml"><img src="https://github.com/CoaleTech/payroll_africa/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/tests-347%20passing-brightgreen" alt="Tests" />
+  <img src="https://img.shields.io/badge/countries-54-blue" alt="Countries" />
+  <img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License" />
+  <img src="https://img.shields.io/badge/Frappe-v15%20%7C%20v16-0089FF" alt="Frappe" />
+</p>
+
 ---
 
 ## Overview

@@ -17,3 +17,8 @@ venv/
 node_modules/
 .claude-flow/
 .claude/
+
+# Internal working drafts (not part of the published app)
+docs/community/
+docs/upstream/
+INCUBATOR_PROPOSAL.md

@@ -1,8 +1,8 @@
 app_name = "payroll_africa"
 app_title = "Payroll Africa"
-app_publisher = "Kimco"
+app_publisher = "CoaleTech"
 app_description = "Statutory payroll deduction automation for African countries"
-app_email = "dev@kimco.co.ke"
+app_email = "support@coale.tech"
 app_license = "gpl-3.0"
 
 required_apps = ["frappe/erpnext", "frappe/hrms"]

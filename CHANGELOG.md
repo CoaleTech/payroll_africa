@@ -7,21 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-07-24
+
+Automatic country setup, complete documentation, and a demo video.
+
 ### Added
+- Automatic country detection — enables the country of each Company automatically
+  on install and on Company creation (additive; never disables manual choices),
+  including Cape Verde/Swaziland country-name aliases.
 - Comprehensive user documentation (`docs/user/`) with screenshots: introduction,
   installation, getting started, country settings, running payroll, reports, API
   reference, and adding a new country.
 - Single-file comprehensive manual: `docs/payroll-africa-documentation.html` and
-  an 8-page `docs/payroll-africa-documentation.pdf` with embedded screenshots.
+  `docs/payroll-africa-documentation.pdf` with embedded screenshots.
+- UI demo video (`docs/media/payroll-africa-demo.mp4` and `.webm`) — a full
+  workflow walkthrough.
 - GitHub Actions CI (server tests on Frappe v16) and pre-commit linter workflows.
 - README status badges (CI, tests, countries, license, Frappe version).
-- Automatic country detection — Payroll Africa now enables the country of each
-  Company automatically on install and on Company creation (additive; never
-  disables manual choices), including Cape Verde/Swaziland country-name aliases.
 
 ### Changed
 - Aligned publisher, author, and source copyright to CoaleTech
   (`support@coale.tech`) across `pyproject.toml`, `hooks.py`, and source headers.
+- README now uses the green Africa desk icon instead of the line-art sketch.
 
 ## [0.0.3] - 2026-07-22
 
@@ -99,7 +106,8 @@ Initial launch — statutory payroll deduction automation for 11 African countri
 - Workspace sidebar and salary-component dropdowns dynamically filtered to
   enabled countries.
 
-[Unreleased]: https://github.com/CoaleTech/payroll_africa/compare/v0.0.3...HEAD
+[Unreleased]: https://github.com/CoaleTech/payroll_africa/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/CoaleTech/payroll_africa/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/CoaleTech/payroll_africa/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/CoaleTech/payroll_africa/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/CoaleTech/payroll_africa/releases/tag/v0.0.1

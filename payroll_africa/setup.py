@@ -248,9 +248,78 @@ def _run_setup():
 	setup_desktop_icon()
 
 
+# Frappe Country docnames that differ from COUNTRY_FIELD_MAP keys.
+_COUNTRY_ALIASES = {
+	"Cape Verde": "Cabo Verde",
+	"Swaziland": "Eswatini",
+}
+
+
+def _clear_boot_cache():
+	from payroll_africa.boot import BOOT_CACHE_KEY
+
+	frappe.cache.delete_value(BOOT_CACHE_KEY)
+
+
+def _enable_field_for_country(country):
+	"""Return the Payroll Africa Settings enable field for a Company country, or None."""
+	from payroll_africa.boot import COUNTRY_FIELD_MAP
+
+	if not country:
+		return None
+	key = country if country in COUNTRY_FIELD_MAP else _COUNTRY_ALIASES.get(country)
+	return COUNTRY_FIELD_MAP.get(key) if key else None
+
+
+def _apply_enable_fields(fields):
+	"""Enable the given settings fields (additive). Return count newly enabled."""
+	if not fields:
+		return 0
+	settings = frappe.get_doc("Payroll Africa Settings")
+	changed = False
+	if not settings.enabled:
+		settings.enabled = 1
+		changed = True
+	newly = 0
+	for field in fields:
+		if not settings.get(field):
+			settings.set(field, 1)
+			newly += 1
+			changed = True
+	if changed:
+		settings.save(ignore_permissions=True)
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit
+		_clear_boot_cache()
+	return newly
+
+
+def auto_enable_from_companies():
+	"""Enable Payroll Africa countries that match existing Company countries.
+
+	Additive only: turns matching countries on, never disables any. Enables the
+	master switch if at least one company maps to a supported country.
+	"""
+	fields = set()
+	for country in frappe.get_all("Company", pluck="country"):
+		field = _enable_field_for_country(country)
+		if field:
+			fields.add(field)
+	return {"newly_enabled": _apply_enable_fields(fields)}
+
+
+def enable_country_on_company_insert(doc, method=None):
+	"""Company after_insert hook: auto-enable the new company's country (additive)."""
+	if not frappe.db.exists("DocType", "Payroll Africa Settings"):
+		return
+	field = _enable_field_for_country(getattr(doc, "country", None))
+	if field:
+		_apply_enable_fields({field})
+
+
 def after_install():
 	"""Run after app installation."""
 	_run_setup()
+	auto_enable_from_companies()
 
 
 def after_migrate():

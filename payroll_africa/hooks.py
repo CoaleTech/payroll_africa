@@ -43,6 +43,12 @@ after_install = "payroll_africa.setup.after_install"
 after_migrate = "payroll_africa.setup.after_migrate"
 before_uninstall = "payroll_africa.setup.before_uninstall"
 
+doc_events = {
+	"Company": {
+		"after_insert": "payroll_africa.setup.enable_country_on_company_insert",
+	},
+}
+
 fixtures = [
 	{
 		"doctype": "Income Tax Slab",

@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   an 8-page `docs/payroll-africa-documentation.pdf` with embedded screenshots.
 - GitHub Actions CI (server tests on Frappe v16) and pre-commit linter workflows.
 - README status badges (CI, tests, countries, license, Frappe version).
+- Automatic country detection — Payroll Africa now enables the country of each
+  Company automatically on install and on Company creation (additive; never
+  disables manual choices), including Cape Verde/Swaziland country-name aliases.
 
 ### Changed
 - Aligned publisher, author, and source copyright to CoaleTech

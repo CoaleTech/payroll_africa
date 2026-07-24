@@ -8,6 +8,15 @@ From the **Payroll Africa** workspace, click **Payroll Africa Settings** (under 
 
 ![Payroll Africa Settings](screenshots/payroll-africa-settings.png)
 
+## Automatic country detection
+
+Payroll Africa can enable countries for you automatically, so you often don't need to tick them by hand:
+
+- **On installation**, it scans your existing Companies and enables the country of each one — a Company based in Kenya enables Kenya, a Company in Nigeria enables Nigeria, and so on.
+- **When you add a new Company**, its country is enabled automatically.
+
+This is **additive only**: it never disables a country you have turned off, and it does not change your selections when you run `bench migrate`. In the screenshot above, the ticked countries under **Enabled Countries** reflect the companies configured on this site, plus any manual choices. You can always override the result in the next section.
+
 ## Enable the app
 
 Tick **Enable Payroll Africa** at the top of the page. This is the master switch — when it is off, no statutory deductions are computed for any country.

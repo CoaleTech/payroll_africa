@@ -20,6 +20,7 @@ Payroll teams across Africa maintain 54 different statutory rulebooks by hand, a
 - **54 countries** — a dedicated calculator, configurable Settings page, and tax-band table for each.
 - **111 reports** — country-specific PAYE returns and social-security remittances, plus cross-country summaries.
 - **Country enable/disable** — toggle active countries from a single settings page; the sidebar and salary-component dropdowns update automatically.
+- **Automatic country detection** — countries are enabled automatically from your Company records, on install and whenever a Company is added.
 - **Rate-change tracking** — update statutory rates with effective dates, backed by an audit-trail report.
 - **Salary structure templates & income tax slabs** — pre-built for every country with statutory deductions.
 - **Standalone deduction API** — calculate deductions for any country without creating a Salary Slip.

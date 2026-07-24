@@ -27,9 +27,15 @@ Create and save a Salary Slip for the employee as usual. Payroll Africa runs dur
 - **Employee deductions** in the Salary Slip `Deductions` table.
 - **Employer-only contributions** in the `Employer Contributions` table (when present).
 
-The example below shows the same employee before and after Payroll Africa is active. With the app enabled, the Kenya statutory rows — NSSF Employee, SHIF, Housing Levy, NSSF Employer, Employer Housing Levy, and NITA — are appended automatically, and the totals update.
+The example below shows the same employee before and after Payroll Africa is active.
 
-![Salary Slip with statutory deductions](screenshots/salary-slip-deductions.png)
+**Before** — with Payroll Africa disabled, the Salary Slip shows only structure components; the Deductions table is empty.
+
+![Salary Slip before — no statutory deductions](screenshots/salary-slip-before.png)
+
+**After** — with Payroll Africa enabled, the Kenya statutory rows — NSSF Employee, SHIF, Housing Levy, NSSF Employer, Employer Housing Levy, and NITA — are appended automatically, and the totals update.
+
+![Salary Slip after — statutory deductions appended](screenshots/salary-slip-deductions.png)
 
 ## Bulk recalculation
 

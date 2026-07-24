@@ -2,6 +2,13 @@
 
 Statutory payroll deduction automation for all 54 African countries, built on ERPNext and Frappe HR.
 
+## Demo Video
+
+A ~1.5-minute walkthrough of the full workflow — workspace, settings, country configuration, salary structure, a Salary Slip with statutory deductions computed automatically, and a statutory report:
+
+- [Watch (MP4)](../media/payroll-africa-demo.mp4)
+- [Watch (WebM)](../media/payroll-africa-demo.webm)
+
 ## Contents
 
 1. **[Introduction](introduction.md)** — what Payroll Africa is, key features, and supported regions.

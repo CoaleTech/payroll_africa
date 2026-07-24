@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Comprehensive user documentation (`docs/user/`) with screenshots: introduction,
+  installation, getting started, country settings, running payroll, reports, API
+  reference, and adding a new country.
+- Single-file comprehensive manual: `docs/payroll-africa-documentation.html` and
+  an 8-page `docs/payroll-africa-documentation.pdf` with embedded screenshots.
+- GitHub Actions CI (server tests on Frappe v16) and pre-commit linter workflows.
+- README status badges (CI, tests, countries, license, Frappe version).
+
+### Changed
+- Aligned publisher, author, and source copyright to CoaleTech
+  (`support@coale.tech`) across `pyproject.toml`, `hooks.py`, and source headers.
+
 ## [0.0.3] - 2026-07-22
 
 Full 54-country coverage — every country now ships with configurable statutory

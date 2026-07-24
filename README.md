@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="payroll_africa/public/icons/africa.svg" alt="Payroll Africa" width="80" />
+  <img src="payroll_africa/public/icons/desktop_icons/solid/payroll_africa.svg" alt="Payroll Africa" width="80" />
 </p>
 
 <h1 align="center">Payroll Africa</h1>

@@ -40,6 +40,16 @@ class KenyaCalculator(BaseCalculator):
 
 		return results
 
+	def post_apply(self, salary_slip):
+		"""HRMS computes PAYE before the statutory rows above are set, so it taxes
+		pre-deduction pay. Rerun it now that NSSF/SHIF/AHL are on the slip, then
+		subtract personal relief (a tax credit, not a slab band)."""
+		salary_slip.add_tax_components()
+		relief = flt(self.settings.personal_relief)
+		for row in salary_slip.deductions:
+			if row.variable_based_on_taxable_salary:
+				row.amount = max(flt(row.amount) - relief, 0)
+
 	def _compute_paye(self, gross, allowable_deductions):
 		"""Compute PAYE using monthly progressive bands.
 

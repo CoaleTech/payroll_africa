@@ -117,13 +117,6 @@ SETTINGS_MAP = {
 	"Sudan": "Sudan Payroll Settings",
 }
 
-VALID_SUFFIXES = {
-	"UG", "TZ", "RW", "BI", "ZM", "MW", "CD", "NG", "MZ", "AO", "GH", "ET", "ZA", "EG", "BW", "MA", "CI", "TN", "NA", "MG",
-	"DZ", "SN", "CM", "MU", "ZW", "ML", "NE", "BF", "BJ", "GA", "CG", "GN", "TG", "SC",
-	"CV", "CF", "TD", "KM", "DJ", "GQ", "ER", "SZ", "GM", "GW", "LS", "LR", "LY", "MR", "ST", "SL", "SO", "SS", "SD",
-	""
-}
-
 
 def is_supported_country(country: str) -> bool:
 	return country in COUNTRY_MAP

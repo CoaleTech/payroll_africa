@@ -36,6 +36,10 @@ def apply_regional_deductions(doc):
 			data.get("is_employer_only", False),
 		)
 
+	post_apply = getattr(calculator, "post_apply", None)
+	if post_apply:
+		post_apply(doc)
+
 
 def _is_country_enabled(country):
 	"""Check global Payroll Africa Settings and per-country enable flag."""

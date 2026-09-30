@@ -411,7 +411,6 @@ payroll_africa/
 ├── public/
 │   ├── js/
 │   │   ├── payroll_africa_change_log.js       # What's New dialog
-│   │   ├── payroll_africa_salary_structure.js # Hides disabled countries' components
 │   │   └── payroll_africa_sidebar.js          # Hides disabled countries' sidebar links
 │   └── css/
 │       ├── payroll_africa.css

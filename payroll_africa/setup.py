@@ -1,5 +1,7 @@
 import frappe
 
+from payroll_africa.boot import COUNTRY_FIELD_MAP
+
 # ── Currency codes required by each country setup ──────────────────────
 REQUIRED_CURRENCIES = {
 	"KES": {"currency_name": "Kenyan Shilling", "symbol": "KSh", "number_format": "#,###.##", "smallest_currency_fraction_value": 0.01, "fraction": "Cent", "fraction_units": 100},
@@ -161,6 +163,8 @@ def _setup_custom_fields():
 def _upsert_salary_component(comp_data: dict):
 	"""Insert a Salary Component or update its setup-driven fields if it already exists."""
 	name = comp_data["salary_component"]
+	if _record("Salary Component", name):
+		return
 	if frappe.db.exists("Salary Component", name):
 		updates = {}
 		for tag_field in ("p9a_tax_deduction_card_type", "p10a_tax_deduction_card_type"):
@@ -190,6 +194,8 @@ def _upsert_salary_component(comp_data: dict):
 
 def _create_income_tax_slab(slab_name: str, currency: str, bands: list, personal_relief: float = 0):
 	"""Create an Income Tax Slab unless one with this name already exists."""
+	if _record("Income Tax Slab", slab_name):
+		return
 	if frappe.db.exists("Income Tax Slab", slab_name):
 		return
 
@@ -218,32 +224,98 @@ def _create_income_tax_slab(slab_name: str, currency: str, bands: list, personal
 	doc.insert()
 
 
+# Setup functions are named setup_<field minus "enable_">, except these.
+_SETUP_ALIASES = {"sao_tome": "sao_tome_and_principe"}
+_REMOVE_ORDER = ("Salary Structure", "Salary Component", "Income Tax Slab")
+_recorded = None  # while a set, the create helpers record (doctype, name) instead of creating
+
+
+def _record(doctype, name):
+	if _recorded is None:
+		return False
+	_recorded.add((doctype, name))
+	return True
+
+
+def _setup_fn(field):
+	return globals()["setup_" + _SETUP_ALIASES.get(field[7:], field[7:])]
+
+
+def _assets(field):
+	"""(doctype, name) of the structure, components and slab a country's setup creates.
+
+	Dry run: the create helpers only record, and settings saves are suppressed.
+	"""
+	global _recorded
+	from unittest.mock import patch
+
+	from frappe.model.document import Document
+
+	_recorded = set()
+	try:
+		with patch.object(Document, "save", lambda self, *a, **k: self):
+			_setup_fn(field)()
+		return _recorded
+	finally:
+		_recorded = None
+
+
+def _remove(doctype, name):
+	"""Delete; if history links to it, deactivate instead."""
+	if not frappe.db.exists(doctype, name):
+		return
+	try:
+		frappe.delete_doc(doctype, name, ignore_permissions=True)
+	except (frappe.ValidationError, frappe.PermissionError):
+		frappe.clear_last_message()
+		if doctype == "Salary Structure":
+			frappe.db.set_value(doctype, name, "is_active", "No")
+		elif doctype == "Salary Component":
+			frappe.db.set_value(doctype, name, "disabled", 1)
+
+
+def _remove_assets(assets):
+	for doctype, name in sorted(assets, key=lambda a: _REMOVE_ORDER.index(a[0])):
+		_remove(doctype, name)
+
+
+def reconcile_countries():
+	"""Create setup for countries enabled in Payroll Africa Settings, remove it for the rest.
+
+	Components shared between countries (e.g. "PAYE") survive while any enabled country uses them.
+	"""
+	settings = frappe.get_doc("Payroll Africa Settings")
+	fields = set(COUNTRY_FIELD_MAP.values())
+	enabled = {f for f in fields if settings.get(f)}
+	keep = set().union(*(_assets(f) for f in enabled))
+	for field in enabled:
+		_setup_fn(field)()
+	_remove_assets(set().union(*(_assets(f) for f in fields - enabled)) - keep)
+
+
+def _enable_company_countries():
+	"""Enable the country of every Company.
+
+	Every country ticked is the untouched field default, so start from none in that case.
+	"""
+	settings = frappe.get_doc("Payroll Africa Settings")
+	fields = list(COUNTRY_FIELD_MAP.values())
+	if all(settings.get(f) for f in fields):
+		settings.update(dict.fromkeys(fields, 0))
+	for country in frappe.get_all("Company", pluck="country"):
+		if country in COUNTRY_FIELD_MAP:
+			settings.set(COUNTRY_FIELD_MAP[country], 1)
+	settings.flags.ignore_permissions = True
+	settings.flags.skip_reconcile = True  # _run_setup reconciles right after
+	settings.save()
+
+
 def _run_setup():
 	"""Shared setup logic for install and migrate."""
 	_ensure_currencies()
 	_setup_custom_fields()
-	for setup_fn in (
-		setup_kenya, setup_uganda, setup_tanzania, setup_rwanda,
-		setup_burundi, setup_zambia, setup_malawi, setup_nigeria,
-		setup_drc, setup_angola, setup_mozambique,
-		setup_ethiopia, setup_south_africa, setup_egypt, setup_ghana,
-		setup_botswana, setup_morocco, setup_tunisia, setup_namibia,
-		setup_madagascar, setup_ivory_coast,
-		setup_cameroon, setup_chad, setup_central_african_republic,
-		setup_congo, setup_gabon, setup_equatorial_guinea,
-		setup_sao_tome_and_principe,
-		setup_algeria, setup_libya, setup_sudan, setup_mauritania,
-		setup_zimbabwe,
-		setup_djibouti, setup_eritrea, setup_comoros,
-		setup_sierra_leone, setup_liberia,
-		setup_gambia, setup_cabo_verde, setup_mauritius,
-		setup_senegal, setup_mali, setup_niger,
-		setup_burkina_faso, setup_benin, setup_togo,
-		setup_seychelles, setup_lesotho, setup_eswatini,
-		setup_guinea, setup_guinea_bissau,
-		setup_somalia, setup_south_sudan,
-	):
-		setup_fn()
+	_enable_company_countries()
+	reconcile_countries()
 	setup_workspace_sidebar()
 	setup_desktop_icon()
 
@@ -266,6 +338,8 @@ def _create_salary_structure(name, currency, deductions):
 		currency: Currency code, e.g. "KES"
 		deductions: List of salary component names to add as deductions or employer contributions
 	"""
+	if _record("Salary Structure", name):
+		return
 	if frappe.db.exists("Salary Structure", name):
 		return
 
@@ -4413,9 +4487,7 @@ def setup_desktop_icon():
 def before_uninstall():
 	"""Clean up all data created by payroll_africa on uninstall."""
 	_remove_desktop_icon()
-	_remove_salary_structures()
-	_remove_salary_components()
-	_remove_income_tax_slabs()
+	_remove_country_assets()
 	_remove_custom_fields()
 
 
@@ -4428,108 +4500,10 @@ def _remove_desktop_icon():
 		frappe.delete_doc("Desktop Icon", name, force=True)
 
 
-def _remove_salary_structures():
-	"""Remove template Salary Structures created by the app."""
-	templates = [
-		"Kenya Payroll Template", "Uganda Payroll Template",
-		"Tanzania Payroll Template", "Rwanda Payroll Template",
-		"Burundi Payroll Template", "Zambia Payroll Template",
-		"Malawi Payroll Template", "DRC Payroll Template",
-		"Nigeria Payroll Template", "Mozambique Payroll Template",
-		"Angola Payroll Template",
-		"Ethiopia Payroll Template", "South Africa Payroll Template",
-		"Egypt Payroll Template", "Ghana Payroll Template",
-		"Botswana Payroll Template", "Morocco Payroll Template",
-		"Tunisia Payroll Template", "Namibia Payroll Template",
-		"Madagascar Payroll Template", "Ivory Coast Payroll Template",
-	]
-	for name in templates:
-		if frappe.db.exists("Salary Structure", name):
-			frappe.delete_doc("Salary Structure", name, force=True)
+def _remove_country_assets():
+	"""Remove every Salary Structure, Salary Component and Income Tax Slab any country setup creates."""
+	_remove_assets(set().union(*(_assets(f) for f in set(COUNTRY_FIELD_MAP.values()))))
 
-
-def _remove_salary_components():
-	"""Remove statutory Salary Components created by the app."""
-	components = [
-		# Kenya
-		"PAYE", "NSSF Employee", "NSSF Employer", "SHIF",
-		"Housing Levy", "Employer Housing Levy", "NITA",
-		# Uganda
-		"PAYE UG", "NSSF Employee UG", "NSSF Employer UG", "LST",
-		# Tanzania
-		"PAYE TZ", "NSSF Employee TZ", "NSSF Employer TZ", "SDL", "WCF",
-		# Rwanda
-		"PAYE RW", "Pension Employee RW", "Pension Employer RW",
-		"Maternity Employee RW", "Maternity Employer RW",
-		"CBHI RW", "Occupational Hazards RW",
-		# Burundi
-		"PAYE BI", "INSS Employee BI", "INSS Employer BI", "Work Injury BI",
-		"Health Insurance Employee BI", "Health Insurance Employer BI",
-		"Training Fund Employee BI", "Training Fund Employer BI",
-		# Zambia
-		"PAYE ZM", "NAPSA Employee ZM", "NAPSA Employer ZM",
-		"NHIMA Employee ZM", "NHIMA Employer ZM",
-		# Malawi
-		"PAYE MW", "Pension Employee MW", "Pension Employer MW",
-		# DRC
-		"PAYE CD", "INSS Pension Employee CD", "INSS Pension Employer CD",
-		"INSS Occupational Risks CD", "INSS Family Benefits CD",
-		"INPP CD", "ONEM CD",
-		# Nigeria
-		"PAYE NG", "Pension Employee NG", "Pension Employer NG",
-		"NHF NG", "NHIS Employee NG", "NHIS Employer NG",
-		"NSITF NG", "ITF NG",
-		# Mozambique
-		"PAYE MZ", "INSS Employee MZ", "INSS Employer MZ",
-		# Angola
-		"PAYE AO", "INSS Employee AO", "INSS Employer AO",
-		# Ethiopia
-		"PIT", "Pension Employee", "Pension Employer",
-		# South Africa
-		"PAYE", "UIF Employee", "UIF Employer", "SDL",
-		# Egypt
-		"Income Tax", "Social Insurance Employee", "Social Insurance Employer",
-		"Health Insurance Employee", "Health Insurance Employer", "Martyrs Fund",
-		# Ghana
-		"PAYE", "SSNIT Employee", "SSNIT Employer", "Tier 2 Pension Employer",
-		# Botswana
-		"PAYE",
-		# Morocco
-		"IR", "CNSS Employee", "CNSS Employer",
-		# Tunisia
-		"IRPP", "CNSS Employee", "CNSS Employer", "Social Solidarity Contribution",
-		# Namibia
-		"PAYE", "Social Security Employee", "Social Security Employer",
-		"VET Levy", "Employees Compensation",
-		# Madagascar
-		"IRSA", "CNaPS Employee", "CNaPS Employer",
-		"Health Insurance Employee", "Health Insurance Employer", "FMFP Training Fund",
-		# Ivory Coast
-		"ITS", "CNPS Retirement Employee", "CNPS Retirement Employer",
-		"CNPS Family Allowances", "Work Injury Insurance", "Vocational Training Tax",
-		"Housing Construction Fund",
-	]
-	for name in components:
-		if frappe.db.exists("Salary Component", name):
-			frappe.delete_doc("Salary Component", name, force=True)
-
-
-def _remove_income_tax_slabs():
-	"""Remove Income Tax Slabs created by the app."""
-	slabs = [
-		"Kenya PAYE 2025", "Uganda PAYE 2025", "Tanzania PAYE 2025",
-		"Rwanda PAYE 2025", "Burundi PAYE 2025", "Zambia PAYE 2025",
-		"Malawi PAYE 2025", "DRC PAYE 2025", "Nigeria PAYE 2025",
-		"Mozambique PAYE 2025", "Angola PAYE 2025",
-		"Ethiopia PIT 2025", "South Africa PAYE 2025",
-		"Egypt IT 2025", "Ghana PAYE 2025",
-		"Botswana PAYE 2025", "Morocco IR 2025",
-		"Tunisia IRPP 2025", "Namibia PAYE 2025",
-		"Madagascar IRSA 2025", "Ivory Coast ITS 2025",
-	]
-	for name in slabs:
-		if frappe.db.exists("Income Tax Slab", name):
-			frappe.delete_doc("Income Tax Slab", name, force=True)
 
 
 def _remove_custom_fields():

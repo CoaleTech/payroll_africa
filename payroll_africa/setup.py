@@ -4466,7 +4466,7 @@ def setup_desktop_icon():
 
 	icon = frappe.new_doc("Desktop Icon")
 	icon.label = "Payroll Africa"
-	icon.app = "hrms"
+	icon.app = "payroll_africa"
 	icon.icon = "globe"
 	icon.icon_type = "Link"
 	icon.link_to = "Payroll Africa"

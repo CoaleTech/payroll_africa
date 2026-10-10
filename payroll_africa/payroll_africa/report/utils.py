@@ -14,9 +14,9 @@ def standard_slip_conditions(filters):
 	return conditions
 
 
-def fetch_component_amounts(slip_names, components, parentfield="deductions"):
+def fetch_component_amounts(slip_names, components, parentfield=("deductions", "employer_contributions")):
 	"""Batch-fetch Salary Detail amounts for salary slips and components.
-
+	`parentfield` is one table name or a tuple (employer components live in employer_contributions).
 	Returns: {slip_name: {component_name: amount}}
 	"""
 	if not slip_names or not components:
@@ -28,9 +28,9 @@ def fetch_component_amounts(slip_names, components, parentfield="deductions"):
 		FROM `tabSalary Detail`
 		WHERE parent IN %s
 			AND salary_component IN %s
-			AND parentfield = %s
+			AND parentfield IN %s
 		""",
-		(slip_names, components, parentfield),
+		(slip_names, components, (parentfield,) if isinstance(parentfield, str) else tuple(parentfield)),
 		as_dict=True,
 	)
 

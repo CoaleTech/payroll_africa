@@ -1,16 +1,18 @@
 import frappe
 from frappe.utils import flt
+from hrms.payroll.doctype.salary_slip.salary_slip import SalarySlip
 
 from payroll_africa.engine.hooks import get_employee_country
 from payroll_africa.engine.registry import get_calculator
 
 
-def apply_regional_deductions(doc):
-	"""Regional hook for Salary Slip statutory African deductions.
+class PayrollAfricaSalarySlip(SalarySlip):
+	def apply_regional_deductions(self):
+		apply_regional_deductions(self)
 
-	This is the target of the HRMS ``apply_regional_deductions`` regional
-	override.  It replaces the previous ``doc_events`` ``validate`` hook.
-	"""
+
+def apply_regional_deductions(doc):
+	"""Salary Slip statutory African deductions, called from the Salary Slip override."""
 	country = get_employee_country(
 		doc.employee,
 		doc.company,

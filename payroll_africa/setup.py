@@ -89,6 +89,48 @@ def _setup_custom_fields():
 				"insert_after": "company",
 				"description": "Country for statutory payroll deduction rules. Falls back to Company country if not set.",
 				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "zm_statutory_section",
+				"fieldtype": "Section Break",
+				"label": "Zambia Statutory IDs",
+				"insert_after": "payroll_country",
+				"collapsible": 1,
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "zm_tpin",
+				"fieldtype": "Data",
+				"label": "ZRA TPIN",
+				"insert_after": "zm_statutory_section",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "zm_nrc",
+				"fieldtype": "Data",
+				"label": "NRC Number",
+				"insert_after": "zm_tpin",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "zm_statutory_column",
+				"fieldtype": "Column Break",
+				"insert_after": "zm_nrc",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "zm_napsa_no",
+				"fieldtype": "Data",
+				"label": "NAPSA Number",
+				"insert_after": "zm_statutory_column",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "zm_nhima_no",
+				"fieldtype": "Data",
+				"label": "NHIMA Number",
+				"insert_after": "zm_napsa_no",
+				"module": "Payroll Africa",
 			}
 		],
 		"Salary Structure Assignment": [
@@ -244,7 +286,6 @@ def _run_setup():
 		setup_somalia, setup_south_sudan,
 	):
 		setup_fn()
-	setup_workspace_sidebar()
 	setup_desktop_icon()
 
 
@@ -1084,7 +1125,7 @@ def _create_zambia_salary_components():
 			"salary_component_abbr": "NAPSAeZM",
 			"type": "Deduction",
 			"variable_based_on_taxable_salary": 0,
-			"exempted_from_income_tax": 1,
+			"exempted_from_income_tax": 0,  # s.37(1)(a) relief repealed 1 Jan 2025
 			"statistical_component": 0,
 			"do_not_include_in_total": 0,
 			"remove_if_zero_valued": 0,
@@ -1125,18 +1166,18 @@ def _create_zambia_salary_components():
 		_upsert_salary_component(comp_data)
 
 
+# HRMS applies Income Tax Slab bands to ANNUAL taxable income: monthly ZRA bands x 12.
+ZAMBIA_PAYE_SLAB_BANDS = [
+	{"from_amount": 0, "to_amount": 61200, "rate": 0},
+	{"from_amount": 61201, "to_amount": 85200, "rate": 20},
+	{"from_amount": 85201, "to_amount": 110400, "rate": 30},
+	{"from_amount": 110401, "to_amount": 0, "rate": 37},
+]
+
+
 def _create_zambia_income_tax_slab():
-	"""Create Zambia PAYE Income Tax Slab for 2025."""
-	_create_income_tax_slab(
-		slab_name="Zambia PAYE 2025",
-		currency="ZMW",
-		bands=[
-			{"from_amount": 0, "to_amount": 5100, "rate": 0},
-			{"from_amount": 5101, "to_amount": 7100, "rate": 20},
-			{"from_amount": 7101, "to_amount": 9200, "rate": 30},
-			{"from_amount": 9201, "to_amount": 0, "rate": 37},
-		],
-	)
+	"""Create Zambia PAYE Income Tax Slab (annual bands, ZRA 2026)."""
+	_create_income_tax_slab(slab_name="Zambia PAYE 2025", currency="ZMW", bands=ZAMBIA_PAYE_SLAB_BANDS)
 
 
 def setup_malawi():
@@ -4317,137 +4358,6 @@ def setup_south_sudan():
 		doc.effective_from = "2026-01-01"
 	doc.flags.ignore_permissions = True
 	doc.save()
-
-
-def setup_workspace_sidebar():
-	"""Rebuild Payroll Africa workspace sidebar based on enabled countries.
-
-	Reads the workspace_sidebar/payroll_africa.json template, filters out
-	sections for disabled countries, and writes the result to the database.
-	"""
-	import json
-	import os
-
-	from payroll_africa.boot import COUNTRY_FIELD_MAP, get_enabled_countries
-
-	if frappe.db.exists("Workspace Sidebar", "Payroll"):
-		sidebar = frappe.get_doc("Workspace Sidebar", "Payroll")
-		legacy_labels = {
-			"Payroll Africa", "Statutory Deductions Summary", "Employer Contributions",
-			"Cost to Company", "P9A Tax Deduction Card", "P10 Monthly Tax Return",
-			"NSSF Remittance", "SHIF Remittance", "Housing Levy Return",
-			"Kenya Payroll Settings",
-		}
-		original_count = len(sidebar.items)
-		sidebar.items = [item for item in sidebar.items if item.label not in legacy_labels]
-		if len(sidebar.items) < original_count:
-			sidebar.flags.ignore_permissions = True
-			sidebar.save()
-			frappe.db.commit()  # nosemgrep: frappe-manual-commit
-
-	template_path = frappe.get_app_path("payroll_africa", "workspace_sidebar", "payroll_africa.json")
-	if not os.path.exists(template_path):
-		return
-	with open(template_path) as f:  # nosemgrep: frappe-security-file-traversal
-		template = json.load(f)
-
-	enabled = get_enabled_countries()
-
-	_settings_to_country = {}
-	for country in COUNTRY_FIELD_MAP:
-		if country == "Congo, The Democratic Republic of the":
-			prefix = "DRC"
-		else:
-			prefix = country
-		_settings_to_country[f"{prefix} Payroll Settings"] = country
-		_settings_to_country[f"{prefix} Reports"] = country
-
-	filtered_items = []
-	skip_section = False
-
-	for item in template.get("items", []):
-		label = item.get("label", "")
-
-		if item.get("type") == "Section Break" and label in _settings_to_country:
-			country = _settings_to_country[label]
-			skip_section = country not in enabled
-			if skip_section:
-				continue
-			else:
-				filtered_items.append(item)
-				continue
-
-		if label in _settings_to_country:
-			country = _settings_to_country[label]
-			if country not in enabled:
-				continue
-
-		if skip_section and item.get("child"):
-			continue
-
-		if item.get("type") == "Section Break":
-			skip_section = False
-
-		filtered_items.append(item)
-
-	final_items = []
-	i = 0
-	while i < len(filtered_items):
-		item = filtered_items[i]
-		if (
-			item.get("type") == "Section Break"
-			and item.get("label") in ("East Africa", "Southern Africa", "West & Central Africa")
-		):
-			has_children = False
-			j = i + 1
-			while j < len(filtered_items):
-				next_item = filtered_items[j]
-				if next_item.get("type") == "Section Break" and not next_item.get("child"):
-					break
-				if next_item.get("child"):
-					has_children = True
-					break
-				j += 1
-			if not has_children:
-				i += 1
-				continue
-		final_items.append(item)
-		i += 1
-
-	if frappe.db.exists("Workspace Sidebar", "Payroll Africa"):
-		frappe.db.delete("Workspace Sidebar Item", {"parent": "Payroll Africa"})
-		sidebar_doc = frappe.get_doc("Workspace Sidebar", "Payroll Africa")
-	else:
-		sidebar_doc = frappe.new_doc("Workspace Sidebar")
-		sidebar_doc.name = template.get("name", "Payroll Africa")
-		sidebar_doc.title = template.get("title", "Payroll Africa")
-		sidebar_doc.module = template.get("module", "Payroll Africa")
-		sidebar_doc.app = template.get("app", "payroll_africa")
-		sidebar_doc.header_icon = template.get("header_icon", "globe")
-		sidebar_doc.standard = 1
-
-	sidebar_doc.items = []
-	for item_data in final_items:
-		link_to = item_data.get("link_to", "")
-		link_type = item_data.get("link_type", "")
-		if link_to and link_type and not frappe.db.exists(link_type, link_to):
-			continue  # skip links whose target report/doctype isn't installed
-		sidebar_doc.append("items", {
-			"label": item_data.get("label", ""),
-			"link_to": item_data.get("link_to", ""),
-			"link_type": item_data.get("link_type", ""),
-			"type": item_data.get("type", "Link"),
-			"icon": item_data.get("icon", ""),
-			"child": item_data.get("child", 0),
-			"collapsible": item_data.get("collapsible", 0),
-			"indent": item_data.get("indent", 0),
-			"keep_closed": item_data.get("keep_closed", 0),
-			"show_arrow": item_data.get("show_arrow", 0),
-		})
-
-	sidebar_doc.flags.ignore_permissions = True
-	sidebar_doc.save()
-	frappe.db.commit()  # nosemgrep: frappe-manual-commit
 
 
 def setup_desktop_icon():

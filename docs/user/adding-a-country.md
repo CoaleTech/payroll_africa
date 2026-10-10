@@ -10,7 +10,7 @@ Payroll Africa is designed to be extended. Adding a country follows a consistent
 4. **Register** — add entries to `COUNTRY_MAP` and `SETTINGS_MAP` in `engine/registry.py`.
 5. **Boot** — add `"Country Name": "enable_{snake}"` to `COUNTRY_FIELD_MAP` in `boot.py`.
 6. **Settings toggle** — add an `enable_{snake}` Check field to `payroll_africa_settings.json`.
-7. **Sidebar** — add the settings link to `workspace_sidebar/payroll_africa.json`.
+7. **Sidebar** — add the settings link to `payroll_africa/sidebar/payroll_africa/payroll_africa.json` (a standard `Sidebar`; lucide icon names only).
 8. **Reports** — create the tax-return and social-security remittance reports under `payroll_africa/report/`.
 9. **Tests** — add a test class covering zero gross, a rate spot-check, employer flags, ceilings, and PIT thresholds.
 10. **Migrate** — run a site migration to install the new DocTypes.

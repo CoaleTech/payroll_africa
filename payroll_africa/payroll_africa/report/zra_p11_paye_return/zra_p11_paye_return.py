@@ -49,7 +49,7 @@ def get_data(filters):
 		slip_amounts = amounts.get(row.salary_slip, {})
 		napsa = slip_amounts.get("NAPSA Employee ZM", 0)
 		row["napsa_deduction"] = napsa
-		row["taxable_income"] = flt(row.gross_pay) - napsa
+		row["taxable_income"] = flt(row.gross_pay)  # NAPSA no longer deductible for PAYE (2025+)
 		row["paye"] = slip_amounts.get("PAYE ZM", 0)
 		del row["salary_slip"]
 

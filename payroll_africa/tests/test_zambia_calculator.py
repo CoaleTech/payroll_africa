@@ -14,11 +14,18 @@ class TestZambiaCalculator(unittest.TestCase):
 		self.settings.nhima_employer_rate = 1
 		self.calculator = ZambiaCalculator(self.settings)
 
-	def _make_slip(self, gross):
+	def _make_slip(self, gross, basic=None):
 		slip = MagicMock()
 		slip.gross_pay = gross
-		slip.earnings = [MagicMock(salary_component="Basic Salary", amount=gross)]
+		slip.earnings = [MagicMock(salary_component="Basic Salary", amount=gross if basic is None else basic)]
 		return slip
+
+	def test_nhima_on_basic_only(self):
+		# zamcalc reference: basic 15,092 + allowances 4,527.60 -> NHIMA 150.92, NAPSA 980.98
+		result = self.calculator.compute(self._make_slip(19619.60, basic=15092))
+		self.assertAlmostEqual(result["NHIMA Employee ZM"]["amount"], 150.92)
+		self.assertAlmostEqual(result["NHIMA Employer ZM"]["amount"], 150.92)
+		self.assertAlmostEqual(result["NAPSA Employee ZM"]["amount"], 980.98)
 
 	def test_napsa_employee_under_cap(self):
 		result = self.calculator.compute(self._make_slip(5000))

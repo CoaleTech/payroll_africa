@@ -1,11 +1,11 @@
 """Chad statutory deduction calculator.
 
-Reference: CNPS Chad (ONPT)
-- CNPS Pension: Employee 3.5%, Employer 7%
+Reference: CNPS Chad (PwC 2024, Central Africa Tax Guide 2023)
+- CNPS Pension: Employee 3.5%, Employer 5%
 - CNPS Family Allowances: Employer 7.5%
 - CNPS Work Injury: Employer 2-5% by risk
 - PIT: Progressive 0-30%
-- Ceiling: cnps_ceiling field if non-zero, else 8x minimum wage
+- Ceiling: cnps_ceiling field if non-zero, else 8x minimum wage (legal ceiling 500,000 XAF/month)
 """
 
 from frappe.utils import flt
@@ -22,8 +22,8 @@ class ChadCalculator(BaseCalculator):
         base = self._get_contribution_base(gross)
 
         # 1. CNPS Pension
-        pension_emp = base * (flt(self.settings.cnps_pension_employee_rate or 3.5) / 100)
-        pension_empr = base * (flt(self.settings.cnps_pension_employer_rate or 7) / 100)
+        pension_emp = base * (self._num("cnps_pension_employee_rate", 3.5) / 100)
+        pension_empr = base * (self._num("cnps_pension_employer_rate", 5) / 100)
         results["CNPS Pension Employee"] = {
             "amount": pension_emp, "is_employer_only": False,
         }
@@ -61,7 +61,7 @@ class ChadCalculator(BaseCalculator):
         if cnps_ceiling:
             ceiling = flt(cnps_ceiling)
         else:
-            min_wage = flt(getattr(self.settings, "minimum_wage", None) or 75000)
+            min_wage = flt(getattr(self.settings, "minimum_wage", None) or 60000)
             ceiling = min_wage * 8
         return min(gross, ceiling) if gross > 0 else 0
 

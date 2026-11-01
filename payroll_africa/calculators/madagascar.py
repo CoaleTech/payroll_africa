@@ -75,31 +75,31 @@ class MadagascarCalculator(BaseCalculator):
 
     def _compute_cnaps_employee(self, gross):
         """CNaPS employee: 1% of gross, capped."""
-        rate = flt(self.settings.cnaps_employee_rate or 1) / 100
+        rate = self._num("cnaps_employee_rate", 1) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_cnaps_employer(self, gross):
         """CNaPS employer: 13% of gross, capped."""
-        rate = flt(self.settings.cnaps_employer_rate or 13) / 100
+        rate = self._num("cnaps_employer_rate", 13) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_health_employee(self, gross):
         """Health insurance employee: 1% of gross, capped."""
-        rate = flt(self.settings.health_employee_rate or 1) / 100
+        rate = self._num("health_employee_rate", 1) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_health_employer(self, gross):
         """Health insurance employer: 5% of gross, capped."""
-        rate = flt(self.settings.health_employer_rate or 5) / 100
+        rate = self._num("health_employer_rate", 5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_fmfp(self, gross):
         """FMFP vocational training: 1% employer only."""
-        rate = flt(self.settings.fmfp_rate or 1) / 100
+        rate = self._num("fmfp_rate", 1) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_irsa(self, taxable_income):
@@ -139,7 +139,7 @@ class MadagascarCalculator(BaseCalculator):
             tax = self._irsa_hardcoded(taxable_income)
 
         # Minimum IRSA
-        minimum_irsa = flt(self.settings.minimum_irsa or 2000)
+        minimum_irsa = self._num("minimum_irsa", 2000)
         return max(tax, minimum_irsa) if tax > 0 else 0
 
     def _irsa_hardcoded(self, taxable_income):

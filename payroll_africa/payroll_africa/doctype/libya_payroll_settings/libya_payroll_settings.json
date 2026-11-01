@@ -13,7 +13,6 @@
   "ssf_employer_rate",
   "ssf_ceiling",
   "col_break_ssf",
-  "jehad_tax_rate",
   "solidarity_fund_rate",
   "pit_section",
   "tax_free_threshold",
@@ -65,13 +64,6 @@
   {
    "fieldname": "col_break_ssf",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "jehad_tax_rate",
-   "fieldtype": "Percent",
-   "label": "Jehad Tax Rate",
-   "default": "3",
-   "description": "Jehad Tax is tiered (1% for gross < LYD 50, 2% for LYD 50-100, 3% above); this field is not currently read by the calculator."
   },
   {
    "fieldname": "solidarity_fund_rate",

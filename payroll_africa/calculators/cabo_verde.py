@@ -20,14 +20,14 @@ class CaboVerdeCalculator(BaseCalculator):
         ceiling = flt(self.settings.inps_ceiling or 80000)
         base = min(gross, ceiling) if gross > 0 else 0
 
-        inps_emp = base * (flt(self.settings.inps_employee_rate or 8.5) / 100)
-        inps_empr = base * (flt(self.settings.inps_employer_rate or 16) / 100)
+        inps_emp = base * (self._num("inps_employee_rate", 8.5) / 100)
+        inps_empr = base * (self._num("inps_employer_rate", 16) / 100)
         results["INPS Employee"] = {"amount": inps_emp, "is_employer_only": False}
         results["INPS Employer"] = {"amount": inps_empr, "is_employer_only": True}
 
         # Work injury (separate insurance) — risk class 1/2/3 → 2/4/6%
         # Applied to contribution base, not gross
-        risk = flt(self.settings.work_injury_rate or 1)
+        risk = self._num("work_injury_rate", 1)
         risk_pct = {1: 2.0, 2: 4.0, 3: 6.0}
         injury = base * (risk_pct.get(int(risk), 2.0) / 100) if base > 0 else 0
         results["Work Injury Insurance"] = {"amount": injury, "is_employer_only": True}

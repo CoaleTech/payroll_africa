@@ -6,8 +6,10 @@ Reference: SSF Libya (Law 13/1980 as amended); PwC Libya Tax 2026
 - Solidarity Fund: 1% of gross (employee); rate read from settings
 - PIT: Progressive 5-10% (2 bands)
   Annual: 0-12,000@5%, 12,000+@10%
-- Jehad Tax: 1-3% tiered based on monthly gross (not read from settings)
-  < LYD 50/month: 1%; LYD 50-100/month: 2%; > LYD 100/month: 3%
+- Jehad Tax: ABOLISHED effective 14 July 2025 (EY Tax News Update 2025-1651
+  "Libya cancels Jihad Tax"; confirmed by Orbitax). Removed from calculator.
+  For salary slips dated before 14 July 2025 the tax applied; historical
+  computed amounts on submitted slips are preserved as-is.
 - Tax year: January 1 - December 31
 """
 
@@ -56,13 +58,6 @@ class LibyaCalculator(BaseCalculator):
                 "amount": pit, "is_employer_only": False,
             }
 
-        # 4. Jehad Tax (tiered; not driven by settings field)
-        jehad = self._compute_jehad(gross)
-        if jehad > 0:
-            results["Jehad Tax"] = {
-                "amount": jehad, "is_employer_only": False,
-            }
-
         return results
 
     def _compute_pit(self, taxable_income):
@@ -104,13 +99,3 @@ class LibyaCalculator(BaseCalculator):
                 tax += amount * rate
         return tax / 12
 
-    def _compute_jehad(self, gross):
-        """Jehad Tax: 1-3% tiered on monthly gross."""
-        if gross <= 0:
-            return 0
-        if gross < 50:
-            return gross * 0.01
-        elif gross <= 100:
-            return gross * 0.02
-        else:
-            return gross * 0.03

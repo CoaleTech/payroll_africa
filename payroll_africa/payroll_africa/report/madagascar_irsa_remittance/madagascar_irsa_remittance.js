@@ -33,14 +33,14 @@ frappe.query_reports["Madagascar IRSA Remittance"] = {
 				doctype: "Company",
 				filters: { country: "Madagascar" },
 				fields: ["name"],
-				limit_page_length: 1,
+				limit_page_length: 0,
 			},
 			callback: function(r) {
-				if (r.message && r.message.length) {
-					var company_filter = report.get_filter("company");
-					if (company_filter) {
-						company_filter.set_value(r.message[0].name);
-					}
+				var company_filter = report.get_filter("company");
+				var names = (r.message || []).map(function(c) { return c.name; });
+				// Keep the user's default company when it is in this country; else pick the first one.
+				if (company_filter && names.length && names.indexOf(company_filter.get_value()) === -1) {
+					company_filter.set_value(names[0]);
 				}
 			},
 		});

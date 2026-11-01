@@ -60,22 +60,22 @@ class NigerCalculator(BaseCalculator):
         return min(gross, ceiling) if gross > 0 else 0
 
     def _compute_cnss_employee(self, gross):
-        rate = flt(self.settings.cnss_employee_rate or 5.25) / 100
+        rate = self._num("cnss_employee_rate", 5.25) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_cnss_employer(self, gross):
-        rate = flt(self.settings.cnss_employer_rate or 16.4) / 100
+        rate = self._num("cnss_employer_rate", 16.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employee(self, gross):
-        rate = flt(self.settings.amo_employee_rate or 2.5) / 100
+        rate = self._num("amo_employee_rate", 2.5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employer(self, gross):
-        rate = flt(self.settings.amo_employer_rate or 4.5) / 100
+        rate = self._num("amo_employer_rate", 4.5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
@@ -98,7 +98,7 @@ class NigerCalculator(BaseCalculator):
                 if amount > 0:
                     tax += amount * rate
             return tax
-        threshold = flt(self.settings.pit_threshold or 25000)
+        threshold = self._num("pit_threshold", 25000)
         if monthly <= threshold:
             return 0
         tax = 0

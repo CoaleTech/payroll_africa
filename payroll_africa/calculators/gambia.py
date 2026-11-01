@@ -16,8 +16,8 @@ class GambiaCalculator(BaseCalculator):
         ceiling = flt(self.settings.sshfc_ceiling or 25000)
         base = min(gross, ceiling) if gross > 0 else 0
 
-        sshfc_emp = base * (flt(self.settings.sshfc_employee_rate or 5) / 100)
-        sshfc_empr = base * (flt(self.settings.sshfc_employer_rate or 10) / 100)
+        sshfc_emp = base * (self._num("sshfc_employee_rate", 5) / 100)
+        sshfc_empr = base * (self._num("sshfc_employer_rate", 10) / 100)
         results["SSHFC Employee"] = {"amount": sshfc_emp, "is_employer_only": False}
         results["SSHFC Employer"] = {"amount": sshfc_empr, "is_employer_only": True}
 

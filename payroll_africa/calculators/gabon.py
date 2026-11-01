@@ -37,12 +37,12 @@ class GabonCalculator(BaseCalculator):
 
         if use_2026_reform:
             # Post-reform 2026: separate rates (cnss_total_rate is not a DocType field)
-            employee_share = flt(self.settings.cnss_employee_rate or 5) / 100
-            employer_share = flt(self.settings.cnss_employer_rate or 18) / 100
+            employee_share = self._num("cnss_employee_rate", 5) / 100
+            employer_share = self._num("cnss_employer_rate", 18) / 100
         else:
             # Pre-reform: separate rates
-            employee_share = flt(self.settings.cnss_employee_rate or 2.5) / 100
-            employer_share = flt(self.settings.cnss_employer_rate or 16.5) / 100
+            employee_share = self._num("cnss_employee_rate", 2.5) / 100
+            employer_share = self._num("cnss_employer_rate", 16) / 100
 
         ceiling = flt(self.settings.cnss_ceiling or 1500000)
         base = min(gross, ceiling) if gross > 0 else 0
@@ -89,7 +89,7 @@ class GabonCalculator(BaseCalculator):
             return 0
 
         annual_income = taxable_income * 12
-        threshold = flt(self.settings.pit_threshold_annual or 2160000)
+        threshold = self._num("pit_threshold_annual", 2160000)
 
         if annual_income <= threshold:
             return 0

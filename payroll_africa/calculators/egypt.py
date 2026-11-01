@@ -57,7 +57,7 @@ class EgyptCalculator(BaseCalculator):
 
         # 4. Income Tax - progressive
         annual_deductions = (social_insurance_emp + health_emp + martyrs) * 12
-        personal_exemption = flt(self.settings.personal_exemption or 20000)   # PwC 2024 (Law 7/2024)
+        personal_exemption = self._num("personal_exemption", 20000)   # PwC 2024 (Law 7/2024)
         dependent_deduction = self._get_dependent_deduction()
 
         taxable_annual = max(gross * 12 - annual_deductions - personal_exemption - dependent_deduction, 0)
@@ -72,32 +72,32 @@ class EgyptCalculator(BaseCalculator):
     def _compute_social_insurance_employee(self, gross):
         """Employee social insurance: 11% of gross, capped."""
         ceiling = flt(self.settings.social_insurance_ceiling or 16700)
-        rate = flt(self.settings.social_insurance_employee_rate or 11) / 100
+        rate = self._num("social_insurance_employee_rate", 11) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_social_insurance_employer(self, gross):
         """Employer social insurance: 18.75% of gross, capped."""
         ceiling = flt(self.settings.social_insurance_ceiling or 16700)
-        rate = flt(self.settings.social_insurance_employer_rate or 18.75) / 100
+        rate = self._num("social_insurance_employer_rate", 18.75) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_health_insurance_employee(self, gross):
         """Employee health insurance: 1% of gross, no cap."""
-        rate = flt(self.settings.health_insurance_employee_rate or 1) / 100
+        rate = self._num("health_insurance_employee_rate", 1) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_health_insurance_employer(self, gross):
         """Employer health insurance: 3.25% of gross, no cap."""
-        rate = flt(self.settings.health_insurance_employer_rate or 3.25) / 100
+        rate = self._num("health_insurance_employer_rate", 3.25) / 100
         return gross * rate if gross > 0 else 0
 
     def _get_dependent_deduction(self):
         """Get dependent deduction: EGP 3,000 per dependent."""
-        num_dependents = flt(self.settings.number_of_dependents or 0)
+        num_dependents = self._num("number_of_dependents", 0)
         max_dependents = flt(self.settings.max_dependents or 3)
-        deduction_per_dependent = flt(self.settings.dependent_deduction or 3000)
+        deduction_per_dependent = self._num("dependent_deduction", 3000)
         actual = min(num_dependents, max_dependents)
         return actual * deduction_per_dependent
 

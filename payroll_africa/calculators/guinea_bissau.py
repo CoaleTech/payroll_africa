@@ -19,8 +19,8 @@ class GuineaBissauCalculator(BaseCalculator):
         ceiling = inss_ceiling if inss_ceiling > 0 else min_wage * 8
         base = min(gross, ceiling) if gross > 0 else 0
 
-        inss_emp = base * (flt(self.settings.inss_employee_rate or 8) / 100)
-        inss_empr = base * (flt(self.settings.inss_employer_rate or 14) / 100)
+        inss_emp = base * (self._num("inss_employee_rate", 8) / 100)
+        inss_empr = base * (self._num("inss_employer_rate", 14) / 100)
         results["INSS Employee"] = {"amount": inss_emp, "is_employer_only": False}
         results["INSS Employer"] = {"amount": inss_empr, "is_employer_only": True}
 

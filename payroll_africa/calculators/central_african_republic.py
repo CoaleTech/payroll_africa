@@ -1,9 +1,11 @@
 """Central African Republic statutory deduction calculator.
 
-Reference: CNSS CAR (limited data availability)
-- CNSS: Employee ~3%, Employer ~14% (capped)
-- Ceiling: cnss_ceiling field if non-zero; else 8x minimum wage
+Reference: CNSS CAR (Sage 2025, Africa HR Solutions)
+- CNSS: Employee ~3%, Employer ~19% (12% family + 3% risks + 4% pension; capped)
+- Ceiling: cnss_ceiling field if non-zero (legal fixed ceiling 600,000 XAF/month); else 8x minimum wage
 - PIT: Progressive tax system
+- Note: ACFPE professional training 2% and CDS social dialogue 10% employer contributions
+  are not modelled — see Edge cases and known limitations in countries/central-african-republic.md.
 """
 from frappe.utils import flt
 from payroll_africa.calculators.base import BaseCalculator
@@ -23,8 +25,8 @@ class CentralAfricanRepublicCalculator(BaseCalculator):
             ceiling = min_wage * 8
         base = min(gross, ceiling) if gross > 0 else 0
 
-        cnss_emp = base * (flt(self.settings.cnss_employee_rate or 3) / 100)
-        cnss_empr = base * (flt(self.settings.cnss_employer_rate or 14) / 100)
+        cnss_emp = base * (self._num("cnss_employee_rate", 3) / 100)
+        cnss_empr = base * (self._num("cnss_employer_rate", 19) / 100)
         results["CNSS Employee"] = {"amount": cnss_emp, "is_employer_only": False}
         results["CNSS Employer"] = {"amount": cnss_empr, "is_employer_only": True}
 

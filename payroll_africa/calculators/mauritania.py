@@ -19,14 +19,14 @@ class MauritaniaCalculator(BaseCalculator):
         # CNSS (capped)
         cnss_ceiling = flt(self.settings.cnss_ceiling or 15000)
         cnss_base = min(gross, cnss_ceiling) if gross > 0 else 0
-        cnss_emp = cnss_base * (flt(self.settings.cnss_employee_rate or 1) / 100)
-        cnss_empr = cnss_base * (flt(self.settings.cnss_employer_rate or 15) / 100)
+        cnss_emp = cnss_base * (self._num("cnss_employee_rate", 1) / 100)
+        cnss_empr = cnss_base * (self._num("cnss_employer_rate", 15) / 100)
         results["CNSS Employee"] = {"amount": cnss_emp, "is_employer_only": False}
         results["CNSS Employer"] = {"amount": cnss_empr, "is_employer_only": True}
 
         # CNAM Health (uncapped)
-        cnam_emp = gross * (flt(self.settings.cnam_employee_rate or 4) / 100) if gross > 0 else 0
-        cnam_empr = gross * (flt(self.settings.cnam_employer_rate or 5) / 100) if gross > 0 else 0
+        cnam_emp = gross * (self._num("cnam_employee_rate", 4) / 100) if gross > 0 else 0
+        cnam_empr = gross * (self._num("cnam_employer_rate", 5) / 100) if gross > 0 else 0
         results["CNAM Health Employee"] = {"amount": cnam_emp, "is_employer_only": False}
         results["CNAM Health Employer"] = {"amount": cnam_empr, "is_employer_only": True}
 

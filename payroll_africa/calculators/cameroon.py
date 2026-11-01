@@ -105,19 +105,19 @@ class CameroonCalculator(BaseCalculator):
 
     def _compute_cnps_pension_employee(self, gross):
         """CNPS pension employee: 4.2% of capped base."""
-        rate = flt(self.settings.cnps_pension_employee_rate or 4.2) / 100
+        rate = self._num("cnps_pension_employee_rate", 4.2) / 100
         base = self._get_cnps_base(gross)
         return base * rate
 
     def _compute_cnps_pension_employer(self, gross):
         """CNPS pension employer: 4.2% of capped base."""
-        rate = flt(self.settings.cnps_pension_employer_rate or 4.2) / 100
+        rate = self._num("cnps_pension_employer_rate", 4.2) / 100
         base = self._get_cnps_base(gross)
         return base * rate
 
     def _compute_family_allowances(self, gross):
         """CNPS family allowances: 7% employer only, capped."""
-        rate = flt(self.settings.family_allowances_rate or 7) / 100
+        rate = self._num("family_allowances_rate", 7) / 100
         base = self._get_cnps_base(gross)
         return base * rate
 
@@ -130,17 +130,17 @@ class CameroonCalculator(BaseCalculator):
 
     def _compute_cfc_employee(self, gross):
         """CFC housing fund employee: 1%."""
-        rate = flt(self.settings.cfc_employee_rate or 1) / 100
+        rate = self._num("cfc_employee_rate", 1) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_cfc_employer(self, gross):
         """CFC housing fund employer: 1.5%."""
-        rate = flt(self.settings.cfc_employer_rate or 1.5) / 100
+        rate = self._num("cfc_employer_rate", 1.5) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_fne(self, gross):
         """FNE employment fund: 1% employer only."""
-        rate = flt(self.settings.fne_rate or 1) / 100
+        rate = self._num("fne_rate", 1) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_pit(self, gross, cnps_employee):
@@ -154,7 +154,7 @@ class CameroonCalculator(BaseCalculator):
         5. Round down to nearest 1,000
         6. Apply progressive rates + 10% CAC surcharge
         """
-        exemption_monthly = flt(self.settings.pit_exemption_monthly or 62000)
+        exemption_monthly = self._num("pit_exemption_monthly", 62000)
         if gross < exemption_monthly:
             return 0
 
@@ -164,12 +164,12 @@ class CameroonCalculator(BaseCalculator):
         annual_cnps = cnps_employee * 12
 
         # Step 2: 30% professional abatement applied to (gross - CNPS), per DGI formula
-        prof_abatement = flt(self.settings.professional_abatement_rate or 30) / 100
+        prof_abatement = self._num("professional_abatement_rate", 30) / 100
         net_of_cnps = annual_gross - annual_cnps
         prof_deduction = net_of_cnps * prof_abatement
 
         # Step 3: Standard deduction
-        standard_deduction = flt(self.settings.standard_deduction or 500000)
+        standard_deduction = self._num("standard_deduction", 500000)
 
         taxable_annual = max(net_of_cnps - prof_deduction - standard_deduction, 0)
 
@@ -193,7 +193,7 @@ class CameroonCalculator(BaseCalculator):
         3,000,001 - 5,000,000 : 25% (27.5% effective)
         Over 5,000,000    : 35% (38.5% effective)
         """
-        cac_rate = 1 + (flt(self.settings.cac_surcharge_rate or 10) / 100)
+        cac_rate = 1 + (self._num("cac_surcharge_rate", 10) / 100)
         tax = 0
 
         bands = self.settings.pit_bands or []

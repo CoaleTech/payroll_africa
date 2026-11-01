@@ -139,6 +139,22 @@ class TestSouthAfricaCalculator(unittest.TestCase):
 		# Old accumulation bug would give ≈ 241,514 for 512,800; must be far below that
 		self.assertLess(self.calculator._sars_tax_formula(512800), 200000)
 
+	def test_employee_over_65_gets_secondary_rebate(self):
+		"""Age comes from the slip's employee date of birth (not settings)."""
+		from datetime import date
+		get_value = sys.modules["frappe"].db.get_value
+		self.settings.rebate_secondary = 9444
+		self.settings.threshold_65_74 = 148217
+		slip = make_salary_slip(30000)
+		slip.end_date = None
+		try:
+			young = get_amount(self.calculator.compute(slip), "PAYE")
+			get_value.return_value = date(date.today().year - 70, 1, 1)
+			senior = get_amount(self.calculator.compute(slip), "PAYE")
+		finally:
+			get_value.return_value = None
+		self.assertAlmostEqual(young - senior, 9444 / 12, places=1)
+
 
 if __name__ == "__main__":
 	unittest.main()

@@ -45,7 +45,7 @@
    "fieldname": "cnss_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employer Rate",
-   "default": "21.5"
+   "default": "20.285"
   },
   {
    "fieldname": "cnss_employee_rate",
@@ -58,7 +58,7 @@
    "fieldname": "cnss_ceiling",
    "fieldtype": "Currency",
    "label": "CNSS Ceiling (XAF)",
-   "default": "1000000"
+   "default": "1200000"
   },
   {
    "fieldname": "col_break_cnss",
@@ -67,8 +67,9 @@
   {
    "fieldname": "cnamgs_rate",
    "fieldtype": "Percent",
-   "label": "CNAMGS Health Employer Rate",
-   "default": "4"
+   "label": "CAMU Solidarity Employer Rate",
+   "default": "0.5",
+   "description": "CAMU solidarity contribution: 0.5% on gross income above XAF 500,000. Field name kept as cnamgs_rate for data compatibility."
   },
   {
    "fieldname": "pit_section",

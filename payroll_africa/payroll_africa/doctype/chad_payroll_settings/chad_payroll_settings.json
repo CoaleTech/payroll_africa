@@ -53,13 +53,13 @@
    "fieldname": "cnps_pension_employer_rate",
    "fieldtype": "Percent",
    "label": "CNPS Employer Rate",
-   "default": "7.5"
+   "default": "5"
   },
   {
    "fieldname": "cnps_ceiling",
    "fieldtype": "Currency",
    "label": "CNPS Ceiling (XAF)",
-   "default": "0"
+   "default": "500000"
   },
   {
    "fieldname": "minimum_wage",
@@ -75,7 +75,7 @@
    "fieldname": "family_allowances_rate",
    "fieldtype": "Percent",
    "label": "Family Allowances Rate",
-   "default": "6"
+   "default": "7.5"
   },
   {
    "fieldname": "work_injury_risk_class",

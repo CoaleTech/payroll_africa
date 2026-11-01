@@ -134,7 +134,7 @@
    "fieldname": "amo_ceiling",
    "fieldtype": "Currency",
    "label": "AMO Ceiling (XOF)",
-   "default": "299000"
+   "default": "250000"
   },
   {
    "fieldname": "it_section",

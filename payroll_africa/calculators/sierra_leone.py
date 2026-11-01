@@ -19,8 +19,8 @@ class SierraLeoneCalculator(BaseCalculator):
 
         # 1. NASSIT
         base = self._get_contribution_base(gross)
-        nassit_emp = base * (flt(self.settings.nassit_employee_rate or 5) / 100)
-        nassit_empr = base * (flt(self.settings.nassit_employer_rate or 10) / 100)
+        nassit_emp = base * (self._num("nassit_employee_rate", 5) / 100)
+        nassit_empr = base * (self._num("nassit_employer_rate", 10) / 100)
         results["NASSIT Employee"] = {"amount": nassit_emp, "is_employer_only": False}
         results["NASSIT Employer"] = {"amount": nassit_empr, "is_employer_only": True}
 

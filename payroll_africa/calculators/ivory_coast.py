@@ -78,20 +78,20 @@ class IvoryCoastCalculator(BaseCalculator):
     def _compute_cnps_employee(self, gross):
         """CNPS retirement employee: 6.3% of gross, capped."""
         ceiling = flt(self.settings.cnps_ceiling or 3375000)
-        rate = flt(self.settings.cnps_employee_rate or 6.3) / 100
+        rate = self._num("cnps_employee_rate", 6.3) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_cnps_employer(self, gross):
         """CNPS retirement employer: 7.7% of gross, capped."""
         ceiling = flt(self.settings.cnps_ceiling or 3375000)
-        rate = flt(self.settings.cnps_employer_rate or 7.7) / 100
+        rate = self._num("cnps_employer_rate", 7.7) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_family_allowances(self, gross):
         """CNPS family allowances: 5.75% employer only."""
-        rate = flt(self.settings.family_allowances_rate or 5.75) / 100
+        rate = self._num("family_allowances_rate", 5.75) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_work_injury(self, gross):
@@ -104,12 +104,12 @@ class IvoryCoastCalculator(BaseCalculator):
 
     def _compute_training_tax(self, gross):
         """Vocational training tax: 1.2% employer only."""
-        rate = flt(self.settings.training_tax_rate or 1.2) / 100
+        rate = self._num("training_tax_rate", 1.2) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_housing_fund(self, gross):
         """Housing construction fund: 1.5% employer only."""
-        rate = flt(self.settings.housing_fund_rate or 1.5) / 100
+        rate = self._num("housing_fund_rate", 1.5) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_its(self, gross):
@@ -132,7 +132,7 @@ class IvoryCoastCalculator(BaseCalculator):
             return 0
 
         # Step 1: 20% standard deduction
-        standard_deduction_rate = flt(self.settings.standard_deduction_rate or 20) / 100
+        standard_deduction_rate = self._num("standard_deduction_rate", 20) / 100
         taxable_income = gross * (1 - standard_deduction_rate)
 
         # Step 2: Progressive ITS
@@ -188,7 +188,7 @@ class IvoryCoastCalculator(BaseCalculator):
         if credit_eligible:
             num_shares = flt(self.settings.family_shares or 1)
             max_shares = flt(self.settings.max_shares or 5)
-            credit_per_half_share = flt(self.settings.tax_credit_per_share or 5500)
+            credit_per_half_share = self._num("tax_credit_per_share", 5500)
             actual_shares = min(num_shares, max_shares)
             tax -= actual_shares * credit_per_half_share
 
@@ -204,7 +204,7 @@ class IvoryCoastCalculator(BaseCalculator):
         if taxable_income > second_bracket_lower and second_bracket_lower > 0:
             num_shares = flt(self.settings.family_shares or 1)
             max_shares = flt(self.settings.max_shares or 5)
-            credit_per_half_share = flt(self.settings.tax_credit_per_share or 5500)
+            credit_per_half_share = self._num("tax_credit_per_share", 5500)
             actual_shares = min(num_shares, max_shares)
             tax -= actual_shares * credit_per_half_share
 

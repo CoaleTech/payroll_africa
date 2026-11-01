@@ -1,15 +1,17 @@
 """Guinea (Conakry) statutory deduction calculator.
 
 Reference: INSS Guinea (Institut National de Securite Sociale), DGI
-- INSS Pension: Employee 2.5%, Employer 5%
-- INSS Family Allowances: Employer 3%
-- INSS Work Injury: Employer 1.5-4% by risk class (applied to contribution base, not gross)
-- AMO Health: Employee 1.5%, Employer 1.5%
+- INSS Pension: Employee 5%, Employer 1.5%
+- INSS Family Allowances: Employer 6%
+- INSS Work Injury: Employer 4% flat (all risk classes)
+- AMO Health: Employee 0%, Employer 6.5%
 - PIT: Progressive 0-40%
-- Contribution ceiling: 8x minimum wage
+- Contribution ceiling: GNF 2,500,000/month (fixed statutory ceiling)
+- Minimum wage (SMIG): GNF 550,000/month (Decree D/2022/0270/PRG/SGG)
+
+Sources: cnss.gov.gn/cotisations-sociales-employeurs; walirh.com 2026; mahkano 2026
 """
 
-from frappe.utils import flt
 from payroll_africa.calculators.base import BaseCalculator
 
 
@@ -23,25 +25,22 @@ class GuineaCalculator(BaseCalculator):
         base = self._get_contribution_base(gross)
 
         # 1. INSS Pension
-        pension_emp = base * (flt(self.settings.inss_pension_employee_rate or 2.5) / 100)
-        pension_empr = base * (flt(self.settings.inss_pension_employer_rate or 5) / 100)
+        pension_emp = base * (self._num("inss_pension_employee_rate", 5) / 100)
+        pension_empr = base * (self._num("inss_pension_employer_rate", 1.5) / 100)
         results["INSS Pension Employee"] = {"amount": pension_emp, "is_employer_only": False}
         results["INSS Pension Employer"] = {"amount": pension_empr, "is_employer_only": True}
 
         # 2. INSS Family Allowances - Employer only
-        family = base * (flt(self.settings.inss_family_rate or 3) / 100)
+        family = base * (self._num("inss_family_rate", 6) / 100)
         results["INSS Family Allowances"] = {"amount": family, "is_employer_only": True}
 
-        # 3. Work Injury - Employer only (applied to contribution base, not gross)
-        risk_class = flt(self.settings.work_injury_risk_class or 1)
-        risk_rates = {1: 1.5, 2: 2.5, 3: 4.0}
-        injury_rate = risk_rates.get(int(risk_class), 1.5) / 100
-        injury = base * injury_rate if base > 0 else 0
+        # 3. Work Injury - Employer only, 4% flat (all risk classes; field kept for info)
+        injury = base * 0.04 if base > 0 else 0
         results["Work Injury Insurance"] = {"amount": injury, "is_employer_only": True}
 
         # 4. AMO Health
-        amo_emp = base * (flt(self.settings.amo_employee_rate or 1.5) / 100)
-        amo_empr = base * (flt(self.settings.amo_employer_rate or 1.5) / 100)
+        amo_emp = base * (self._num("amo_employee_rate", 0) / 100)
+        amo_empr = base * (self._num("amo_employer_rate", 6.5) / 100)
         results["AMO Health Employee"] = {"amount": amo_emp, "is_employer_only": False}
         results["AMO Health Employer"] = {"amount": amo_empr, "is_employer_only": True}
 
@@ -54,8 +53,8 @@ class GuineaCalculator(BaseCalculator):
         return results
 
     def _get_contribution_base(self, gross):
-        min_wage = flt(self.settings.minimum_wage or 80000)
-        ceiling = min_wage * 8
+        """Contribution base capped at the fixed statutory ceiling (GNF 2,500,000/month)."""
+        ceiling = self._num("inss_ceiling", 0) or 2500000
         return min(gross, ceiling) if gross > 0 else 0
 
     def _compute_pit(self, taxable_income):

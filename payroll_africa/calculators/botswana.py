@@ -45,7 +45,7 @@ class BotswanaCalculator(BaseCalculator):
             return 0
 
         annual_income = gross_monthly * 12
-        tax_free_threshold = flt(self.settings.tax_free_threshold or 48000)
+        tax_free_threshold = self._num("tax_free_threshold", 48000)
 
         if annual_income <= tax_free_threshold:
             return 0

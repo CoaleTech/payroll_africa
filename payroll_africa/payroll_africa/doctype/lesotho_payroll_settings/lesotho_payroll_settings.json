@@ -40,7 +40,8 @@
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (LSL)",
-   "default": "21600"
+   "default": "0",
+   "description": "Leave at 0 (no threshold). Lesotho uses a credit-based system; there is no statutory zero-rate income threshold. RSL 2025/26 circular."
   },
   {
    "fieldname": "tax_credit_annual",

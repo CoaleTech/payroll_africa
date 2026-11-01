@@ -51,13 +51,13 @@
    "fieldname": "cnss_employee_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employee Rate",
-   "default": "2.5"
+   "default": "5"
   },
   {
    "fieldname": "cnss_employer_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employer Rate",
-   "default": "20.1"
+   "default": "18"
   },
   {
    "fieldname": "cnss_ceiling",

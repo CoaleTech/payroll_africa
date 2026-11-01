@@ -59,25 +59,25 @@ class MaliCalculator(BaseCalculator):
 
     def _compute_inss_employee(self, gross):
         """INSS employee: 3.6% of gross (uncapped)."""
-        rate = flt(self.settings.inss_employee_rate or 3.6) / 100
+        rate = self._num("inss_employee_rate", 3.6) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_inss_employer(self, gross):
         """INSS employer: 5.4% of gross (uncapped)."""
-        rate = flt(self.settings.inss_employer_rate or 5.4) / 100
+        rate = self._num("inss_employer_rate", 5.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employee(self, gross):
         """AMO employee: 2% of capped base."""
-        rate = flt(self.settings.amo_employee_rate or 2) / 100
+        rate = self._num("amo_employee_rate", 2) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employer(self, gross):
         """AMO employer: 3.5% of capped base."""
-        rate = flt(self.settings.amo_employer_rate or 3.5) / 100
+        rate = self._num("amo_employer_rate", 3.5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
@@ -100,7 +100,7 @@ class MaliCalculator(BaseCalculator):
                 if amount > 0:
                     tax += amount * rate
             return tax
-        threshold = flt(self.settings.pit_threshold or 175000)
+        threshold = self._num("pit_threshold", 175000)
         if monthly <= threshold:
             return 0
         tax = 0

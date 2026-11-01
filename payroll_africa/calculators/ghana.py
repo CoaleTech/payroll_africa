@@ -54,21 +54,21 @@ class GhanaCalculator(BaseCalculator):
 
     def _compute_ssnit_employee(self, basic):
         """Employee SSNIT: 5.5% of basic salary."""
-        rate = flt(self.settings.ssnit_employee_rate or 5.5) / 100
+        rate = self._num("ssnit_employee_rate", 5.5) / 100
         ceiling = flt(self.settings.ssnit_ceiling or 0)  # No ceiling currently
         base = min(basic, ceiling) if ceiling > 0 and basic > 0 else basic
         return base * rate if base > 0 else 0
 
     def _compute_ssnit_employer(self, basic):
         """Employer SSNIT Tier 1: 13% of basic salary."""
-        rate = flt(self.settings.ssnit_employer_rate or 13) / 100
+        rate = self._num("ssnit_employer_rate", 13) / 100
         ceiling = flt(self.settings.ssnit_ceiling or 0)
         base = min(basic, ceiling) if ceiling > 0 and basic > 0 else basic
         return base * rate if base > 0 else 0
 
     def _compute_tier2_employer(self, basic):
         """Employer Tier 2 Pension: 5% of basic salary."""
-        rate = flt(self.settings.tier2_employer_rate or 5) / 100
+        rate = self._num("tier2_employer_rate", 5) / 100
         ceiling = flt(self.settings.ssnit_ceiling or 0)
         base = min(basic, ceiling) if ceiling > 0 and basic > 0 else basic
         return base * rate if base > 0 else 0

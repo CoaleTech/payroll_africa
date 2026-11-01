@@ -54,11 +54,12 @@ class TestLibya(unittest.TestCase):
         from payroll_africa.calculators.libya import LibyaCalculator
         self.calc = LibyaCalculator(MockSettings(ssf_employee_rate=5.125, ssf_employer_rate=14.35, solidarity_fund_rate=1))
 
-    def test_ssf_solidarity_jehad(self):
+    def test_ssf_solidarity(self):
+        # Jehad Tax abolished 14 Jul 2025 (EY Tax News 2025-1651)
         r = self.calc.compute(slip(2000))
         self.assertAlmostEqual(r["SSF Employee"]["amount"], 102.5, delta=1)
         self.assertAlmostEqual(r["Solidarity Fund"]["amount"], 20, delta=1)
-        self.assertAlmostEqual(r["Jehad Tax"]["amount"], 60, delta=1)  # 3% of 2000
+        self.assertNotIn("Jehad Tax", r)
 
     def test_zero_gross(self):
         r = self.calc.compute(slip(0))
@@ -70,12 +71,12 @@ class TestLibya(unittest.TestCase):
 
     def test_key_components(self):
         # gross=2000: ssf_emp=5.125%*2000=102.5, ssf_empr=14.35%*2000=287
-        # solidarity=1%*2000=20, jehad=3%*2000=60
+        # solidarity=1%*2000=20; Jehad Tax no longer computed
         r = self.calc.compute(slip(2000))
         self.assertAlmostEqual(r["SSF Employee"]["amount"], 102.5, delta=1)
         self.assertAlmostEqual(r["SSF Employer"]["amount"], 287, delta=1)
         self.assertAlmostEqual(r["Solidarity Fund"]["amount"], 20, delta=1)
-        self.assertAlmostEqual(r["Jehad Tax"]["amount"], 60, delta=1)
+        self.assertNotIn("Jehad Tax", r)
 
     def test_employer_only_flag(self):
         r = self.calc.compute(slip(2000))
@@ -83,16 +84,12 @@ class TestLibya(unittest.TestCase):
         self.assertFalse(r["SSF Employee"]["is_employer_only"])
         self.assertFalse(r["Solidarity Fund"]["is_employer_only"])
 
-    def test_jehad_rate_bands(self):
-        # gross < 50: 1% => 40 * 0.01 = 0.40
-        r_low = self.calc.compute(slip(40))
-        self.assertAlmostEqual(r_low["Jehad Tax"]["amount"], 0.40, delta=0.01)
-        # gross 50-100: 2% => 75 * 0.02 = 1.50
-        r_mid = self.calc.compute(slip(75))
-        self.assertAlmostEqual(r_mid["Jehad Tax"]["amount"], 1.50, delta=0.01)
-        # gross > 100: 3% => 200 * 0.03 = 6.0
-        r_high = self.calc.compute(slip(200))
-        self.assertAlmostEqual(r_high["Jehad Tax"]["amount"], 6.0, delta=0.01)
+    def test_jehad_tax_no_longer_computed(self):
+        # Jehad Tax abolished 14 Jul 2025 — must not appear in results
+        for gross in [40, 75, 200, 2000]:
+            with self.subTest(gross=gross):
+                r = self.calc.compute(slip(gross))
+                self.assertNotIn("Jehad Tax", r)
 
 
 class TestSomalia(unittest.TestCase):
@@ -212,7 +209,8 @@ class TestMauritania(unittest.TestCase):
 class TestCAR(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.central_african_republic import CentralAfricanRepublicCalculator
-        self.calc = CentralAfricanRepublicCalculator(MockSettings(minimum_wage=50000, cnss_employee_rate=3, cnss_employer_rate=15))
+        self.calc = CentralAfricanRepublicCalculator(MockSettings(
+            cnss_ceiling=600000, cnss_employee_rate=3, cnss_employer_rate=19))
 
     def test_cnss(self):
         r = self.calc.compute(slip(500000))
@@ -225,11 +223,11 @@ class TestCAR(unittest.TestCase):
         self.assertNotIn("PIT", r)
 
     def test_key_components(self):
-        # ceiling = 50000 * 8 = 400000; gross 200000 below ceiling
-        # CNSS emp: 200000 * 3% = 6,000; empr: 200000 * 15% = 30,000
+        # ceiling 600,000; gross 200,000 below ceiling
+        # CNSS emp: 200,000 * 3% = 6,000; empr: 200,000 * 19% = 38,000
         r = self.calc.compute(slip(200000))
         self.assertAlmostEqual(r["CNSS Employee"]["amount"], 6000, delta=1)
-        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 30000, delta=1)
+        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 38000, delta=1)
 
     def test_employer_only_flag(self):
         r = self.calc.compute(slip(200000))
@@ -237,13 +235,13 @@ class TestCAR(unittest.TestCase):
         self.assertTrue(r["CNSS Employer"]["is_employer_only"])
 
     def test_ceiling(self):
-        # gross 600000 > ceiling 400000; CNSS emp = 400000 * 3% = 12,000
-        r = self.calc.compute(slip(600000))
-        self.assertAlmostEqual(r["CNSS Employee"]["amount"], 12000, delta=1)
-        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 60000, delta=1)
+        # gross 800,000 > ceiling 600,000; CNSS emp = 600,000 * 3% = 18,000
+        r = self.calc.compute(slip(800000))
+        self.assertAlmostEqual(r["CNSS Employee"]["amount"], 18000, delta=1)
+        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 114000, delta=1)
 
     def test_below_pit_threshold(self):
-        # annual PIT threshold 600,000; gross 40000: taxable ~38800, annual ~465600 < 600000
+        # annual PIT threshold 600,000; gross 40,000: taxable ~38,800, annual ~465,600 < 600,000
         r = self.calc.compute(slip(40000))
         self.assertNotIn("PIT", r)
 

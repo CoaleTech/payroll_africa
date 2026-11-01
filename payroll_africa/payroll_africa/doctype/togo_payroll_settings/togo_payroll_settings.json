@@ -60,7 +60,7 @@
    "fieldname": "cnss_ceiling",
    "fieldtype": "Currency",
    "label": "CNSS Ceiling (XOF)",
-   "default": 500000
+   "default": 0
   },
   {
    "fieldname": "minimum_wage",

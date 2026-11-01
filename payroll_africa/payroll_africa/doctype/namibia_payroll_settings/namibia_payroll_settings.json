@@ -70,8 +70,8 @@
    "fieldname": "ssc_annual_ceiling",
    "fieldtype": "Currency",
    "label": "SSC Annual Ceiling",
-   "default": "108000",
-   "description": "Maximum annual gross subject to SSC (NAD)"
+   "default": "150000",
+   "description": "Maximum annual gross subject to SSC (NAD). N$12,500/month from 1 Sep 2026; scheduled N$14,000/month from March 2027."
   },
   {
    "fieldname": "vet_levy_section",

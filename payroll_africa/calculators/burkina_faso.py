@@ -59,22 +59,22 @@ class BurkinaFasoCalculator(BaseCalculator):
         return min(gross, ceiling) if gross > 0 else 0
 
     def _compute_cnss_employee(self, gross):
-        rate = flt(self.settings.cnss_employee_rate or 8) / 100
+        rate = self._num("cnss_employee_rate", 8) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_cnss_employer(self, gross):
-        rate = flt(self.settings.cnss_employer_rate or 17.5) / 100
+        rate = self._num("cnss_employer_rate", 17.5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employee(self, gross):
-        rate = flt(self.settings.amo_employee_rate or 2.5) / 100
+        rate = self._num("amo_employee_rate", 2.5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employer(self, gross):
-        rate = flt(self.settings.amo_employer_rate or 2.5) / 100
+        rate = self._num("amo_employer_rate", 2.5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
@@ -82,7 +82,7 @@ class BurkinaFasoCalculator(BaseCalculator):
         """IUTS progressive (monthly bands, DGI Burkina Faso)."""
         if taxable_income <= 0:
             return 0
-        threshold = flt(self.settings.pit_threshold or 30000)
+        threshold = self._num("pit_threshold", 30000)
         if taxable_income <= threshold:
             return 0
         tax = 0

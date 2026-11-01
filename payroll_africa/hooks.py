@@ -49,6 +49,7 @@ before_uninstall = "payroll_africa.setup.before_uninstall"
 doc_events = {
 	"Company": {
 		"after_insert": "payroll_africa.setup.enable_country_on_company_insert",
+		"on_update": "payroll_africa.setup.ensure_company_component_accounts",
 	},
 }
 

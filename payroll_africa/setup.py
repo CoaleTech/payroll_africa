@@ -398,9 +398,59 @@ def after_install():
 	auto_enable_from_companies()
 
 
+def ensure_component_accounts(company=None):
+	"""Give the app's Earning/Deduction components a GL account per Payroll Africa company.
+
+	HRMS Payroll Entry refuses to book a slip whose component has no account for the
+	company. Earnings post to the company's "Salary" expense account, deductions to its
+	default payroll payable account. Existing rows are never changed; companies missing
+	either account are skipped. Employer Contribution components are not booked by HRMS.
+	"""
+	filters = {"name": company} if company else {}
+	targets = {}
+	for c in frappe.get_all(
+		"Company", filters=filters, fields=["name", "country", "default_payroll_payable_account"]
+	):
+		salary = frappe.db.get_value(
+			"Account", {"company": c.name, "account_name": "Salary", "is_group": 0}, "name"
+		)
+		if _enable_field_for_country(c.country) and salary and c.default_payroll_payable_account:
+			targets[c.name] = {"Earning": salary, "Deduction": c.default_payroll_payable_account}
+	if not targets:
+		return
+
+	components = frappe.db.sql(
+		"""select distinct sc.name, sc.type from `tabSalary Component` sc
+		join `tabSalary Detail` sd on sd.salary_component = sc.name
+		join `tabSalary Structure` ss on ss.name = sd.parent and sd.parenttype = 'Salary Structure'
+		where ss.name like %s and sc.type in ('Earning', 'Deduction')""",
+		("% Payroll Template",),
+		as_dict=True,
+	)
+	for comp in components:
+		have = set(
+			frappe.get_all("Salary Component Account", filters={"parent": comp.name}, pluck="company")
+		)
+		missing = [c for c in targets if c not in have]
+		if not missing:
+			continue
+		doc = frappe.get_doc("Salary Component", comp.name)
+		for c in missing:
+			doc.append("accounts", {"company": c, "account": targets[c][comp.type]})
+		doc.flags.ignore_permissions = True
+		doc.save()
+
+
+def ensure_company_component_accounts(doc, method=None):
+	"""Company on_update hook: keep a (new) company's component accounts in place."""
+	if frappe.db.exists("DocType", "Payroll Africa Settings"):
+		ensure_component_accounts(doc.name)
+
+
 def after_migrate():
 	"""Run after bench migrate."""
 	_run_setup()
+	ensure_component_accounts()
 
 
 def _create_salary_structure(name, currency, deductions, country=None):
@@ -2492,26 +2542,26 @@ def setup_namibia():
 
 
 def _create_namibia_settings():
-	"""Create Namibia Payroll Settings with 2025 default rates."""
+	"""Create Namibia Payroll Settings (PwC/NamRA 2025/26; SSC from 1 Sep 2026)."""
 	doc = frappe.get_doc("Namibia Payroll Settings")
 	if doc.paye_bands:
 		return
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.ssc_rate = 0.9
-	doc.ssc_annual_ceiling = 132000  # SSC GN 8461, effective Mar 2025 (NAD 11,000/mo)
+	doc.ssc_annual_ceiling = 150000  # NAD 12,500/month from 1 Sep 2026 (Deloitte/Sage Aug 2026)
 	doc.vet_levy_applicable = 1
 	doc.vet_levy_rate = 1
 	doc.ecf_risk_sector = "low"
 
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 100000, "rate": 0, "base_tax": 0},
-		{"from_amount": 100001, "to_amount": 250000, "rate": 18, "base_tax": 0},
-		{"from_amount": 250001, "to_amount": 500000, "rate": 25, "base_tax": 27000},
-		{"from_amount": 500001, "to_amount": 750000, "rate": 28, "base_tax": 89500},
-		{"from_amount": 750001, "to_amount": 1000000, "rate": 30, "base_tax": 159500},
-		{"from_amount": 1000001, "to_amount": 1500000, "rate": 32, "base_tax": 234500},
-		{"from_amount": 1500001, "to_amount": 0, "rate": 37, "base_tax": 394500},
+		{"from_amount": 100001, "to_amount": 150000, "rate": 18, "base_tax": 0},
+		{"from_amount": 150001, "to_amount": 350000, "rate": 25, "base_tax": 9000},
+		{"from_amount": 350001, "to_amount": 550000, "rate": 28, "base_tax": 59000},
+		{"from_amount": 550001, "to_amount": 850000, "rate": 30, "base_tax": 115000},
+		{"from_amount": 850001, "to_amount": 1550000, "rate": 32, "base_tax": 205000},
+		{"from_amount": 1550001, "to_amount": 0, "rate": 37, "base_tax": 429000},
 	]
 	for band in paye_bands:
 		doc.append("paye_bands", band)
@@ -2579,18 +2629,18 @@ def _create_namibia_salary_components():
 
 
 def _create_namibia_income_tax_slab():
-	"""Create Namibia PAYE Income Tax Slab for 2025."""
+	"""Create Namibia PAYE Income Tax Slab for 2025/26."""
 	_create_income_tax_slab(
 		slab_name="Namibia PAYE 2025",
 		currency="NAD",
 		bands=[
 			{"from_amount": 0, "to_amount": 100000, "rate": 0},
-			{"from_amount": 100001, "to_amount": 250000, "rate": 18},
-			{"from_amount": 250001, "to_amount": 500000, "rate": 25},
-			{"from_amount": 500001, "to_amount": 750000, "rate": 28},
-			{"from_amount": 750001, "to_amount": 1000000, "rate": 30},
-			{"from_amount": 1000001, "to_amount": 1500000, "rate": 32},
-			{"from_amount": 1500001, "to_amount": 0, "rate": 37},
+			{"from_amount": 100001, "to_amount": 150000, "rate": 18},
+			{"from_amount": 150001, "to_amount": 350000, "rate": 25},
+			{"from_amount": 350001, "to_amount": 550000, "rate": 28},
+			{"from_amount": 550001, "to_amount": 850000, "rate": 30},
+			{"from_amount": 850001, "to_amount": 1550000, "rate": 32},
+			{"from_amount": 1550001, "to_amount": 0, "rate": 37},
 		],
 	)
 
@@ -3032,7 +3082,7 @@ def _create_chad_settings():
 	doc.enabled = 1
 	doc.effective_from = "2025-01-01"
 	doc.cnps_pension_employee_rate = 3.5
-	doc.cnps_pension_employer_rate = 7
+	doc.cnps_pension_employer_rate = 5
 	doc.cnps_ceiling = 500000
 	doc.minimum_wage = 60000
 	doc.family_allowances_rate = 7.5
@@ -3355,14 +3405,14 @@ def setup_algeria():
 
 
 def _create_algeria_settings():
-	"""Create Algeria Payroll Settings (PwC + LFC 2024)."""
+	"""Create Algeria Payroll Settings (CLEISS 2024 + LFC 2024)."""
 	doc = frappe.get_doc("Algeria Payroll Settings")
 	if doc.pit_bands:
 		return
 	doc.enabled = 1
 	doc.effective_from = "2024-01-01"
 	doc.cnas_employee_rate = 9
-	doc.cnas_employer_rate = 26
+	doc.cnas_employer_rate = 25
 	doc.cnas_ceiling = 0
 	doc.training_tax_rate = 1
 	pit_bands = [
@@ -3411,7 +3461,7 @@ def setup_libya():
 	_create_libya_salary_components()
 	_create_libya_income_tax_slab()
 	_create_salary_structure("Libya Payroll Template", "LYD", [
-		"PIT", "SSF Employee", "SSF Employer", "Solidarity Fund", "Jehad Tax",
+		"PIT", "SSF Employee", "SSF Employer", "Solidarity Fund",
 	])
 
 
@@ -3444,7 +3494,6 @@ def _create_libya_salary_components():
 		{"salary_component": "SSF Employee", "salary_component_abbr": "SSFe", "type": "Deduction", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 1},
 		{"salary_component": "SSF Employer", "salary_component_abbr": "SSFr", "type": "Employer Contribution", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 0},
 		{"salary_component": "Solidarity Fund", "salary_component_abbr": "SOL", "type": "Deduction", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 0},
-		{"salary_component": "Jehad Tax", "salary_component_abbr": "JHD", "type": "Deduction", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 0},
 	]:
 		_upsert_salary_component(comp_data)
 
@@ -4363,7 +4412,7 @@ def _create_togo_settings():
 	doc.effective_from = "2026-01-01"
 	doc.cnss_employee_rate = 4
 	doc.cnss_employer_rate = 17.5
-	doc.cnss_ceiling = 500000
+	doc.cnss_ceiling = 0
 	doc.minimum_wage = 52500
 	doc.inam_employee_rate = 5
 	doc.inam_employer_rate = 5
@@ -4504,8 +4553,9 @@ def _create_eswatini_settings():
 	doc.effective_from = "2026-01-01"
 	doc.tax_rebate_annual = 8200
 	doc.enpf_rate = 5
-	doc.enpf_cap_total = 400
+	doc.enpf_cap_total = 430
 	doc.sdl_rate = 1
+	doc.tax_rebate_secondary = 2700
 	for band in [
 		{"from_amount": 0, "to_amount": 100000, "rate": 20},
 		{"from_amount": 100000, "to_amount": 150000, "rate": 25},
@@ -4542,19 +4592,20 @@ def setup_guinea():
 
 
 def _create_guinea_settings():
-	"""Create Guinea Payroll Settings (INSS/DGI). minimum_wage is CONFIRM-NEEDED (SMIG)."""
+	"""Create Guinea Payroll Settings (CNSS Guinea 2026; Decree D/2022/0270/PRG/SGG)."""
 	doc = frappe.get_doc("Guinea Payroll Settings")
 	if doc.pit_bands:
 		return
 	doc.enabled = 1
 	doc.effective_from = "2026-01-01"
-	doc.inss_pension_employee_rate = 2.5
-	doc.inss_pension_employer_rate = 5
-	doc.inss_family_rate = 3
+	doc.inss_pension_employee_rate = 5
+	doc.inss_pension_employer_rate = 1.5
+	doc.inss_family_rate = 6
 	doc.work_injury_risk_class = 1
-	doc.amo_employee_rate = 1.5
-	doc.amo_employer_rate = 1.5
+	doc.amo_employee_rate = 0
+	doc.amo_employer_rate = 6.5
 	doc.minimum_wage = 550000
+	doc.inss_ceiling = 2500000
 	for band in [
 		{"from_amount": 0, "to_amount": 1200000, "rate": 0},
 		{"from_amount": 1200000, "to_amount": 3000000, "rate": 5},
@@ -4832,8 +4883,8 @@ _PAYROLL_AFRICA_SALARY_COMPONENTS = [
 	"Housing Construction Fund",
 	# Algeria
 	"CNAS Employee", "CNAS Employer",
-	# Libya
-	"SSF Employee", "SSF Employer", "Solidarity Fund", "Jehad Tax",
+	# Libya (Jehad Tax abolished 14 Jul 2025; leave existing component records)
+	"SSF Employee", "SSF Employer", "Solidarity Fund",
 	# Sudan
 	"NSIF Employee", "NSIF Employer",
 	# Mauritania (CNSS Employee/Employer already listed under Morocco)

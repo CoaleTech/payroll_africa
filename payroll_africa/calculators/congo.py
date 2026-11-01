@@ -1,12 +1,11 @@
 """Congo (Brazzaville) statutory deduction calculator.
 
-Reference: CNSS Congo, CNAMGS
-- CNSS: Employer 16% of gross salary
+Reference: CNSS Congo, CAMU (Caisse Autonome Mutuelle des Agents)
+- CNSS Employer: ~20.285% of gross (capped at cnss_ceiling, default 1,200,000 XAF)
   Components: Family allowances, old age pension, work injury
-- CNAMGS (Health): Employer 4.1% of gross salary
-  (Caisse Nationale d'Assurance Maladie et de Garantie Sociale)
-- Employee contribution: Typically minimal or 0%
-- PIT: Progressive tax system
+- CNSS Employee: 4% of gross (capped at cnss_ceiling)
+- CAMU solidarity contribution: Employer 0.5% on income above 500,000 XAF
+- PIT: Progressive tax system (1%–40% annual bands)
 """
 
 from frappe.utils import flt
@@ -21,7 +20,7 @@ class CongoCalculator(BaseCalculator):
         results = {}
 
         # 1. CNSS - Employer only (16%)
-        cnss_rate = flt(self.settings.cnss_rate or 20.285) / 100
+        cnss_rate = self._num("cnss_rate", 20.285) / 100
         cnss_ceiling = flt(self.settings.cnss_ceiling or 1200000)
         cnss_base = min(gross, cnss_ceiling) if gross > 0 else 0
         cnss_empr = cnss_base * cnss_rate
@@ -38,7 +37,7 @@ class CongoCalculator(BaseCalculator):
         }
 
         # 3. CAMU Health - Employer only (0.5% on income > 500,000)
-        camu_rate = flt(self.settings.cnamgs_rate or 0.5) / 100
+        camu_rate = self._num("cnamgs_rate", 0.5) / 100
         camu_base = max(gross - 500000, 0) if gross > 0 else 0
         camu_empr = camu_base * camu_rate
         results["CAMU Health Employer"] = {
@@ -59,7 +58,7 @@ class CongoCalculator(BaseCalculator):
 
     def _compute_cnss_employee(self, gross):
         """Employee CNSS contribution (~4%), capped at cnss_ceiling (default 1,200,000 XAF)."""
-        rate = flt(self.settings.cnss_employee_rate or 4) / 100
+        rate = self._num("cnss_employee_rate", 4) / 100
         ceiling = flt(self.settings.cnss_ceiling or 1200000)
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate

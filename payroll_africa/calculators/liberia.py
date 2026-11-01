@@ -19,8 +19,8 @@ class LiberiaCalculator(BaseCalculator):
 
         # 1. NASSCorp
         base = self._get_contribution_base(gross)
-        nassc_emp = base * (flt(self.settings.nasscorp_employee_rate or 4) / 100)
-        nassc_empr = base * (flt(self.settings.nasscorp_employer_rate or 6) / 100)
+        nassc_emp = base * (self._num("nasscorp_employee_rate", 4) / 100)
+        nassc_empr = base * (self._num("nasscorp_employer_rate", 6) / 100)
         results["NASSCorp Employee"] = {"amount": nassc_emp, "is_employer_only": False}
         results["NASSCorp Employer"] = {"amount": nassc_empr, "is_employer_only": True}
 

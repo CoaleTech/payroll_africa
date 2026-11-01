@@ -1,10 +1,16 @@
 """Algeria statutory deduction calculator.
 
 Reference: CNAS, DGI
-- CNAS Social Security: Employee 9%, Employer 26%
-  (Health, maternity, work injury, pension, family allowances)
-- PIT (IRG): Progressive 0-35% (6 brackets)
+- CNAS Social Security: Employee 9%, Employer 25%
+  (Health, maternity, work injury, pension, family allowances; source: CLEISS 2024)
+  Breakdown (employer): Social insurance 11.5 % + AT/MP 1.25 % + Retirement 11 %
+    + Early-retirement 0.25 % + Unemployment 1 % = 25 %. The FNPOS 0.5 % is a
+    separate fund (Fonds National de Péréquation des Oeuvres Sociales) charged to
+    the FNPOS column, not to the employer; document-only, not modelled here.
+- PIT (IRG): Progressive 0-35% (6 brackets, LF 2024 and earlier)
   Annual: 0-240k@0%, 240k-480k@23%, 480k-960k@27%, 960k-1920k@30%, 1920k-3840k@33%, 3840k+@35%
+  NOTE: LF 2025 may introduce a simplified 4-bracket scale and an abatement — see
+  countries/algeria.md Unverified section.
 - Tax year: January 1 - December 31
 """
 
@@ -34,9 +40,9 @@ class AlgeriaCalculator(BaseCalculator):
             "amount": cnas_emp, "is_employer_only": False,
         }
 
-        # CNAS Employer (26%)
+        # CNAS Employer (25%; CLEISS 2024: 11.5+1.25+11+0.25+1=25%)
         empr_rate = self.settings.cnas_employer_rate
-        cnas_empr = gross * (flt(empr_rate if empr_rate is not None else 26) / 100) if gross > 0 else 0
+        cnas_empr = gross * (flt(empr_rate if empr_rate is not None else 25) / 100) if gross > 0 else 0
         results["CNAS Employer"] = {
             "amount": cnas_empr, "is_employer_only": True,
         }

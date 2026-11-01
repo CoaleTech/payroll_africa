@@ -37,7 +37,7 @@ class LesothoCalculator(BaseCalculator):
         if threshold and annual <= flt(threshold):
             return 0
 
-        credit = flt(self.settings.tax_credit_annual or 11640)
+        credit = self._num("tax_credit_annual", 11640)
 
         if annual <= 74040:
             tax = annual * 0.20

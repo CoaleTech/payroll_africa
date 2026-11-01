@@ -1,5 +1,7 @@
+from datetime import date
+
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 
 
 class BaseCalculator:
@@ -7,6 +9,23 @@ class BaseCalculator:
 
 	def __init__(self, settings):
 		self.settings = settings
+
+	def _num(self, field, default):
+		"""Stored setting value; `default` only if the field was never saved (None).
+
+		An explicit 0 is honoured (unlike `x or default`). Use `or` only for fields
+		where 0 is meaningless (ceilings, minimum wage, caps).
+		"""
+		value = getattr(self.settings, field, None)
+		return default if value is None else flt(value)
+
+	def get_employee_age(self, salary_slip):
+		"""Whole-year age on the slip end date; None when no date of birth is on file."""
+		dob = frappe.db.get_value("Employee", salary_slip.employee, "date_of_birth")
+		if not isinstance(dob, date):
+			return None
+		on = getdate(salary_slip.end_date) if salary_slip.end_date else date.today()
+		return on.year - dob.year - ((on.month, on.day) < (dob.month, dob.day))
 
 	def compute(self, salary_slip):
 		"""Compute all statutory deductions for this country.

@@ -56,7 +56,7 @@
    "fieldname": "sshfc_ceiling",
    "fieldtype": "Currency",
    "label": "SSHFC Ceiling (GMD)",
-   "default": "0"
+   "default": 25000
   },
   {
    "fieldname": "col_break_sshfc",
@@ -71,7 +71,7 @@
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (GMD)",
-   "default": "0"
+   "default": 7500
   },
   {
    "fieldname": "pit_bands_section",

@@ -70,6 +70,17 @@
    "description": "Graduated LST bands. From/To = monthly income range (UGX). Rate = annual LST amount (UGX, not a percentage)."
   },
   {
+   "fieldname": "lst_annual_amount",
+   "fieldtype": "Currency",
+   "label": "LST Annual Amount (Flat)",
+   "description": "Flat annual LST when no band table is configured. Divided by 12 per month.",
+   "default": "0",
+   "in_list_view": 0,
+   "reqd": 0,
+   "hidden": 0,
+   "read_only": 0
+  },
+  {
    "fieldname": "paye_section",
    "fieldtype": "Section Break",
    "label": "PAYE"

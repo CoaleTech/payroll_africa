@@ -49,7 +49,7 @@
    "fieldname": "cnas_employer_rate",
    "fieldtype": "Percent",
    "label": "CNAS Employer Rate",
-   "default": "25.5"
+   "default": "26"
   },
   {
    "fieldname": "cnas_ceiling",

@@ -42,7 +42,8 @@
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (SCR)",
-   "default": "0"
+   "default": "8555.5",
+   "description": "Monthly gross below which PAYE is zero (SCR). Used by the calculator."
   },
   {
    "fieldname": "social_section",

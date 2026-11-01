@@ -87,20 +87,23 @@ class NamibiaCalculator(BaseCalculator):
     def _compute_paye(self, gross):
         """Compute PAYE using progressive annual bands.
 
-        Annual taxable income bands (NAD):
-        0 - 100,000       : 0%
-        100,001 - 250,000 : 18% above 100,000
-        250,001 - 500,000 : 27,000 + 25% above 250,000
-        500,001 - 750,000 : 89,500 + 28% above 500,000
-        750,001 - 1,000,000: 159,500 + 30% above 750,000
-        1,000,001 - 1,500,000: 234,500 + 32% above 1,000,000
-        Over 1,500,000    : 394,500 + 37% above 1,500,000
+        Each band carries a ``base_tax`` representing cumulative tax at the
+        bottom of that band.  We find the single matching band and return
+        ``base_tax + (income − lower) × rate`` divided by 12 for monthly.
+
+        Annual taxable income bands (NAD, NamRA 2025):
+        0 - 100,000        : 0 %
+        100,001 - 250,000  : 18 % above 100,000
+        250,001 - 500,000  : 27,000 + 25 % above 250,000
+        500,001 - 750,000  : 89,500 + 28 % above 500,000
+        750,001 - 1,000,000: 159,500 + 30 % above 750,000
+        1,000,001-1,500,000: 234,500 + 32 % above 1,000,000
+        Over 1,500,000     : 394,500 + 37 % above 1,500,000
         """
         if gross <= 0:
             return 0
 
         annual_income = gross * 12
-        tax = 0
 
         bands = self.settings.paye_bands or []
         if bands:
@@ -113,14 +116,14 @@ class NamibiaCalculator(BaseCalculator):
                 if annual_income <= lower:
                     break
 
-                band_top = upper if upper > 0 else annual_income
-                taxable_in_band = min(annual_income, band_top) - lower
-                if taxable_in_band > 0:
-                    tax += base_tax + taxable_in_band * rate
-        else:
-            tax = self._paye_hardcoded(annual_income)
+                band_top = upper if upper > 0 else float("inf")
+                if annual_income <= band_top:
+                    # Matching band found — return its contribution only
+                    return (base_tax + (annual_income - lower) * rate) / 12
 
-        return tax / 12
+            return 0  # income below first band's lower (shouldn't happen)
+
+        return self._paye_hardcoded(annual_income) / 12
 
     def _paye_hardcoded(self, annual_income):
         """Hardcoded PAYE formula."""

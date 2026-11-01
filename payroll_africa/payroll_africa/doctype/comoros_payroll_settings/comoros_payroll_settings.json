@@ -45,13 +45,15 @@
    "fieldname": "cnss_employee_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employee Rate",
-   "default": "3"
+   "default": "3.5",
+   "description": "Employee CNSS contribution rate"
   },
   {
    "fieldname": "cnss_employer_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employer Rate",
-   "default": "9"
+   "default": "10.5",
+   "description": "Employer CNSS contribution rate"
   },
   {
    "fieldname": "cnss_ceiling",
@@ -78,7 +80,8 @@
    "fieldname": "pit_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (KMF)",
-   "default": "0"
+   "default": "360000",
+   "description": "Annual PIT-free threshold (KMF)"
   },
   {
    "fieldname": "pit_bands_section",

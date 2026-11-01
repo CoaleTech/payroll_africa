@@ -52,7 +52,7 @@
    "fieldname": "inss_employer_rate",
    "fieldtype": "Percent",
    "label": "INSS Employer Rate",
-   "default": "8.4"
+   "default": "5.4"
   },
   {
    "fieldname": "minimum_wage",
@@ -69,13 +69,13 @@
    "fieldname": "amo_employee_rate",
    "fieldtype": "Percent",
    "label": "AMO Health Employee Rate",
-   "default": "3"
+   "default": "2"
   },
   {
    "fieldname": "amo_employer_rate",
    "fieldtype": "Percent",
    "label": "AMO Health Employer Rate",
-   "default": "4"
+   "default": "3.5"
   },
   {
    "fieldname": "pit_section",
@@ -85,8 +85,8 @@
   {
    "fieldname": "pit_threshold",
    "fieldtype": "Currency",
-   "label": "PIT Tax-Free Threshold (XOF Annual)",
-   "default": "650000"
+   "label": "PIT Tax-Free Threshold (XOF Monthly)",
+   "default": "175000"
   },
   {
    "fieldname": "pit_bands_section",

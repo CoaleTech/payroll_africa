@@ -1,11 +1,10 @@
 """Benin statutory deduction calculator.
 
 Reference: CNSS, DGI
-- CNSS Pension: Employee 3.6%, Employer 6.4% (capped at XOF 8x minimum wage)
-- AMO Health: Employee 2%, Employer 4% (capped)
-- PIT (IR): Progressive 0-35%
-- Tax-free threshold: XOF 500,000/year
-- Professional deduction: 20% of gross
+- CNSS Pension: Employee 3.6%, Employer 15.4% (ceiling: cnss_ceiling; 0 = uncapped)
+- AMO Health: Employee 0%, Employer 0% (disabled; rates configurable)
+- PIT (ITS): Progressive 0-40% on monthly taxable income (CGI Benin 2026)
+- Tax-free threshold: XOF 60,000/month
 """
 
 from frappe.utils import flt

@@ -131,7 +131,42 @@ def _setup_custom_fields():
 				"label": "NHIMA Number",
 				"insert_after": "zm_napsa_no",
 				"module": "Payroll Africa",
-			}
+			},
+			{
+				"fieldname": "ke_statutory_section",
+				"fieldtype": "Section Break",
+				"label": "Kenya Statutory IDs",
+				"insert_after": "zm_nhima_no",
+				"collapsible": 1,
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "tax_id",
+				"fieldtype": "Data",
+				"label": "KRA PIN / Tax ID",
+				"insert_after": "ke_statutory_section",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "national_id",
+				"fieldtype": "Data",
+				"label": "National ID",
+				"insert_after": "tax_id",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "ke_cb",
+				"fieldtype": "Column Break",
+				"insert_after": "national_id",
+				"module": "Payroll Africa",
+			},
+			{
+				"fieldname": "nssf_no",
+				"fieldtype": "Data",
+				"label": "NSSF Number",
+				"insert_after": "ke_cb",
+				"module": "Payroll Africa",
+			},
 		],
 		"Salary Structure Assignment": [
 			{
@@ -230,8 +265,14 @@ def _upsert_salary_component(comp_data: dict):
 	doc.insert()
 
 
-def _create_income_tax_slab(slab_name: str, currency: str, bands: list, personal_relief: float = 0):
-	"""Create an Income Tax Slab unless one with this name already exists."""
+def _create_income_tax_slab(slab_name: str, currency: str, bands: list):
+	"""Create and submit an Income Tax Slab unless one with this name already exists.
+
+	Bands must use ANNUAL amounts (HRMS annualises monthly taxable income before
+	applying the slab).  personal_relief is intentionally not applied here:
+	HRMS Income Tax Slab Other Charges has no flat_amount field, so flat credit
+	rows are silently dropped.  Apply personal relief in the calculator instead.
+	"""
 	if frappe.db.exists("Income Tax Slab", slab_name):
 		return
 
@@ -249,15 +290,9 @@ def _create_income_tax_slab(slab_name: str, currency: str, bands: list, personal
 			"percent_deduction": band["rate"],
 		})
 
-	if personal_relief:
-		doc.append("other_taxes_and_charges", {
-			"description": "Personal Relief",
-			"percent": 0,
-			"flat_amount": -personal_relief,
-		})
-
 	doc.flags.ignore_permissions = True
 	doc.insert()
+	doc.submit()
 
 
 def _run_setup():
@@ -368,13 +403,14 @@ def after_migrate():
 	_run_setup()
 
 
-def _create_salary_structure(name, currency, deductions):
+def _create_salary_structure(name, currency, deductions, country=None):
 	"""Create a template Salary Structure for a country.
 
 	Args:
 		name: Salary Structure name, e.g. "Kenya Payroll Template"
 		currency: Currency code, e.g. "KES"
 		deductions: List of salary component names to add as deductions or employer contributions
+		country: Optional country name to find a matching Company (avoids using the global default).
 	"""
 	if frappe.db.exists("Salary Structure", name):
 		return
@@ -388,7 +424,10 @@ def _create_salary_structure(name, currency, deductions):
 		bs.flags.ignore_permissions = True
 		bs.insert()
 
-	company = frappe.db.get_default("company") or frappe.db.get_value("Company", {}, "name")
+	if country:
+		company = frappe.db.get_value("Company", {"country": country}, "name")
+	else:
+		company = frappe.db.get_default("company") or frappe.db.get_value("Company", {}, "name")
 	if not company:
 		return
 
@@ -568,19 +607,11 @@ def _create_kenya_salary_components():
 
 
 def _create_kenya_income_tax_slab():
-	"""Create Kenya PAYE Income Tax Slab for 2025."""
-	_create_income_tax_slab(
-		slab_name="Kenya PAYE 2025",
-		currency="KES",
-		bands=[
-			{"from_amount": 0, "to_amount": 24000, "rate": 10},
-			{"from_amount": 24001, "to_amount": 32333, "rate": 25},
-			{"from_amount": 32334, "to_amount": 500000, "rate": 30},
-			{"from_amount": 500001, "to_amount": 800000, "rate": 32.5},
-			{"from_amount": 800001, "to_amount": 0, "rate": 35},
-		],
-		personal_relief=2400,
-	)
+	"""Create Kenya PAYE Income Tax Slab (annual bands — HRMS annualises monthly income).
+
+	Personal relief is applied in the calculator (_compute_paye), not the slab.
+	"""
+	_create_income_tax_slab(slab_name="Kenya PAYE 2025", currency="KES", bands=KENYA_PAYE_ANNUAL_BANDS)
 
 
 def setup_uganda():
@@ -670,18 +701,8 @@ def _create_uganda_salary_components():
 
 
 def _create_uganda_income_tax_slab():
-	"""Create Uganda PAYE Income Tax Slab for 2025."""
-	_create_income_tax_slab(
-		slab_name="Uganda PAYE 2025",
-		currency="UGX",
-		bands=[
-			{"from_amount": 0, "to_amount": 235000, "rate": 0},
-			{"from_amount": 235001, "to_amount": 335000, "rate": 10},
-			{"from_amount": 335001, "to_amount": 410000, "rate": 20},
-			{"from_amount": 410001, "to_amount": 10000000, "rate": 30},
-			{"from_amount": 10000001, "to_amount": 0, "rate": 40},
-		],
-	)
+	"""Create Uganda PAYE Income Tax Slab (annual bands — HRMS annualises monthly income)."""
+	_create_income_tax_slab(slab_name="Uganda PAYE 2025", currency="UGX", bands=UGANDA_PAYE_ANNUAL_BANDS)
 
 
 def setup_tanzania():
@@ -779,18 +800,8 @@ def _create_tanzania_salary_components():
 
 
 def _create_tanzania_income_tax_slab():
-	"""Create Tanzania PAYE Income Tax Slab for 2025."""
-	_create_income_tax_slab(
-		slab_name="Tanzania PAYE 2025",
-		currency="TZS",
-		bands=[
-			{"from_amount": 0, "to_amount": 270000, "rate": 0},
-			{"from_amount": 270001, "to_amount": 520000, "rate": 8},
-			{"from_amount": 520001, "to_amount": 760000, "rate": 20},
-			{"from_amount": 760001, "to_amount": 1000000, "rate": 25},
-			{"from_amount": 1000001, "to_amount": 0, "rate": 30},
-		],
-	)
+	"""Create Tanzania PAYE Income Tax Slab (annual bands — HRMS annualises monthly income)."""
+	_create_income_tax_slab(slab_name="Tanzania PAYE 2025", currency="TZS", bands=TANZANIA_PAYE_ANNUAL_BANDS)
 
 
 def setup_rwanda():
@@ -913,17 +924,8 @@ def _create_rwanda_salary_components():
 
 
 def _create_rwanda_income_tax_slab():
-	"""Create Rwanda PAYE Income Tax Slab for 2025."""
-	_create_income_tax_slab(
-		slab_name="Rwanda PAYE 2025",
-		currency="RWF",
-		bands=[
-			{"from_amount": 0, "to_amount": 60000, "rate": 0},
-			{"from_amount": 60001, "to_amount": 100000, "rate": 10},
-			{"from_amount": 100001, "to_amount": 200000, "rate": 20},
-			{"from_amount": 200001, "to_amount": 0, "rate": 30},
-		],
-	)
+	"""Create Rwanda PAYE Income Tax Slab (annual bands — HRMS annualises monthly income)."""
+	_create_income_tax_slab(slab_name="Rwanda PAYE 2025", currency="RWF", bands=RWANDA_PAYE_ANNUAL_BANDS)
 
 
 def setup_burundi():
@@ -1056,17 +1058,8 @@ def _create_burundi_salary_components():
 
 
 def _create_burundi_income_tax_slab():
-	"""Create Burundi PAYE Income Tax Slab for 2025."""
-	_create_income_tax_slab(
-		slab_name="Burundi PAYE 2025",
-		currency="BIF",
-		bands=[
-			{"from_amount": 0, "to_amount": 150000, "rate": 0},
-			{"from_amount": 150001, "to_amount": 300000, "rate": 20},
-			{"from_amount": 300001, "to_amount": 600000, "rate": 25},
-			{"from_amount": 600001, "to_amount": 0, "rate": 30},
-		],
-	)
+	"""Create Burundi PAYE Income Tax Slab (annual bands — HRMS annualises monthly income)."""
+	_create_income_tax_slab(slab_name="Burundi PAYE 2025", currency="BIF", bands=BURUNDI_PAYE_ANNUAL_BANDS)
 
 
 def setup_zambia():
@@ -1174,6 +1167,46 @@ ZAMBIA_PAYE_SLAB_BANDS = [
 	{"from_amount": 110401, "to_amount": 0, "rate": 37},
 ]
 
+# HRMS applies Income Tax Slab bands to ANNUAL taxable income; monthly bands × 12.
+# from_amount = previous to_amount + 1 (standard); patch also uses these constants.
+KENYA_PAYE_ANNUAL_BANDS = [
+	{"from_amount": 0, "to_amount": 288000, "rate": 10},
+	{"from_amount": 288001, "to_amount": 387996, "rate": 25},
+	{"from_amount": 387997, "to_amount": 6000000, "rate": 30},
+	{"from_amount": 6000001, "to_amount": 9600000, "rate": 32.5},
+	{"from_amount": 9600001, "to_amount": 0, "rate": 35},
+]
+
+UGANDA_PAYE_ANNUAL_BANDS = [
+	{"from_amount": 0, "to_amount": 2820000, "rate": 0},
+	{"from_amount": 2820001, "to_amount": 4020000, "rate": 10},
+	{"from_amount": 4020001, "to_amount": 4920000, "rate": 20},
+	{"from_amount": 4920001, "to_amount": 120000000, "rate": 30},
+	{"from_amount": 120000001, "to_amount": 0, "rate": 40},
+]
+
+TANZANIA_PAYE_ANNUAL_BANDS = [
+	{"from_amount": 0, "to_amount": 3240000, "rate": 0},
+	{"from_amount": 3240001, "to_amount": 6240000, "rate": 8},
+	{"from_amount": 6240001, "to_amount": 9120000, "rate": 20},
+	{"from_amount": 9120001, "to_amount": 12000000, "rate": 25},
+	{"from_amount": 12000001, "to_amount": 0, "rate": 30},
+]
+
+RWANDA_PAYE_ANNUAL_BANDS = [
+	{"from_amount": 0, "to_amount": 720000, "rate": 0},
+	{"from_amount": 720001, "to_amount": 1200000, "rate": 10},
+	{"from_amount": 1200001, "to_amount": 2400000, "rate": 20},
+	{"from_amount": 2400001, "to_amount": 0, "rate": 30},
+]
+
+BURUNDI_PAYE_ANNUAL_BANDS = [
+	{"from_amount": 0, "to_amount": 1800000, "rate": 0},
+	{"from_amount": 1800001, "to_amount": 3600000, "rate": 20},
+	{"from_amount": 3600001, "to_amount": 7200000, "rate": 25},
+	{"from_amount": 7200001, "to_amount": 0, "rate": 30},
+]
+
 
 def _create_zambia_income_tax_slab():
 	"""Create Zambia PAYE Income Tax Slab (annual bands, ZRA 2026)."""
@@ -1276,7 +1309,7 @@ def setup_drc():
 		"PAYE CD", "INSS Pension Employee CD", "INSS Pension Employer CD",
 		"INSS Occupational Risks CD", "INSS Family Benefits CD",
 		"INPP CD", "ONEM CD",
-	])
+	], country="Congo, The Democratic Republic of the")
 
 
 def _create_drc_settings():
@@ -1291,7 +1324,7 @@ def _create_drc_settings():
 	doc.inss_occupational_risks_rate = 1.5
 	doc.inss_family_benefits_rate = 6.5
 	doc.inpp_rate = 3
-	doc.onem_rate = 0.5  # Ministerial Order, Aug 2025
+	doc.onem_rate = 0.2
 
 	paye_bands = [
 		{"from_amount": 0, "to_amount": 162000, "rate": 3},
@@ -1313,7 +1346,7 @@ def _create_drc_salary_components():
 			"salary_component": "PAYE CD",
 			"salary_component_abbr": "PAYECD",
 			"type": "Deduction",
-			"variable_based_on_taxable_salary": 1,
+			"variable_based_on_taxable_salary": 0,
 			"exempted_from_income_tax": 0,
 			"statistical_component": 0,
 			"do_not_include_in_total": 0,
@@ -1408,6 +1441,17 @@ def setup_nigeria():
 	])
 
 
+# Annual FIRS progressive tax bands (PITA s.33, NGN/year, 2025).
+# HRMS Income Tax Slab applies these to ANNUAL taxable income.
+NIGERIA_PAYE_SLAB_BANDS = [
+	{"from_amount": 0, "to_amount": 300000, "rate": 7},
+	{"from_amount": 300001, "to_amount": 600000, "rate": 11},
+	{"from_amount": 600001, "to_amount": 1100000, "rate": 15},
+	{"from_amount": 1100001, "to_amount": 1600000, "rate": 19},
+	{"from_amount": 1600001, "to_amount": 3200000, "rate": 21},
+	{"from_amount": 3200001, "to_amount": 0, "rate": 24},
+]
+
 def _create_nigeria_settings():
 	"""Create Nigeria Payroll Settings with 2025 default rates."""
 	doc = frappe.get_doc("Nigeria Payroll Settings")
@@ -1423,15 +1467,7 @@ def _create_nigeria_settings():
 	doc.nsitf_rate = 1
 	doc.itf_rate = 1
 
-	paye_bands = [
-		{"from_amount": 0, "to_amount": 25000, "rate": 7},
-		{"from_amount": 25001, "to_amount": 50000, "rate": 11},
-		{"from_amount": 50001, "to_amount": 91667, "rate": 15},
-		{"from_amount": 91668, "to_amount": 133333, "rate": 19},
-		{"from_amount": 133334, "to_amount": 266667, "rate": 21},
-		{"from_amount": 266668, "to_amount": 0, "rate": 24},
-	]
-	for band in paye_bands:
+	for band in NIGERIA_PAYE_SLAB_BANDS:
 		doc.append("paye_bands", band)
 
 	doc.flags.ignore_permissions = True
@@ -1528,18 +1564,11 @@ def _create_nigeria_salary_components():
 
 
 def _create_nigeria_income_tax_slab():
-	"""Create Nigeria PAYE Income Tax Slab for 2025."""
+	"""Create Nigeria PAYE Income Tax Slab for 2025 (annual FIRS bands, PITA s.33)."""
 	_create_income_tax_slab(
 		slab_name="Nigeria PAYE 2025",
 		currency="NGN",
-		bands=[
-			{"from_amount": 0, "to_amount": 25000, "rate": 7},
-			{"from_amount": 25001, "to_amount": 50000, "rate": 11},
-			{"from_amount": 50001, "to_amount": 91667, "rate": 15},
-			{"from_amount": 91668, "to_amount": 133333, "rate": 19},
-			{"from_amount": 133334, "to_amount": 266667, "rate": 21},
-			{"from_amount": 266668, "to_amount": 0, "rate": 24},
-		],
+		bands=NIGERIA_PAYE_SLAB_BANDS,
 	)
 
 
@@ -2197,8 +2226,7 @@ def _create_botswana_settings():
 		{"from_amount": 48001, "to_amount": 84000, "rate": 5},
 		{"from_amount": 84001, "to_amount": 120000, "rate": 12.5},
 		{"from_amount": 120001, "to_amount": 156000, "rate": 18.75},
-		{"from_amount": 156001, "to_amount": 192000, "rate": 25},
-		{"from_amount": 192001, "to_amount": 0, "rate": 26.5},
+		{"from_amount": 156001, "to_amount": 0, "rate": 25},
 	]
 	for band in paye_bands:
 		doc.append("paye_bands", band)
@@ -2237,8 +2265,7 @@ def _create_botswana_income_tax_slab():
 			{"from_amount": 48001, "to_amount": 84000, "rate": 5},
 			{"from_amount": 84001, "to_amount": 120000, "rate": 12.5},
 			{"from_amount": 120001, "to_amount": 156000, "rate": 18.75},
-			{"from_amount": 156001, "to_amount": 192000, "rate": 25},
-			{"from_amount": 192001, "to_amount": 0, "rate": 26.5},
+			{"from_amount": 156001, "to_amount": 0, "rate": 25},
 		],
 	)
 
@@ -2838,6 +2865,7 @@ def _create_ivory_coast_income_tax_slab():
 def setup_cameroon():
 	"""Seed Cameroon Payroll Settings (rates configurable via DocType)."""
 	_create_cameroon_settings()
+	_create_cameroon_salary_components()
 
 
 def _create_cameroon_settings():
@@ -2864,8 +2892,7 @@ def _create_cameroon_settings():
 		{"from_amount": 0, "to_amount": 2000000, "rate": 10},
 		{"from_amount": 2000001, "to_amount": 3000000, "rate": 15},
 		{"from_amount": 3000001, "to_amount": 5000000, "rate": 25},
-		{"from_amount": 5000001, "to_amount": 10000000, "rate": 35},
-		{"from_amount": 10000001, "to_amount": 0, "rate": 38.5},
+		{"from_amount": 5000001, "to_amount": 0, "rate": 35},
 	]
 	for band in pit_bands:
 		doc.append("pit_bands", band)
@@ -2893,10 +2920,108 @@ def _create_cameroon_settings():
 	doc.flags.ignore_permissions = True
 	doc.save()
 
+def _create_cameroon_salary_components():
+	"""Create Cameroon statutory salary components."""
+	components = [
+		{
+			"salary_component": "CNPS Pension Employee",
+			"salary_component_abbr": "CNPSe",
+			"type": "Deduction",
+			"exempted_from_income_tax": 1,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNPS Pension Employer",
+			"salary_component_abbr": "CNPSr",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNPS Family Allowances",
+			"salary_component_abbr": "CNPSFA",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Work Injury Insurance",
+			"salary_component_abbr": "WII",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CFC Housing Employee",
+			"salary_component_abbr": "CFCe",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CFC Housing Employer",
+			"salary_component_abbr": "CFCr",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "FNE Employment Fund",
+			"salary_component_abbr": "FNE",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "PIT",
+			"salary_component_abbr": "PIT",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 1,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CRTV Royalty",
+			"salary_component_abbr": "CRTV",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 1,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Taxe Communale",
+			"salary_component_abbr": "TC",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 1,
+			"depends_on_payment_days": 0,
+		},
+	]
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
+
 
 def setup_chad():
 	"""Seed Chad Payroll Settings (rates configurable via DocType)."""
 	_create_chad_settings()
+	_create_chad_salary_components()
 
 
 def _create_chad_settings():
@@ -2924,6 +3049,58 @@ def _create_chad_settings():
 		doc.append("pit_bands", band)
 	doc.flags.ignore_permissions = True
 	doc.save()
+
+def _create_chad_salary_components():
+	"""Create Chad statutory salary components."""
+	components = [
+		{
+			"salary_component": "CNPS Pension Employee",
+			"salary_component_abbr": "CNPSe",
+			"type": "Deduction",
+			"exempted_from_income_tax": 1,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNPS Pension Employer",
+			"salary_component_abbr": "CNPSr",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNPS Family Allowances",
+			"salary_component_abbr": "CNPSFA",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "Work Injury Insurance",
+			"salary_component_abbr": "WII",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "PIT",
+			"salary_component_abbr": "PIT",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 1,
+			"depends_on_payment_days": 0,
+		},
+	]
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
 
 
 def setup_central_african_republic():
@@ -2957,6 +3134,7 @@ def _create_central_african_republic_settings():
 def setup_congo():
 	"""Seed Congo Payroll Settings (rates configurable via DocType)."""
 	_create_congo_settings()
+	_create_congo_salary_components()
 
 
 def _create_congo_settings():
@@ -2980,6 +3158,49 @@ def _create_congo_settings():
 		doc.append("pit_bands", band)
 	doc.flags.ignore_permissions = True
 	doc.save()
+
+def _create_congo_salary_components():
+	"""Create Congo (Brazzaville) statutory salary components."""
+	components = [
+		{
+			"salary_component": "CNSS Employee",
+			"salary_component_abbr": "CNSSe",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNSS Employer",
+			"salary_component_abbr": "CNSSr",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CAMU Health Employer",
+			"salary_component_abbr": "CAMU",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 1,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "PIT",
+			"salary_component_abbr": "PIT",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 1,
+			"depends_on_payment_days": 0,
+		},
+	]
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
 
 
 def setup_gabon():
@@ -3015,6 +3236,7 @@ def _create_gabon_settings():
 def setup_equatorial_guinea():
 	"""Seed Equatorial Guinea Payroll Settings (rates configurable via DocType)."""
 	_create_equatorial_guinea_settings()
+	_create_eg_salary_components()
 
 
 def _create_equatorial_guinea_settings():
@@ -3028,6 +3250,8 @@ def _create_equatorial_guinea_settings():
 	doc.cnss_employer_rate = 21.5
 	doc.cnss_ceiling = 0
 	doc.minimum_wage = 150000
+	doc.wpf_employee_rate = 0.5
+	doc.wpf_employer_rate = 1
 	pit_bands = [
 		{"from_amount": 0, "to_amount": 1400000, "rate": 0},
 		{"from_amount": 1400001, "to_amount": 5000000, "rate": 10},
@@ -3039,6 +3263,58 @@ def _create_equatorial_guinea_settings():
 		doc.append("pit_bands", band)
 	doc.flags.ignore_permissions = True
 	doc.save()
+
+def _create_eg_salary_components():
+	"""Create Equatorial Guinea statutory salary components."""
+	components = [
+		{
+			"salary_component": "CNSS Employee",
+			"salary_component_abbr": "CNSSe",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "CNSS Employer",
+			"salary_component_abbr": "CNSSr",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "WPF Employee",
+			"salary_component_abbr": "WPFe",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "WPF Employer",
+			"salary_component_abbr": "WPFr",
+			"type": "Employer Contribution",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 0,
+			"depends_on_payment_days": 0,
+		},
+		{
+			"salary_component": "PIT",
+			"salary_component_abbr": "PIT",
+			"type": "Deduction",
+			"exempted_from_income_tax": 0,
+			"variable_based_on_taxable_salary": 0,
+			"remove_if_zero_valued": 1,
+			"depends_on_payment_days": 0,
+		},
+	]
+	for comp_data in components:
+		_upsert_salary_component(comp_data)
 
 
 def setup_sao_tome_and_principe():
@@ -3760,7 +4036,7 @@ def setup_senegal():
 	_create_senegal_settings()
 	_create_senegal_salary_components()
 	_create_senegal_income_tax_slab()
-	_create_salary_structure("Senegal Payroll Template", "XOF", ["Income Tax", "IPRES Pension Employee", "IPRES Pension Employer", "CSS Health Employer", "AMO Health Employee", "AMO Health Employer"])
+	_create_salary_structure("Senegal Payroll Template", "XOF", ["Income Tax", "IPRES Pension Employee", "IPRES Pension Employer", "CSS Health Employee", "CSS Health Employer", "AMO Health Employee", "AMO Health Employer"])
 
 
 def _create_senegal_settings():
@@ -3807,6 +4083,7 @@ def _create_senegal_salary_components():
 		{"salary_component": "IPRES Pension Employee", "salary_component_abbr": "IPRESe", "type": "Deduction", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 1},
 		{"salary_component": "IPRES Pension Employer", "salary_component_abbr": "IPRESr", "type": "Employer Contribution", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 0},
 		{"salary_component": "CSS Health Employer", "salary_component_abbr": "CSSr", "type": "Employer Contribution", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 0},
+		{"salary_component": "CSS Health Employee", "salary_component_abbr": "CSSe", "type": "Deduction", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 1},
 		{"salary_component": "AMO Health Employee", "salary_component_abbr": "AMOe", "type": "Deduction", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 1},
 		{"salary_component": "AMO Health Employer", "salary_component_abbr": "AMOr", "type": "Employer Contribution", "variable_based_on_taxable_salary": 0, "exempted_from_income_tax": 0},
 	]:
@@ -3903,7 +4180,7 @@ def _create_niger_settings():
 	doc.effective_from = "2026-01-01"
 	doc.cnss_employee_rate = 5.25
 	doc.cnss_employer_rate = 16.4
-	doc.cnss_ceiling = 500000
+	doc.cnss_ceiling = 320000
 	doc.minimum_wage = 40000
 	doc.amo_employee_rate = 2.5
 	doc.amo_employer_rate = 4.5
@@ -4141,10 +4418,11 @@ def setup_seychelles():
 	]:
 		_upsert_salary_component(comp_data)
 	_create_income_tax_slab(slab_name="Seychelles PAYE 2026", currency="SCR", bands=[
-		{"from_amount": 0, "to_amount": 8555.50, "rate": 0},
-		{"from_amount": 8555.50, "to_amount": 10027.75, "rate": 15},
-		{"from_amount": 10027.75, "to_amount": 13630, "rate": 20},
-		{"from_amount": 13630, "to_amount": 0, "rate": 30},
+		# HRMS annualises monthly salary before slab lookup, so slab bands are annual (monthly x 12).
+		{"from_amount": 0, "to_amount": 102666, "rate": 0},
+		{"from_amount": 102666, "to_amount": 120000, "rate": 15},
+		{"from_amount": 120000, "to_amount": 999996, "rate": 20},
+		{"from_amount": 999996, "to_amount": 0, "rate": 30},
 	])
 	_create_salary_structure("Seychelles Payroll Template", "SCR", ["PAYE", "Social Security Employer"])
 
@@ -4161,9 +4439,9 @@ def _create_seychelles_settings():
 	doc.social_security_ceiling = 15000
 	for band in [
 		{"from_amount": 0, "to_amount": 8555.50, "rate": 0},
-		{"from_amount": 8555.50, "to_amount": 10027.75, "rate": 15},
-		{"from_amount": 10027.75, "to_amount": 13630, "rate": 20},
-		{"from_amount": 13630, "to_amount": 0, "rate": 30},
+		{"from_amount": 8555.50, "to_amount": 10000, "rate": 15},
+		{"from_amount": 10000, "to_amount": 83333, "rate": 20},
+		{"from_amount": 83333, "to_amount": 0, "rate": 30},
 	]:
 		doc.append("paye_bands", band)
 	doc.flags.ignore_permissions = True
@@ -4389,6 +4667,7 @@ def setup_desktop_icon():
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit
 
 
+
 def before_uninstall():
 	"""Clean up all data created by payroll_africa on uninstall."""
 	_remove_desktop_icon()
@@ -4396,6 +4675,53 @@ def before_uninstall():
 	_remove_salary_components()
 	_remove_income_tax_slabs()
 	_remove_custom_fields()
+	_remove_property_setters()
+
+
+def _safe_delete(doctype, name):
+	"""Delete *name* only when not referenced in a submitted Salary Slip.
+
+	Skips the deletion (with a console warning) when the document is still in
+	use, so that uninstalling the app never corrupts submitted payroll records.
+	Returns True if deleted (or already absent), False if skipped.
+	"""
+	if not frappe.db.exists(doctype, name):
+		return True
+
+	# Evaluate link-from-submitted-slip risk per doctype.
+	linked = False
+	if doctype == "Salary Component":
+		linked = bool(
+			frappe.db.sql(
+				"""
+				SELECT 1 FROM `tabSalary Detail` sd
+				INNER JOIN `tabSalary Slip` ss ON ss.name = sd.parent
+				WHERE sd.salary_component = %s AND ss.docstatus = 1
+				LIMIT 1
+				""",
+				name,
+			)
+		)
+	elif doctype == "Salary Structure":
+		linked = bool(
+			frappe.db.count("Salary Slip", {"salary_structure": name, "docstatus": 1})
+		)
+	elif doctype == "Income Tax Slab":
+		linked = bool(
+			frappe.db.count("Salary Structure", {"income_tax_slab": name, "is_active": "Yes"})
+		)
+
+	if linked:
+		frappe.msgprint(
+			f"Payroll Africa uninstall: skipping deletion of {doctype} '{name}' — "
+			"still referenced in submitted payroll records. "
+			"Remove manually after resolving the dependency.",
+			alert=True,
+		)
+		return False
+
+	frappe.delete_doc(doctype, name, force=True)
+	return True
 
 
 def _remove_desktop_icon():
@@ -4410,6 +4736,7 @@ def _remove_desktop_icon():
 def _remove_salary_structures():
 	"""Remove template Salary Structures created by the app."""
 	templates = [
+		# Tier 1 (original 21)
 		"Kenya Payroll Template", "Uganda Payroll Template",
 		"Tanzania Payroll Template", "Rwanda Payroll Template",
 		"Burundi Payroll Template", "Zambia Payroll Template",
@@ -4421,81 +4748,145 @@ def _remove_salary_structures():
 		"Botswana Payroll Template", "Morocco Payroll Template",
 		"Tunisia Payroll Template", "Namibia Payroll Template",
 		"Madagascar Payroll Template", "Ivory Coast Payroll Template",
+		# Tier 2
+		"Algeria Payroll Template", "Libya Payroll Template",
+		"Sudan Payroll Template", "Mauritania Payroll Template",
+		"Djibouti Payroll Template", "Eritrea Payroll Template",
+		"Comoros Payroll Template", "Sierra Leone Payroll Template",
+		"Liberia Payroll Template", "Gambia Payroll Template",
+		"Cabo Verde Payroll Template", "Mauritius Payroll Template",
+		"Senegal Payroll Template", "Mali Payroll Template",
+		# Tier 3
+		"Niger Payroll Template", "Burkina Faso Payroll Template",
+		"Benin Payroll Template", "Togo Payroll Template",
+		"Seychelles Payroll Template", "Lesotho Payroll Template",
+		"Eswatini Payroll Template", "Guinea Payroll Template",
+		"Guinea-Bissau Payroll Template",
 	]
 	for name in templates:
-		if frappe.db.exists("Salary Structure", name):
-			frappe.delete_doc("Salary Structure", name, force=True)
+		_safe_delete("Salary Structure", name)
+
+
+# De-duplicated master list of every salary component created by setup_<country>().
+# "Basic Salary" is excluded — it is a stock HRMS component this app never owns.
+_PAYROLL_AFRICA_SALARY_COMPONENTS = [
+	# Shared bare-name components (Kenya / South Africa / Ghana / Botswana /
+	# Sierra Leone / Mauritius / Lesotho / Seychelles / Eswatini)
+	"PAYE",
+	# Kenya
+	"NSSF Employee", "NSSF Employer", "SHIF",
+	"Housing Levy", "Employer Housing Levy", "NITA",
+	# Uganda
+	"PAYE UG", "NSSF Employee UG", "NSSF Employer UG", "LST",
+	# Tanzania
+	"PAYE TZ", "NSSF Employee TZ", "NSSF Employer TZ", "SDL", "WCF",
+	# Rwanda
+	"PAYE RW", "Pension Employee RW", "Pension Employer RW",
+	"Maternity Employee RW", "Maternity Employer RW",
+	"CBHI RW", "Occupational Hazards RW",
+	# Burundi
+	"PAYE BI", "INSS Employee BI", "INSS Employer BI", "Work Injury BI",
+	"Health Insurance Employee BI", "Health Insurance Employer BI",
+	"Training Fund Employee BI", "Training Fund Employer BI",
+	# Zambia
+	"PAYE ZM", "NAPSA Employee ZM", "NAPSA Employer ZM",
+	"NHIMA Employee ZM", "NHIMA Employer ZM",
+	# Malawi
+	"PAYE MW", "Pension Employee MW", "Pension Employer MW",
+	# DRC
+	"PAYE CD", "INSS Pension Employee CD", "INSS Pension Employer CD",
+	"INSS Occupational Risks CD", "INSS Family Benefits CD",
+	"INPP CD", "ONEM CD",
+	# Nigeria
+	"PAYE NG", "Pension Employee NG", "Pension Employer NG",
+	"NHF NG", "NHIS Employee NG", "NHIS Employer NG",
+	"NSITF NG", "ITF NG",
+	# Mozambique
+	"PAYE MZ", "INSS Employee MZ", "INSS Employer MZ",
+	# Angola
+	"PAYE AO", "INSS Employee AO", "INSS Employer AO",
+	# Ethiopia
+	"PIT", "Pension Employee", "Pension Employer",
+	# South Africa
+	"UIF Employee", "UIF Employer",
+	# Egypt
+	"Income Tax",
+	"Social Insurance Employee", "Social Insurance Employer",
+	"Health Insurance Employee", "Health Insurance Employer",
+	"Martyrs Fund",
+	# Ghana
+	"SSNIT Employee", "SSNIT Employer", "Tier 2 Pension Employer",
+	# Morocco
+	"IR", "CNSS Employee", "CNSS Employer",
+	# Tunisia
+	"IRPP", "Social Solidarity Contribution",
+	# Namibia
+	"Social Security Employee", "Social Security Employer",
+	"VET Levy", "Employees Compensation",
+	# Madagascar
+	"IRSA", "CNaPS Employee", "CNaPS Employer",
+	"FMFP Training Fund",
+	# Ivory Coast
+	"ITS", "CNPS Retirement Employee", "CNPS Retirement Employer",
+	"CNPS Family Allowances", "Work Injury Insurance", "Vocational Training Tax",
+	"Housing Construction Fund",
+	# Algeria
+	"CNAS Employee", "CNAS Employer",
+	# Libya
+	"SSF Employee", "SSF Employer", "Solidarity Fund", "Jehad Tax",
+	# Sudan
+	"NSIF Employee", "NSIF Employer",
+	# Mauritania (CNSS Employee/Employer already listed under Morocco)
+	"CNAM Health Employee", "CNAM Health Employer",
+	# Eritrea
+	"NICE Employee", "NICE Employer",
+	# Sierra Leone
+	"NASSIT Employee", "NASSIT Employer",
+	# Liberia
+	"NASSCorp Employee", "NASSCorp Employer",
+	# Gambia
+	"SSHFC Employee", "SSHFC Employer",
+	# Cabo Verde
+	"INPS Employee", "INPS Employer",
+	# Mauritius
+	"NSF Employee", "NSF Employer", "CSG", "CSG Employer",
+	"HRDC Levy", "PRGF", "Fair Share Contribution",
+	# Senegal
+	"IPRES Pension Employee", "IPRES Pension Employer",
+	"CSS Health Employee", "CSS Health Employer",
+	"AMO Health Employee", "AMO Health Employer",
+	# Mali / Niger / Burkina Faso / Benin
+	"INSS Pension Employee", "INSS Pension Employer",
+	"CNSS Pension Employee", "CNSS Pension Employer",
+	# Togo
+	"INAM Employee", "INAM Employer",
+	# Seychelles (Social Security Employer already listed under Namibia above)
+	# Eswatini
+	"ENPF Employee", "ENPF Employer", "Skills Development Levy",
+	# Guinea
+	"INSS Family Allowances",
+	# Guinea-Bissau
+	"INSS Employee", "INSS Employer",
+]
 
 
 def _remove_salary_components():
-	"""Remove statutory Salary Components created by the app."""
-	components = [
-		# Kenya
-		"PAYE", "NSSF Employee", "NSSF Employer", "SHIF",
-		"Housing Levy", "Employer Housing Levy", "NITA",
-		# Uganda
-		"PAYE UG", "NSSF Employee UG", "NSSF Employer UG", "LST",
-		# Tanzania
-		"PAYE TZ", "NSSF Employee TZ", "NSSF Employer TZ", "SDL", "WCF",
-		# Rwanda
-		"PAYE RW", "Pension Employee RW", "Pension Employer RW",
-		"Maternity Employee RW", "Maternity Employer RW",
-		"CBHI RW", "Occupational Hazards RW",
-		# Burundi
-		"PAYE BI", "INSS Employee BI", "INSS Employer BI", "Work Injury BI",
-		"Health Insurance Employee BI", "Health Insurance Employer BI",
-		"Training Fund Employee BI", "Training Fund Employer BI",
-		# Zambia
-		"PAYE ZM", "NAPSA Employee ZM", "NAPSA Employer ZM",
-		"NHIMA Employee ZM", "NHIMA Employer ZM",
-		# Malawi
-		"PAYE MW", "Pension Employee MW", "Pension Employer MW",
-		# DRC
-		"PAYE CD", "INSS Pension Employee CD", "INSS Pension Employer CD",
-		"INSS Occupational Risks CD", "INSS Family Benefits CD",
-		"INPP CD", "ONEM CD",
-		# Nigeria
-		"PAYE NG", "Pension Employee NG", "Pension Employer NG",
-		"NHF NG", "NHIS Employee NG", "NHIS Employer NG",
-		"NSITF NG", "ITF NG",
-		# Mozambique
-		"PAYE MZ", "INSS Employee MZ", "INSS Employer MZ",
-		# Angola
-		"PAYE AO", "INSS Employee AO", "INSS Employer AO",
-		# Ethiopia
-		"PIT", "Pension Employee", "Pension Employer",
-		# South Africa
-		"PAYE", "UIF Employee", "UIF Employer", "SDL",
-		# Egypt
-		"Income Tax", "Social Insurance Employee", "Social Insurance Employer",
-		"Health Insurance Employee", "Health Insurance Employer", "Martyrs Fund",
-		# Ghana
-		"PAYE", "SSNIT Employee", "SSNIT Employer", "Tier 2 Pension Employer",
-		# Botswana
-		"PAYE",
-		# Morocco
-		"IR", "CNSS Employee", "CNSS Employer",
-		# Tunisia
-		"IRPP", "CNSS Employee", "CNSS Employer", "Social Solidarity Contribution",
-		# Namibia
-		"PAYE", "Social Security Employee", "Social Security Employer",
-		"VET Levy", "Employees Compensation",
-		# Madagascar
-		"IRSA", "CNaPS Employee", "CNaPS Employer",
-		"Health Insurance Employee", "Health Insurance Employer", "FMFP Training Fund",
-		# Ivory Coast
-		"ITS", "CNPS Retirement Employee", "CNPS Retirement Employer",
-		"CNPS Family Allowances", "Work Injury Insurance", "Vocational Training Tax",
-		"Housing Construction Fund",
-	]
-	for name in components:
-		if frappe.db.exists("Salary Component", name):
-			frappe.delete_doc("Salary Component", name, force=True)
+	"""Remove statutory Salary Components created by the app.
+
+	Uses _safe_delete to skip components still referenced in submitted Salary
+	Slips, protecting against data corruption on uninstall.
+	"""
+	seen = set()
+	for name in _PAYROLL_AFRICA_SALARY_COMPONENTS:
+		if name not in seen:
+			seen.add(name)
+			_safe_delete("Salary Component", name)
 
 
 def _remove_income_tax_slabs():
 	"""Remove Income Tax Slabs created by the app."""
 	slabs = [
+		# Tier 1 (original 21)
 		"Kenya PAYE 2025", "Uganda PAYE 2025", "Tanzania PAYE 2025",
 		"Rwanda PAYE 2025", "Burundi PAYE 2025", "Zambia PAYE 2025",
 		"Malawi PAYE 2025", "DRC PAYE 2025", "Nigeria PAYE 2025",
@@ -4505,20 +4896,59 @@ def _remove_income_tax_slabs():
 		"Botswana PAYE 2025", "Morocco IR 2025",
 		"Tunisia IRPP 2025", "Namibia PAYE 2025",
 		"Madagascar IRSA 2025", "Ivory Coast ITS 2025",
+		# Tier 2
+		"Algeria IRG 2024", "Libya PIT 2025", "Sudan PIT 2025",
+		"Mauritania ITS 2026",
+		"Djibouti PIT 2026", "Eritrea PAYE 2026", "Comoros PIT 2026",
+		"Sierra Leone PAYE 2026", "Liberia PAYE 2026", "Gambia PIT 2026",
+		"Cabo Verde IRPC 2026", "Mauritius PAYE 2026", "Senegal IR 2026",
+		"Mali ITS 2025",
+		# Tier 3
+		"Niger ITS 2025", "Burkina Faso IUTS 2026",
+		"Benin ITS 2026", "Togo IRPP 2026",
+		"Seychelles PAYE 2026", "Lesotho PAYE 2026", "Eswatini PAYE 2026",
+		"Guinea PIT 2026", "Guinea-Bissau IRPS 2026",
 	]
 	for name in slabs:
-		if frappe.db.exists("Income Tax Slab", name):
-			frappe.delete_doc("Income Tax Slab", name, force=True)
+		_safe_delete("Income Tax Slab", name)
 
 
 def _remove_custom_fields():
 	"""Remove custom fields added by the app."""
 	fields = [
+		# Employee fields (shared / Kenya)
 		"Employee-payroll_country",
+		"Employee-ke_statutory_section",
+		"Employee-tax_id",
+		"Employee-national_id",
+		"Employee-ke_cb",
+		"Employee-nssf_no",
+		# Employee fields (Zambia)
+		"Employee-zm_statutory_section",
+		"Employee-zm_tpin",
+		"Employee-zm_nrc",
+		"Employee-zm_statutory_column",
+		"Employee-zm_napsa_no",
+		"Employee-zm_nhima_no",
+		# Salary Component fields
 		"Salary Component-payroll_africa_section",
 		"Salary Component-p9a_tax_deduction_card_type",
 		"Salary Component-p10a_tax_deduction_card_type",
+		# Salary Structure Assignment fields
+		"Salary Structure Assignment-payroll_country",
+		"Salary Structure Assignment-payroll_africa_section",
+		"Salary Structure Assignment-payroll_africa_notes",
 	]
 	for name in fields:
 		if frappe.db.exists("Custom Field", name):
 			frappe.delete_doc("Custom Field", name, force=True)
+
+
+def _remove_property_setters():
+	"""Remove Property Setters created by the app."""
+	# The app extends Salary Component.type with 'Employer Contribution'.
+	# Frappe names property setters as: <Doctype>-<fieldname>-<property>.
+	name = "Salary Component-type-options"
+	if frappe.db.exists("Property Setter", name):
+		frappe.delete_doc("Property Setter", name, force=True)
+		frappe.clear_cache(doctype="Salary Component")

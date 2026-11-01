@@ -45,19 +45,19 @@
    "fieldname": "cnss_employee_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employee Rate",
-   "default": "4"
+   "default": "2"
   },
   {
    "fieldname": "cnss_employer_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employer Rate",
-   "default": "14"
+   "default": "5"
   },
   {
    "fieldname": "cnss_ceiling",
    "fieldtype": "Currency",
    "label": "CNSS Ceiling (DJF)",
-   "default": "0"
+   "default": "400000"
   },
   {
    "fieldname": "minimum_wage",
@@ -78,7 +78,7 @@
    "fieldname": "pit_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (DJF)",
-   "default": "0"
+   "default": "240000"
   },
   {
    "fieldname": "pit_bands_section",

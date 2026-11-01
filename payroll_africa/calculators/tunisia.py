@@ -20,7 +20,7 @@ class TunisiaCalculator(BaseCalculator):
         gross = self.get_gross_pay(salary_slip)
         results = {}
 
-        # 1. CNSS Employee contribution (9.18%)
+        # 1. CNSS Employee contribution (9.68%, LF2025 / Law 48/2024)
         cnss_employee = self._compute_cnss_employee(gross)
         results["CNSS Employee"] = {
             "amount": cnss_employee,

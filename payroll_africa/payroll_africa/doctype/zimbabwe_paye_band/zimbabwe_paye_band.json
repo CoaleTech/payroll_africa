@@ -6,7 +6,8 @@
  "field_order": [
   "from_amount",
   "to_amount",
-  "rate"
+  "rate",
+  "deduction"
  ],
  "fields": [
   {
@@ -29,6 +30,14 @@
    "in_list_view": 1,
    "label": "Rate (%)",
    "reqd": 1
+  },
+  {
+   "fieldname": "deduction",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Deduction",
+   "default": "0",
+   "description": "Fixed amount subtracted from (income x rate). Monthly formula: (taxable x rate) - deduction."
   }
  ],
  "istable": 1,

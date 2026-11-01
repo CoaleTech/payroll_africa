@@ -103,10 +103,15 @@ class SouthAfricaCalculator(BaseCalculator):
         return tax / 12  # Monthly PAYE
 
     def _sars_tax_formula(self, annual_income):
-        """SARS tax formula for 2024/2025 tax year."""
+        """SARS tax formula for 2024/2025 tax year.
+
+        Each band carries a ``base_tax`` representing cumulative tax at the
+        bottom of that band.  We find the single matching band and return
+        ``base_tax + (income − lower) × rate``.  We never accumulate across
+        multiple bands.
+        """
         bands = self.settings.paye_bands or []
         if bands:
-            tax = 0
             for band in bands:
                 lower = flt(band.from_amount)
                 upper = flt(band.to_amount)
@@ -114,15 +119,16 @@ class SouthAfricaCalculator(BaseCalculator):
                 rate = flt(band.rate) / 100
 
                 if annual_income <= lower:
-                    break
+                    break  # income is below this band's start (shouldn't happen with sorted bands)
 
-                band_top = upper if upper > 0 else annual_income
-                taxable_in_band = min(annual_income, band_top) - lower
-                if taxable_in_band > 0:
-                    tax += base_tax + taxable_in_band * rate
-                else:
-                    tax += base_tax
-            return tax
+                band_top = upper if upper > 0 else float("inf")
+                if annual_income <= band_top:
+                    # This is the matching band
+                    return base_tax + (annual_income - lower) * rate
+
+            # Exhausted all bands (last band had no upper limit but no match found)
+            return 0
+
 
         # Hardcoded fallback
         if annual_income <= 237100:

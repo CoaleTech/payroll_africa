@@ -46,8 +46,9 @@ class CongoCalculator(BaseCalculator):
             "is_employer_only": True,
         }
 
-        # 4. PIT - progressive
-        pit = self._compute_pit(gross)
+        # 4. PIT - progressive on net of CNSS employee
+        taxable = max(gross - cnss_employee, 0)
+        pit = self._compute_pit(taxable)
         if pit > 0:
             results["PIT"] = {
                 "amount": pit,
@@ -57,30 +58,47 @@ class CongoCalculator(BaseCalculator):
         return results
 
     def _compute_cnss_employee(self, gross):
-        """Employee CNSS contribution (~4%), same ceiling as employer."""
+        """Employee CNSS contribution (~4%), capped at cnss_ceiling (default 1,200,000 XAF)."""
         rate = flt(self.settings.cnss_employee_rate or 4) / 100
-        ceiling = flt(self.settings.cnss_ceiling or 1500000)
+        ceiling = flt(self.settings.cnss_ceiling or 1200000)
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
-    def _compute_pit(self, gross):
-        """PIT progressive.
+    def _compute_pit(self, taxable_income):
+        """PIT progressive (annual XAF bands).
 
-        Annual bands (XAF):
         0 - 900,000      : 0%
         900,001 - 2,400,000 : 5%
         2,400,001 - 6,000,000 : 10%
         6,000,001 - 12,000,000: 15%
         12,000,001 - 24,000,000: 25%
         Over 24,000,000  : 35%
+
+        Reads pit_bands from settings if populated; falls back to hardcoded.
         """
-        if gross <= 0:
+        if taxable_income <= 0:
             return 0
 
-        annual = gross * 12
+        annual = taxable_income * 12
         if annual <= 900000:
             return 0
 
+        bands = getattr(self.settings, "pit_bands", None) or []
+        if bands:
+            tax = 0
+            for band in bands:
+                lower = flt(band.from_amount)
+                upper = flt(band.to_amount)
+                rate = flt(band.rate) / 100
+                if annual <= lower:
+                    break
+                band_top = upper if upper > 0 else annual
+                amount = min(annual, band_top) - lower
+                if amount > 0:
+                    tax += amount * rate
+            return tax / 12
+
+        # Hardcoded fallback
         tax = 0
         brackets = [
             (900000, 2400000, 0.05),

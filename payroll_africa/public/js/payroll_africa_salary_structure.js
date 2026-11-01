@@ -3,30 +3,19 @@
 frappe.ui.form.on("Salary Structure", {
 	setup(frm) {
 		const enabled = frappe.boot.payroll_africa_enabled_countries || [];
-		if (!enabled.length) return;
+		// suffix_map is injected by payroll_africa.boot.extend_bootinfo and covers
+		// all 54 supported countries.  Fall back to empty so the form still works
+		// on older boot payloads.
+		const suffix_map = frappe.boot.payroll_africa_country_suffix_map || {};
+		if (!enabled.length || !Object.keys(suffix_map).length) return;
 
-		// Build list of disabled country suffixes for component filtering.
-		// Salary components are named like "PAYE", "NSSF Employee UG", "PAYE TZ" etc.
-		// Components without a country suffix are Kenya-specific (no suffix = Kenya).
-		const all_countries = {
-			Kenya: ["", "KE"],
-			Uganda: ["UG"],
-			Tanzania: ["TZ"],
-			Rwanda: ["RW"],
-			Burundi: ["BI"],
-			Zambia: ["ZM"],
-			Malawi: ["MW"],
-			"Congo, The Democratic Republic of the": ["CD"],
-			Nigeria: ["NG"],
-			Mozambique: ["MZ"],
-			Angola: ["AO"],
-		};
-
-		// Collect suffixes of DISABLED countries
+		// Collect the ISO suffix of every DISABLED country.  Salary components
+		// are named like "PAYE", "NSSF Employee UG", "PAYE TZ" – the trailing
+		// ISO code is the suffix.  Kenya components carry no suffix ("").
 		const disabled_suffixes = [];
-		for (const [country, suffixes] of Object.entries(all_countries)) {
+		for (const [country, suffix] of Object.entries(suffix_map)) {
 			if (!enabled.includes(country)) {
-				disabled_suffixes.push(...suffixes);
+				disabled_suffixes.push(suffix);
 			}
 		}
 

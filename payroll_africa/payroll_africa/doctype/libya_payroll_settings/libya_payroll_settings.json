@@ -46,13 +46,15 @@
    "fieldname": "ssf_employee_rate",
    "fieldtype": "Percent",
    "label": "SSF Employee Rate",
-   "default": "3.75"
+   "default": "5.125",
+   "description": "Employee Social Security Fund rate (PwC 2026). Law 13/1980 original rate was 3.75%."
   },
   {
    "fieldname": "ssf_employer_rate",
    "fieldtype": "Percent",
    "label": "SSF Employer Rate",
-   "default": "11.25"
+   "default": "14.35",
+   "description": "Employer Social Security Fund rate (PwC 2026). Law 13/1980 original rate was 11.25%."
   },
   {
    "fieldname": "ssf_ceiling",
@@ -68,13 +70,15 @@
    "fieldname": "jehad_tax_rate",
    "fieldtype": "Percent",
    "label": "Jehad Tax Rate",
-   "default": "4"
+   "default": "3",
+   "description": "Jehad Tax is tiered (1% for gross < LYD 50, 2% for LYD 50-100, 3% above); this field is not currently read by the calculator."
   },
   {
    "fieldname": "solidarity_fund_rate",
    "fieldtype": "Percent",
    "label": "Solidarity Fund Rate",
-   "default": "3"
+   "default": "1",
+   "description": "Solidarity Fund rate applied to gross pay (employee deduction). Read by the calculator."
   },
   {
    "fieldname": "pit_section",

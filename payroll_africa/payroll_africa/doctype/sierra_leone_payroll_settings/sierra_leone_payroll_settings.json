@@ -43,7 +43,7 @@
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (SLE)",
-   "default": "0"
+   "default": 6000
   },
   {
    "fieldname": "nassit_section",
@@ -66,7 +66,7 @@
    "fieldname": "nassit_ceiling",
    "fieldtype": "Currency",
    "label": "NASSIT Ceiling (SLE)",
-   "default": "3000000"
+   "default": 0
   },
   {
    "fieldname": "paye_bands_section",

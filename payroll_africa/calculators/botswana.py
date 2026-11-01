@@ -2,7 +2,7 @@
 
 Reference: Botswana Unified Revenue Service (BURS)
 - PAYE only (no mandatory national social security)
-- Progressive PAYE: 0% - 26.5% (2025/2026 tax year)
+- Progressive PAYE: 0% - 25% (2025/2026 tax year)
 - Tax year: 1 July - 30 June
 - Employers may optionally contribute to private pension/provident funds
 """
@@ -36,11 +36,10 @@ class BotswanaCalculator(BaseCalculator):
 
         Annual chargeable income bands (BWP):
         0 - 48,000       : 0%
-        48,001 - 96,000  : 5%
-        96,001 - 144,000 : 12.5%
-        144,001 - 192,000: 18.75%
-        192,001 - 240,000: 25%
-        Over 240,000     : 26.5%
+        48,001 - 84,000  : 5%
+        84,001 - 120,000 : 12.5%
+        120,001 - 156,000: 18.75%
+        Over 156,000     : 25%
         """
         if gross_monthly <= 0:
             return 0
@@ -76,19 +75,21 @@ class BotswanaCalculator(BaseCalculator):
         return monthly_tax
 
     def _paye_hardcoded(self, annual_income, threshold):
-        """Hardcoded 2025/2026 PAYE bands."""
+        """Hardcoded 2025/2026 BURS PAYE bands.
+
+        Applied to taxable = annual_income - threshold (BWP 48,000), so each
+        bracket is 36,000 wide above the threshold.
+        """
         taxable = annual_income - threshold
         if taxable <= 0:
             return 0
 
         tax = 0
-        # Bands above threshold
         brackets = [
             (0, 36000, 0.05),        # 48,001 - 84,000
             (36000, 72000, 0.125),   # 84,001 - 120,000
             (72000, 108000, 0.1875), # 120,001 - 156,000
-            (108000, 144000, 0.25),  # 156,001 - 192,000
-            (144000, 0, 0.265),      # Over 192,000
+            (108000, 0, 0.25),       # Over 156,000
         ]
 
         for lower, upper, rate in brackets:

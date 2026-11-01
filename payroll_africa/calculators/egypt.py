@@ -5,7 +5,7 @@ Reference: Egyptian Tax Authority (ETA), NOSI
 - Health Insurance: Employee 1%, Employer 3.25% (no cap)
 - Martyrs Fund: 0.05% of gross (employee)
 - PIT: Progressive 0-27.5% on annual income
-- Personal exemption: EGP 15,000/year
+- Personal exemption: EGP 20,000/year (PwC Worldwide Tax Summaries)
 - Dependent deduction: EGP 3,000 per dependent (max 2 children + spouse)
 """
 

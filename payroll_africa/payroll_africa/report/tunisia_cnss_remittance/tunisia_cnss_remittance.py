@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from frappe.utils import flt
+
 
 from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
 
@@ -12,11 +12,13 @@ def execute(filters=None):
 
 
 def get_columns():
+	emp_rate = frappe.db.get_value("Tunisia Payroll Settings", None, "cnss_employee_rate") or 9.68
+	empr_rate = frappe.db.get_value("Tunisia Payroll Settings", None, "cnss_employer_rate") or 17.07
 	return [
 		{"fieldname": "employee", "label": _("Employee"), "fieldtype": "Link", "options": "Employee", "width": 120},
 		{"fieldname": "employee_name", "label": _("Employee Name"), "fieldtype": "Data", "width": 180},
-		{"fieldname": "cnss_employee", "label": _("CNSS Employee (9.18%)"), "fieldtype": "Currency", "width": 180},
-		{"fieldname": "cnss_employer", "label": _("CNSS Employer (17.07%)"), "fieldtype": "Currency", "width": 180},
+		{"fieldname": "cnss_employee", "label": _("CNSS Employee ({0}%)").format(emp_rate), "fieldtype": "Currency", "width": 180},
+		{"fieldname": "cnss_employer", "label": _("CNSS Employer ({0}%)").format(empr_rate), "fieldtype": "Currency", "width": 180},
 		{"fieldname": "ssc", "label": _("Social Solidarity Contribution (0.5%)"), "fieldtype": "Currency", "width": 220},
 		{"fieldname": "total_cnss", "label": _("Total CNSS"), "fieldtype": "Currency", "width": 150},
 	]

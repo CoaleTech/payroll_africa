@@ -22,8 +22,21 @@ class LesothoCalculator(BaseCalculator):
         return results
 
     def _compute_paye(self, gross):
-        if gross <= 0: return 0
+        """Compute monthly PAYE for Lesotho.
+
+        If ``tax_free_threshold`` (annual LSL) is set on settings and annual
+        income falls at or below it, return 0.  Default bands: 0–74,040 @ 20 %,
+        above @ 30 %.  Annual tax credit (default 11,640 LSL) reduces raw tax
+        before dividing by 12.
+        """
+        if gross <= 0:
+            return 0
         annual = gross * 12
+
+        threshold = getattr(self.settings, "tax_free_threshold", None) or 0
+        if threshold and annual <= flt(threshold):
+            return 0
+
         credit = flt(self.settings.tax_credit_annual or 11640)
 
         if annual <= 74040:

@@ -4,6 +4,15 @@ from unittest.mock import MagicMock
 from payroll_africa.calculators.kenya import KenyaCalculator
 
 
+def make_band(from_amount, to_amount, rate):
+	"""Create a mock PAYE/NSSF band row."""
+	b = MagicMock()
+	b.from_amount = from_amount
+	b.to_amount = to_amount
+	b.rate = rate
+	return b
+
+
 def make_settings():
 	"""Create mock Kenya Payroll Settings (SHIF/AHL/PAYE 2025; NSSF Year 4, Feb 2026)."""
 	settings = MagicMock()
@@ -17,6 +26,15 @@ def make_settings():
 	settings.nssf_tier2_rate = 6
 	settings.nssf_tier2_cap = 5940
 	settings.nita_amount = 50
+	settings.personal_relief = 2400
+	# KRA PAYE monthly bands (calculator uses monthly gross)
+	settings.paye_bands = [
+		make_band(0,      24000,   10),
+		make_band(24001,  32333,   25),
+		make_band(32334,  500000,  30),
+		make_band(500001, 800000,  32.5),
+		make_band(800001, 0,       35),
+	]
 	return settings
 
 
@@ -124,7 +142,7 @@ class TestKenyaCalculator(unittest.TestCase):
 		self.assertTrue(results["NITA"]["is_employer_only"])
 
 	def test_full_computation_50k(self):
-		"""Full computation for KES 50,000 gross."""
+		"""Full computation for KES 50,000 gross — employee totals exclude PAYE."""
 		slip = make_salary_slip(50000)
 		results = self.calculator.compute(slip)
 
@@ -141,25 +159,66 @@ class TestKenyaCalculator(unittest.TestCase):
 		# NITA: 50
 		self.assertEqual(get_amount(results, "NITA"), 50.0)
 
-		# Total employee deductions (before PAYE): 3000 + 1375 + 750 = 5125
-		employee_deductions = sum(
-			v["amount"] for k, v in results.items() if not v["is_employer_only"]
+		# Non-PAYE employee deductions: NSSF(3000) + SHIF(1375) + AHL(750) = 5125
+		non_paye_employee = sum(
+			v["amount"] for k, v in results.items()
+			if not v["is_employer_only"] and k != "PAYE"
 		)
-		self.assertEqual(round(employee_deductions, 2), 5125.0)
+		self.assertEqual(round(non_paye_employee, 2), 5125.0)
 
-	def test_paye_not_computed(self):
-		"""PAYE should NOT be in results (handled by HRMS)."""
+	def test_paye_computed(self):
+		"""PAYE should be in results (calculator overrides HRMS slab)."""
 		slip = make_salary_slip(50000)
 		results = self.calculator.compute(slip)
-		self.assertNotIn("PAYE", results)
+		self.assertIn("PAYE", results)
+		self.assertFalse(results["PAYE"]["is_employer_only"])
 
 	def test_all_components_present(self):
 		"""All expected components should be in results."""
 		slip = make_salary_slip(50000)
 		results = self.calculator.compute(slip)
 
-		expected = {"NSSF Employee", "NSSF Employer", "SHIF", "Housing Levy", "Employer Housing Levy", "NITA"}
+		expected = {
+			"NSSF Employee", "NSSF Employer", "SHIF",
+			"Housing Levy", "Employer Housing Levy", "NITA", "PAYE",
+		}
 		self.assertEqual(set(results.keys()), expected)
+
+	def test_paye_zero_below_personal_relief(self):
+		"""Gross 25,000: tax before relief < 2,400 so PAYE = 0."""
+		# NSSF: Tier I=540 + Tier II=(25000-9000)*6%=960 = 1500
+		# taxable = 25000 - 1500 = 23500
+		# Band 0-24000: 23500 * 10% = 2350 < personal_relief 2400 => PAYE = 0
+		slip = make_salary_slip(25000)
+		results = self.calculator.compute(slip)
+		self.assertEqual(get_amount(results, "PAYE"), 0.0)
+
+	def test_paye_amount_30k(self):
+		"""Gross 30,000: spot-check PAYE calculation with personal relief.
+
+		allowable = NSSF(1800) + SHIF(825) + AHL(450) = 3,075
+		taxable = 30,000 - 3,075 = 26,925
+		Band 0-24000:    24000 * 10% = 2,400
+		Band 24001-32333: 2925 * 25% =   731.25
+		Tax before relief = 3,131.25; after 2,400 relief => PAYE = 731.25
+		"""
+		slip = make_salary_slip(30000)
+		results = self.calculator.compute(slip)
+		self.assertEqual(get_amount(results, "PAYE"), 731.25)
+
+	def test_paye_amount_50k(self):
+		"""Gross 50,000: PAYE spans three bands.
+
+		allowable = NSSF(3000) + SHIF(1375) + AHL(750) = 5,125
+		taxable = 50,000 - 5,125 = 44,875
+		Band 0-24000:      24000 * 10%  = 2,400.00
+		Band 24001-32333:   8333 * 25%  = 2,083.25
+		Band 32334-500000: 12542 * 30%  = 3,762.60
+		Tax before relief = 8,245.85; after 2,400 relief => PAYE = 5,845.85
+		"""
+		slip = make_salary_slip(50000)
+		results = self.calculator.compute(slip)
+		self.assertEqual(get_amount(results, "PAYE"), 5845.85)
 
 
 if __name__ == "__main__":

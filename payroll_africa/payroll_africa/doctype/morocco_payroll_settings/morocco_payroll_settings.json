@@ -152,8 +152,8 @@
    "fieldname": "dependent_allowance",
    "fieldtype": "Currency",
    "label": "Dependent Allowance",
-   "default": "500",
-   "description": "Monthly allowance per dependent (MAD)"
+   "default": "600",
+   "description": "Annual allowance reduction per dependent (MAD). LF 50-25 (2026) rate is MAD 600/year. The calculator multiplies this value by 12 internally."
   },
   {
    "fieldname": "ir_section",

@@ -25,14 +25,14 @@ class EthiopiaCalculator(BaseCalculator):
             "is_employer_only": False,
         }
 
-        # Employer pension contribution (11%) - employer-only, not deducted from net
+        # Employer pension contribution (11%) - employer-only
         pension_employer = self._compute_pension_employer(basic)
         results["Pension Employer"] = {
             "amount": pension_employer,
             "is_employer_only": True,
         }
 
-        # 2. PIT (Personal Income Tax) - progressive on gross after pension deduction
+        # 2. PIT - progressive on gross after pension deduction
         taxable_income = max(gross - pension_employee, 0)
         pit = self._compute_pit(taxable_income)
         results["PIT"] = {
@@ -43,16 +43,24 @@ class EthiopiaCalculator(BaseCalculator):
         return results
 
     def _compute_pension_employee(self, basic):
-        """Employee pension: 7% of basic salary, capped at ETB 15,000."""
-        ceiling = flt(self.settings.pension_ceiling or 15000)
-        base = min(basic, ceiling) if basic > 0 else 0
-        return base * (flt(self.settings.pension_employee_rate or 7) / 100)
+        """Employee pension: 7% of basic salary, capped at ETB 15,000.
+
+        Falls back to statutory defaults only when the settings attribute is None
+        (i.e. not configured at all); a rate or ceiling of 0 is accepted as-is.
+        """
+        ceiling_raw = self.settings.pension_ceiling
+        ceiling = flt(ceiling_raw) if ceiling_raw is not None else 15000
+        base = min(basic, ceiling) if (basic > 0 and ceiling > 0) else (basic if basic > 0 else 0)
+        rate_raw = self.settings.pension_employee_rate
+        return base * (flt(rate_raw) if rate_raw is not None else 7) / 100
 
     def _compute_pension_employer(self, basic):
         """Employer pension: 11% of basic salary, capped at ETB 15,000."""
-        ceiling = flt(self.settings.pension_ceiling or 15000)
-        base = min(basic, ceiling) if basic > 0 else 0
-        return base * (flt(self.settings.pension_employer_rate or 11) / 100)
+        ceiling_raw = self.settings.pension_ceiling
+        ceiling = flt(ceiling_raw) if ceiling_raw is not None else 15000
+        base = min(basic, ceiling) if (basic > 0 and ceiling > 0) else (basic if basic > 0 else 0)
+        rate_raw = self.settings.pension_employer_rate
+        return base * (flt(rate_raw) if rate_raw is not None else 11) / 100
 
     def _compute_pit(self, taxable_income):
         """Compute PIT using progressive monthly bands (2025 rates).
@@ -64,6 +72,10 @@ class EthiopiaCalculator(BaseCalculator):
         7,001 - 10,000 : 25%
         10,001 - 14,000: 30%
         Over 14,000    : 35%
+
+        Reads pit_bands from settings when configured; falls back to
+        hardcoded 2025 brackets. Band boundaries use from_amount =
+        previous to_amount + 1; floor adjusted to avoid off-by-one.
         """
         if taxable_income <= 0:
             return 0
@@ -78,11 +90,12 @@ class EthiopiaCalculator(BaseCalculator):
                 upper = flt(band.to_amount)
                 rate = flt(band.rate) / 100
 
-                if remaining <= lower:
+                if remaining < lower:
                     break
 
+                floor = max(lower - 1, 0)
                 band_top = upper if upper > 0 else remaining
-                taxable_in_band = min(remaining, band_top) - lower
+                taxable_in_band = min(remaining, band_top) - floor
                 if taxable_in_band > 0:
                     tax += taxable_in_band * rate
         else:
@@ -92,7 +105,7 @@ class EthiopiaCalculator(BaseCalculator):
         return tax
 
     def _pit_hardcoded(self, taxable_income):
-        """Hardcoded 2025 PIT bands as fallback."""
+        """Hardcoded 2025 PIT bands as fallback (monthly ETB)."""
         tax = 0
         brackets = [
             (2000, 4000, 0.15),

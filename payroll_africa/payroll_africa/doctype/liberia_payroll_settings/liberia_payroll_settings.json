@@ -43,7 +43,7 @@
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (LRD)",
-   "default": "0"
+   "default": 70000
   },
   {
    "fieldname": "nasscorp_section",
@@ -54,19 +54,19 @@
    "fieldname": "nasscorp_employee_rate",
    "fieldtype": "Percent",
    "label": "NASSCorp Employee Rate",
-   "default": "3"
+   "default": 4
   },
   {
    "fieldname": "nasscorp_employer_rate",
    "fieldtype": "Percent",
    "label": "NASSCorp Employer Rate",
-   "default": "4.75"
+   "default": 6
   },
   {
    "fieldname": "nasscorp_ceiling",
    "fieldtype": "Currency",
    "label": "NASSCorp Ceiling (LRD)",
-   "default": "500000"
+   "default": 0
   },
   {
    "fieldname": "paye_bands_section",

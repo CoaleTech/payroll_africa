@@ -14,6 +14,8 @@
   "cnss_ceiling",
   "minimum_wage",
   "col_break_cnss",
+  "wpf_employee_rate",
+  "wpf_employer_rate",
   "pit_section",
   "pit_threshold",
   "pit_bands_section",
@@ -68,6 +70,20 @@
   {
    "fieldname": "col_break_cnss",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "wpf_employee_rate",
+   "fieldtype": "Percent",
+   "label": "WPF Employee Rate",
+   "default": "0.5",
+   "description": "Work Protection Fund employee contribution rate (% of capped base). PwC 2025: 0.5%."
+  },
+  {
+   "fieldname": "wpf_employer_rate",
+   "fieldtype": "Percent",
+   "label": "WPF Employer Rate",
+   "default": "1",
+   "description": "Work Protection Fund employer contribution rate (% of capped base). PwC 2025: 1%."
   },
   {
    "fieldname": "pit_section",

@@ -110,6 +110,35 @@ class TestSouthAfricaCalculator(unittest.TestCase):
 		expected = {"UIF Employee", "UIF Employer", "SDL", "PAYE"}
 		self.assertEqual(set(results.keys()), expected)
 
+	def test_paye_formula_band1_boundary(self):
+		"""Hardcoded: annual 237,100 → top of band 1 → 237,100 × 18% = 42,678."""
+		raw = self.calculator._sars_tax_formula(237100)
+		self.assertAlmostEqual(raw, 42678, places=0)
+
+	def test_paye_formula_band3_boundary(self):
+		"""Hardcoded: annual 512,800 → top of band 3 → 77,362 + 142,299 × 31% ≈ 121,475."""
+		raw = self.calculator._sars_tax_formula(512800)
+		self.assertAlmostEqual(raw, 121475, delta=1)
+
+	def test_paye_bands_formula_not_accumulated(self):
+		"""DB bands: base_tax applied once for matching band; no cross-band accumulation."""
+		from types import SimpleNamespace
+		self.settings.paye_bands = [
+			SimpleNamespace(from_amount=0,       to_amount=237100,  base_tax=0,      rate=18),
+			SimpleNamespace(from_amount=237101,  to_amount=370500,  base_tax=42678,  rate=26),
+			SimpleNamespace(from_amount=370501,  to_amount=512800,  base_tax=77362,  rate=31),
+			SimpleNamespace(from_amount=512801,  to_amount=673000,  base_tax=121475, rate=36),
+			SimpleNamespace(from_amount=673001,  to_amount=857900,  base_tax=179147, rate=39),
+			SimpleNamespace(from_amount=857901,  to_amount=1817000, base_tax=251258, rate=41),
+			SimpleNamespace(from_amount=1817001, to_amount=0,       base_tax=644489, rate=45),
+		]
+		# Band 1: 237,100 → 0 + 237,100 × 18% = 42,678
+		self.assertAlmostEqual(self.calculator._sars_tax_formula(237100), 42678, places=0)
+		# Band 3: 512,800 → 77,362 + (512,800−370,501)×31% ≈ 121,475
+		self.assertAlmostEqual(self.calculator._sars_tax_formula(512800), 121475, delta=1)
+		# Old accumulation bug would give ≈ 241,514 for 512,800; must be far below that
+		self.assertLess(self.calculator._sars_tax_formula(512800), 200000)
+
 
 if __name__ == "__main__":
 	unittest.main()

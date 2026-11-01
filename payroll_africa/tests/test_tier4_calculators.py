@@ -18,6 +18,10 @@ class MockSettings:
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
+        # Initialise band lists so getattr returns [] (falsy) not None when not provided
+        for band_name in ('paye_bands', 'pit_bands'):
+            if not hasattr(self, band_name):
+                setattr(self, band_name, [])
     def get(self, key, default=None):
         return getattr(self, key, default)
 
@@ -32,7 +36,7 @@ def slip(gross):
 class TestAlgeria(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.algeria import AlgeriaCalculator
-        self.calc = AlgeriaCalculator(MockSettings(cnas_employee_rate=9, cnas_employer_rate=25.5))
+        self.calc = AlgeriaCalculator(MockSettings(cnas_employee_rate=9, cnas_employer_rate=26))
 
     def test_cnas_pit(self):
         r = self.calc.compute(slip(300000))
@@ -48,7 +52,7 @@ class TestAlgeria(unittest.TestCase):
 class TestLibya(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.libya import LibyaCalculator
-        self.calc = LibyaCalculator(MockSettings(ssf_employee_rate=5.125, ssf_employer_rate=14.35))
+        self.calc = LibyaCalculator(MockSettings(ssf_employee_rate=5.125, ssf_employer_rate=14.35, solidarity_fund_rate=1))
 
     def test_ssf_solidarity_jehad(self):
         r = self.calc.compute(slip(2000))
@@ -190,6 +194,20 @@ class TestMauritania(unittest.TestCase):
         r = self.calc.compute(slip(5000))
         self.assertNotIn("PIT", r)
 
+    def test_pit_reads_bands_from_settings(self):
+        from payroll_africa.calculators.mauritania import MauritaniaCalculator
+        class Band:
+            def __init__(self, f, t, r): self.from_amount = f; self.to_amount = t; self.rate = r
+        calc = MauritaniaCalculator(MockSettings(
+            cnss_ceiling=15000, cnss_employee_rate=1, cnss_employer_rate=15,
+            cnam_employee_rate=4, cnam_employer_rate=5,
+            pit_bands=[Band(0, 50000, 0), Band(50000, 0, 20)],
+        ))
+        # gross=30,000; cnss_emp=1%*15,000=150; cnam_emp=4%*30,000=1,200
+        # taxable=28,650; annual=343,800; tax=(343,800-50,000)*20%=58,760; monthly=4,896.67
+        r = calc.compute(slip(30000))
+        self.assertAlmostEqual(r["PIT"]["amount"], 4896.67, delta=1)
+
 
 class TestCAR(unittest.TestCase):
     def setUp(self):
@@ -308,6 +326,29 @@ class TestGuineaBissau(unittest.TestCase):
         self.assertIn("PIT", r)
         self.assertGreater(r["PIT"]["amount"], 0)
 
+    def test_inss_ceiling_overrides_min_wage_times_8(self):
+        from payroll_africa.calculators.guinea_bissau import GuineaBissauCalculator
+        # inss_ceiling=200,000 overrides min_wage*8=360,000
+        calc = GuineaBissauCalculator(MockSettings(
+            minimum_wage=45000, inss_employee_rate=8, inss_employer_rate=14, inss_ceiling=200000,
+        ))
+        r = calc.compute(slip(500000))
+        # Capped at 200,000: 8% = 16,000
+        self.assertAlmostEqual(r["INSS Employee"]["amount"], 16000, delta=1)
+
+    def test_pit_reads_bands_from_settings(self):
+        from payroll_africa.calculators.guinea_bissau import GuineaBissauCalculator
+        class Band:
+            def __init__(self, f, t, r): self.from_amount = f; self.to_amount = t; self.rate = r
+        calc = GuineaBissauCalculator(MockSettings(
+            minimum_wage=45000, inss_employee_rate=8, inss_employer_rate=14,
+            pit_bands=[Band(0, 0, 5)],
+        ))
+        # single 5% band; gross=100,000; inss_emp=8%*(8*45000=360k, cap > gross)=8,000
+        # taxable=92,000; annual=1,104,000; tax=5%*1,104,000=55,200; monthly=4,600
+        r = calc.compute(slip(100000))
+        self.assertAlmostEqual(r["PIT"]["amount"], 4600, delta=1)
+
 
 class TestLesotho(unittest.TestCase):
     def setUp(self):
@@ -380,6 +421,19 @@ class TestGambia(unittest.TestCase):
         r = self.calc.compute(slip(600))
         self.assertNotIn("PIT", r)
 
+    def test_pit_reads_bands_from_settings(self):
+        from payroll_africa.calculators.gambia import GambiaCalculator
+        class Band:
+            def __init__(self, f, t, r): self.from_amount = f; self.to_amount = t; self.rate = r
+        calc = GambiaCalculator(MockSettings(
+            sshfc_ceiling=25000, sshfc_employee_rate=5, sshfc_employer_rate=10,
+            pit_bands=[Band(0, 10000, 0), Band(10000, 0, 15)],
+        ))
+        # gross=5,000; sshfc_emp=250; taxable=4,750; annual=57,000
+        # tax=(57,000-10,000)*15%=7,050; monthly=587.50
+        r = calc.compute(slip(5000))
+        self.assertAlmostEqual(r["PIT"]["amount"], 587.50, delta=1)
+
 
 class TestEritrea(unittest.TestCase):
     def setUp(self):
@@ -417,7 +471,7 @@ class TestEritrea(unittest.TestCase):
 class TestComoros(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.comoros import ComorosCalculator
-        self.calc = ComorosCalculator(MockSettings(minimum_wage=75000, cnss_employee_rate=3.5, cnss_employer_rate=10.5))
+        self.calc = ComorosCalculator(MockSettings(minimum_wage=55000, cnss_employee_rate=3.5, cnss_employer_rate=10.5))
 
     def test_cnss(self):
         r = self.calc.compute(slip(700000))
@@ -430,7 +484,7 @@ class TestComoros(unittest.TestCase):
         self.assertNotIn("PIT", r)
 
     def test_key_components(self):
-        # ceiling = 75000 * 8 = 600000; gross 300000 below ceiling
+        # ceiling = 55000 * 8 = 440000; gross 300000 below ceiling
         # CNSS emp: 300000 * 3.5% = 10,500; empr: 300000 * 10.5% = 31,500
         r = self.calc.compute(slip(300000))
         self.assertAlmostEqual(r["CNSS Employee"]["amount"], 10500, delta=1)
@@ -442,10 +496,10 @@ class TestComoros(unittest.TestCase):
         self.assertTrue(r["CNSS Employer"]["is_employer_only"])
 
     def test_ceiling(self):
-        # gross 800000 > ceiling 600000; CNSS emp = 600000 * 3.5% = 21,000
+        # gross 800000 > ceiling 440000; CNSS emp = 440000 * 3.5% = 15,400; empr = 440000 * 10.5% = 46,200
         r = self.calc.compute(slip(800000))
-        self.assertAlmostEqual(r["CNSS Employee"]["amount"], 21000, delta=1)
-        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 63000, delta=1)
+        self.assertAlmostEqual(r["CNSS Employee"]["amount"], 15400, delta=1)
+        self.assertAlmostEqual(r["CNSS Employer"]["amount"], 46200, delta=1)
 
     def test_below_pit_threshold(self):
         # annual PIT threshold 360,000; gross 25000: taxable ~24125, annual ~289500 < 360000
@@ -495,14 +549,14 @@ class TestSaoTomePrincipe(unittest.TestCase):
 class TestCaboVerde(unittest.TestCase):
     def setUp(self):
         from payroll_africa.calculators.cabo_verde import CaboVerdeCalculator
-        self.calc = CaboVerdeCalculator(MockSettings(inps_ceiling=80000, inps_employee_rate=8.5, inps_employer_rate=16, work_injury_risk=1))
+        self.calc = CaboVerdeCalculator(MockSettings(inps_ceiling=80000, inps_employee_rate=8.5, inps_employer_rate=16, work_injury_rate=1))
 
     def test_inps_injury(self):
         r = self.calc.compute(slip(100000))
         # INPS capped at 80k: emp 8.5% = 6,800
         self.assertAlmostEqual(r["INPS Employee"]["amount"], 6800, delta=1)
-        # Injury: 2% of 100k = 2,000
-        self.assertAlmostEqual(r["Work Injury Insurance"]["amount"], 2000, delta=1)
+        # Injury: 2% of capped base 80,000 = 1,600 (work injury now uses contribution base)
+        self.assertAlmostEqual(r["Work Injury Insurance"]["amount"], 1600, delta=1)
         self.assertTrue(r["Work Injury Insurance"]["is_employer_only"])
 
     def test_zero_gross(self):
@@ -534,6 +588,32 @@ class TestCaboVerde(unittest.TestCase):
         # annual PIT threshold 220,000; gross 20000: taxable ~18,300, annual ~219,600 < 220,000
         r = self.calc.compute(slip(20000))
         self.assertNotIn("PIT", r)
+
+    def test_risk_class_2(self):
+        from payroll_africa.calculators.cabo_verde import CaboVerdeCalculator
+        calc = CaboVerdeCalculator(MockSettings(
+            inps_ceiling=80000, inps_employee_rate=8.5, inps_employer_rate=16, work_injury_rate=2))
+        r = calc.compute(slip(100000))
+        # Risk class 2 = 4%; base=min(100000,80000)=80,000; injury=4%*80,000=3,200
+        self.assertAlmostEqual(r["Work Injury Insurance"]["amount"], 3200, delta=1)
+
+    def test_work_injury_uses_capped_base(self):
+        # gross=200,000 > ceiling=80,000; work injury on base not gross
+        r = self.calc.compute(slip(200000))
+        self.assertAlmostEqual(r["Work Injury Insurance"]["amount"], 80000 * 0.02, delta=1)
+
+    def test_pit_reads_bands_from_settings(self):
+        from payroll_africa.calculators.cabo_verde import CaboVerdeCalculator
+        class Band:
+            def __init__(self, f, t, r): self.from_amount = f; self.to_amount = t; self.rate = r
+        calc = CaboVerdeCalculator(MockSettings(
+            inps_ceiling=80000, inps_employee_rate=8.5, inps_employer_rate=16, work_injury_rate=1,
+            pit_bands=[Band(0, 100000, 0), Band(100000, 0, 10)],
+        ))
+        # gross=50000; inps_emp=8.5%*50000=4250; taxable=45750; annual=549,000
+        # tax=(549,000-100,000)*10%=44,900; monthly=3741.67
+        r = calc.compute(slip(50000))
+        self.assertAlmostEqual(r["PIT"]["amount"], 3741.67, delta=1)
 
 
 class TestSudan(unittest.TestCase):
@@ -575,6 +655,272 @@ class TestSudan(unittest.TestCase):
         r = self.calc.compute(slip(8000))
         self.assertNotIn("PIT", r)
 
+
+
+class TestAlgeriaExtraBands(unittest.TestCase):
+    """Tests for Algeria pit_bands reading from settings."""
+
+    def test_pit_reads_bands_from_settings(self):
+        from payroll_africa.calculators.algeria import AlgeriaCalculator
+        class Band:
+            def __init__(self, f, t, r): self.from_amount = f; self.to_amount = t; self.rate = r
+        # Simple 2-band slab: 0-500000 @ 0%, 500000+ @ 10% (annual)
+        calc = AlgeriaCalculator(MockSettings(
+            cnas_employee_rate=9, cnas_employer_rate=26,
+            pit_bands=[Band(0, 500000, 0), Band(500000, 0, 10)],
+        ))
+        # gross=60000/month; cnas_emp=5400; taxable=54600; annual=655200
+        # band tax: (655200-500000)*10% = 15520; monthly = 1293.33
+        r = calc.compute(slip(60000))
+        self.assertAlmostEqual(r["PIT"]["amount"], 1293.33, delta=2)
+
+    def test_empty_pit_bands_uses_hardcoded(self):
+        from payroll_africa.calculators.algeria import AlgeriaCalculator
+        calc = AlgeriaCalculator(MockSettings(cnas_employee_rate=9, cnas_employer_rate=26))
+        # gross=25000: cnas_emp=2250; taxable=22750; annual=273000 > 240000 → 23% bracket
+        r = calc.compute(slip(25000))
+        self.assertIn("PIT", r)
+        self.assertGreater(r["PIT"]["amount"], 0)
+
+
+class TestLibyaExtraBands(unittest.TestCase):
+    """Tests for Libya pit_bands and solidarity_fund_rate from settings."""
+
+    def test_solidarity_reads_from_settings(self):
+        from payroll_africa.calculators.libya import LibyaCalculator
+        calc = LibyaCalculator(MockSettings(
+            ssf_employee_rate=5.125, ssf_employer_rate=14.35, solidarity_fund_rate=2,
+        ))
+        r = calc.compute(slip(1000))
+        # solidarity = 2% of 1000 = 20
+        self.assertAlmostEqual(r["Solidarity Fund"]["amount"], 20, delta=0.01)
+
+    def test_pit_reads_bands_from_settings(self):
+        from payroll_africa.calculators.libya import LibyaCalculator
+        class Band:
+            def __init__(self, f, t, r): self.from_amount = f; self.to_amount = t; self.rate = r
+        calc = LibyaCalculator(MockSettings(
+            ssf_employee_rate=5.125, ssf_employer_rate=14.35, solidarity_fund_rate=1,
+            pit_bands=[Band(0, 12000, 5), Band(12000, 0, 10)],
+        ))
+        # gross=5000: ssf_emp=256.25, sol=50; taxable=4693.75; annual=56325
+        # tax: 12000*5% + (56325-12000)*10% = 600 + 4432.5 = 5032.5; monthly=419.375
+        r = calc.compute(slip(5000))
+        self.assertAlmostEqual(r["PIT"]["amount"], 419.375, delta=2)
+
+    def test_empty_pit_bands_uses_hardcoded(self):
+        from payroll_africa.calculators.libya import LibyaCalculator
+        calc = LibyaCalculator(MockSettings(
+            ssf_employee_rate=5.125, ssf_employer_rate=14.35, solidarity_fund_rate=1,
+        ))
+        # gross=5000: PIT > 0 with hardcoded bands
+        r = calc.compute(slip(5000))
+        self.assertIn("PIT", r)
+        self.assertGreater(r["PIT"]["amount"], 0)
+
+
+class TestComorosExtraBands(unittest.TestCase):
+    """Tests for Comoros pit_bands and pit_threshold from settings."""
+
+    def test_pit_reads_bands_from_settings(self):
+        from payroll_africa.calculators.comoros import ComorosCalculator
+        class Band:
+            def __init__(self, f, t, r): self.from_amount = f; self.to_amount = t; self.rate = r
+        calc = ComorosCalculator(MockSettings(
+            minimum_wage=55000, cnss_employee_rate=3.5, cnss_employer_rate=10.5,
+            pit_bands=[Band(0, 360000, 0), Band(360000, 0, 10)],
+        ))
+        # gross=50000; ceiling=55000*8=440000; cnss_emp=1750; taxable=48250; annual=579000
+        # tax: (579000-360000)*10% = 21900; monthly = 1825
+        r = calc.compute(slip(50000))
+        self.assertAlmostEqual(r["PIT"]["amount"], 1825, delta=2)
+
+    def test_empty_pit_bands_uses_hardcoded_with_threshold(self):
+        from payroll_africa.calculators.comoros import ComorosCalculator
+        calc = ComorosCalculator(MockSettings(
+            minimum_wage=55000, cnss_employee_rate=3.5, cnss_employer_rate=10.5,
+            pit_threshold=360000,
+        ))
+        r = calc.compute(slip(25000))
+        self.assertNotIn("PIT", r)
+
+
+class TestSeychelles(unittest.TestCase):
+    """Seychelles calculator tests — PAYE + Social Security."""
+
+    def setUp(self):
+        from payroll_africa.calculators.seychelles import SeychellesCalculator
+        self.calc = SeychellesCalculator(MockSettings(
+            social_security_rate=5, social_security_ceiling=15000,
+            tax_free_threshold=8555.5,
+        ))
+
+    def test_below_threshold_no_paye(self):
+        r = self.calc.compute(slip(8000))
+        self.assertNotIn("PAYE", r)
+        self.assertIn("Social Security Employer", r)
+
+    def test_paye_first_band(self):
+        # gross=9000; PAYE: (9000-8555.5)*15% = 444.5*15% = 66.675
+        r = self.calc.compute(slip(9000))
+        self.assertAlmostEqual(r["PAYE"]["amount"], 66.675, delta=0.01)
+        self.assertFalse(r["PAYE"]["is_employer_only"])
+
+    def test_social_security_capped(self):
+        # gross=20000 > ceiling 15000; SS = 15000 * 5% = 750
+        r = self.calc.compute(slip(20000))
+        self.assertAlmostEqual(r["Social Security Employer"]["amount"], 750, delta=1)
+        self.assertTrue(r["Social Security Employer"]["is_employer_only"])
+
+    def test_zero_gross(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["Social Security Employer"]["amount"], 0, delta=0.01)
+        self.assertNotIn("PAYE", r)
+
+    def test_paye_reads_bands_from_settings(self):
+        from payroll_africa.calculators.seychelles import SeychellesCalculator
+        class Band:
+            def __init__(self, f, t, r):
+                self.from_amount = f; self.to_amount = t; self.rate = r
+        # Settings bands are monthly (child DocType field is `rate`)
+        calc = SeychellesCalculator(MockSettings(
+            social_security_rate=5, social_security_ceiling=15000,
+            tax_free_threshold=8555.5,
+            paye_bands=[Band(0, 8555.5, 0), Band(8555.5, 0, 10)],
+        ))
+        # gross=9000: (9000-8555.5)*10% = 44.45
+        r = calc.compute(slip(9000))
+        self.assertAlmostEqual(r["PAYE"]["amount"], 44.45, delta=0.01)
+
+    def test_paye_twenty_percent_band(self):
+        # gross=50000: 15% x 1444.5 = 216.675; 20% x (50000-10000) = 8000 -> 8216.675
+        r = self.calc.compute(slip(50000))
+        self.assertAlmostEqual(r["PAYE"]["amount"], 8216.675, delta=0.01)
+
+    def test_paye_top_band_starts_at_83333(self):
+        # gross=100000: 216.675 + 20% x 73333 (14666.6) + 30% x 16667 (5000.1) = 19883.375
+        r = self.calc.compute(slip(100000))
+        self.assertAlmostEqual(r["PAYE"]["amount"], 19883.375, delta=0.01)
+
+    def test_paye_tax_free_threshold_from_settings(self):
+        from payroll_africa.calculators.seychelles import SeychellesCalculator
+        # Custom threshold of 10000 — gross=9500 should have no PAYE
+        calc = SeychellesCalculator(MockSettings(
+            social_security_rate=5, social_security_ceiling=15000,
+            tax_free_threshold=10000,
+        ))
+        r = calc.compute(slip(9500))
+        self.assertNotIn("PAYE", r)
+
+
+class TestMauritius(unittest.TestCase):
+    """Mauritius calculator tests — NSF, CSG, HRDC, PAYE."""
+
+    def setUp(self):
+        from payroll_africa.calculators.mauritius import MauritiusCalculator
+        self.calc = MauritiusCalculator(MockSettings(
+            nsf_employee_rate=1, nsf_employer_rate=2.5, nsf_ceiling=28570,
+            csg_rate=1.5, hrdc_rate=1.5, prgf_rate=4.5,
+            prgf_exemption_threshold=200000,
+            exempt_threshold_monthly=38462,
+            paye_bands=[],
+        ))
+
+    def test_nsf_below_ceiling(self):
+        # gross=20000 < ceiling 28570; nsf_emp=1%*20000=200, nsf_empr=2.5%*20000=500
+        r = self.calc.compute(slip(20000))
+        self.assertAlmostEqual(r["NSF Employee"]["amount"], 200, delta=1)
+        self.assertAlmostEqual(r["NSF Employer"]["amount"], 500, delta=1)
+
+    def test_nsf_above_ceiling(self):
+        # gross=50000 > ceiling 28570; nsf_emp=1%*28570=285.70, nsf_empr=2.5%*28570=714.25
+        r = self.calc.compute(slip(50000))
+        self.assertAlmostEqual(r["NSF Employee"]["amount"], 285.70, delta=1)
+        self.assertAlmostEqual(r["NSF Employer"]["amount"], 714.25, delta=1)
+
+    def test_csg_below_threshold(self):
+        # gross=30000 <= csg_high_threshold 50000; csg=1.5%*30000=450
+        r = self.calc.compute(slip(30000))
+        self.assertAlmostEqual(r["CSG"]["amount"], 450, delta=1)
+        self.assertFalse(r["CSG"]["is_employer_only"])
+
+    def test_hrdc_levy(self):
+        # hrdc=1.5%*30000=450
+        r = self.calc.compute(slip(30000))
+        self.assertAlmostEqual(r["HRDC Levy"]["amount"], 450, delta=1)
+        self.assertTrue(r["HRDC Levy"]["is_employer_only"])
+
+    def test_exempt_below_threshold(self):
+        # gross=35000 < exempt_threshold 38462 => no PAYE
+        r = self.calc.compute(slip(35000))
+        self.assertNotIn("PAYE", r)
+
+    def test_paye_above_exempt(self):
+        # gross=50000 > 38462 => PAYE > 0
+        r = self.calc.compute(slip(50000))
+        self.assertIn("PAYE", r)
+        self.assertGreater(r["PAYE"]["amount"], 0)
+
+    def test_zero_gross(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["NSF Employee"]["amount"], 0, delta=0.01)
+        self.assertAlmostEqual(r["NSF Employer"]["amount"], 0, delta=0.01)
+        self.assertNotIn("PAYE", r)
+        self.assertNotIn("CSG", r)
+
+
+class TestDRC(unittest.TestCase):
+    def setUp(self):
+        from payroll_africa.calculators.drc import DRCCalculator
+        self.calc = DRCCalculator(MockSettings(
+            inss_pension_employee_rate=5,
+            inss_pension_employer_rate=5,
+            inss_occupational_risks_rate=1.5,
+            inss_family_benefits_rate=6.5,
+            inpp_rate=3,
+            onem_rate=0.2,
+        ))
+
+    def test_inss_contributions(self):
+        # gross=800000: INSS emp=5%*800000=40000, INSS empr=5%*800000=40000
+        r = self.calc.compute(slip(800000))
+        self.assertAlmostEqual(r["INSS Pension Employee CD"]["amount"], 40000, delta=1)
+        self.assertAlmostEqual(r["INSS Pension Employer CD"]["amount"], 40000, delta=1)
+        self.assertFalse(r["INSS Pension Employee CD"]["is_employer_only"])
+        self.assertTrue(r["INSS Pension Employer CD"]["is_employer_only"])
+
+    def test_employer_contributions(self):
+        # gross=800000: occ_risk=1.5%*800000=12000, family=6.5%*800000=52000
+        # inpp=3%*800000=24000, onem=0.2%*800000=1600
+        r = self.calc.compute(slip(800000))
+        self.assertAlmostEqual(r["INSS Occupational Risks CD"]["amount"], 12000, delta=1)
+        self.assertAlmostEqual(r["INSS Family Benefits CD"]["amount"], 52000, delta=1)
+        self.assertAlmostEqual(r["INPP CD"]["amount"], 24000, delta=1)
+        self.assertAlmostEqual(r["ONEM CD"]["amount"], 1600, delta=1)
+
+    def test_ipr_computed_from_bands(self):
+        # gross=800000; inss_emp=40000; taxable=760000
+        # Band1: 0-162000 at 3% => 162000*0.03 = 4860
+        # Band2: 162001-1800000 at 15% => (760000-162001)*0.15 = 89699.85
+        # Total IPR = 4860 + 89699.85 = 94559.85
+        r = self.calc.compute(slip(800000))
+        self.assertIn("PAYE CD", r)
+        self.assertAlmostEqual(r["PAYE CD"]["amount"], 94559.85, delta=5)
+        self.assertFalse(r["PAYE CD"]["is_employer_only"])
+
+    def test_zero_gross_no_ipr(self):
+        r = self.calc.compute(slip(0))
+        self.assertAlmostEqual(r["INSS Pension Employee CD"]["amount"], 0, delta=1)
+        self.assertNotIn("PAYE CD", r)
+
+    def test_fallback_rates_no_crash(self):
+        # MockSettings with no rate fields: defaults must kick in
+        from payroll_africa.calculators.drc import DRCCalculator
+        calc_bare = DRCCalculator(MockSettings())
+        r = calc_bare.compute(slip(500000))
+        # Default inss_pension_employee=5% => 25000
+        self.assertAlmostEqual(r["INSS Pension Employee CD"]["amount"], 25000, delta=1)
+        self.assertIn("PAYE CD", r)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

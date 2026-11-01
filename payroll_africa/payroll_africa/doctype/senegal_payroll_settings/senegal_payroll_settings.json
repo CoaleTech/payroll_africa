@@ -69,7 +69,7 @@
    "fieldname": "ipres_ceiling",
    "fieldtype": "Currency",
    "label": "IPRES Ceiling (XOF)",
-   "default": "299000"
+   "default": "432000"
   },
   {
    "fieldname": "minimum_wage",
@@ -82,7 +82,7 @@
    "fieldname": "ipres_ceiling_multiplier",
    "fieldtype": "Int",
    "label": "IPRES Ceiling Multiplier",
-   "default": "4",
+   "default": "6",
    "description": "IPRES ceiling = minimum_wage × this multiplier"
   },
   {
@@ -93,19 +93,19 @@
    "fieldname": "css_employee_rate",
    "fieldtype": "Percent",
    "label": "CSS Health Employee Rate",
-   "default": "3"
+   "default": "0"
   },
   {
    "fieldname": "css_employer_rate",
    "fieldtype": "Percent",
    "label": "CSS Health Employer Rate",
-   "default": "5"
+   "default": "7"
   },
   {
    "fieldname": "css_ceiling",
    "fieldtype": "Currency",
    "label": "CSS Ceiling (XOF)",
-   "default": "299000"
+   "default": "432000"
   },
   {
    "fieldname": "amo_section",

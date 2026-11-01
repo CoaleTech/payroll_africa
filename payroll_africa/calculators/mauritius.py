@@ -4,10 +4,10 @@ Reference: MRA (Mauritius Revenue Authority)
 - PAYE (from July 2025): Simplified 3-band system
   First MUR 500,000: 0%, Next MUR 500,000: 10%, Remainder: 20%
   (Replaced 11-band system from Budget 2025-2026)
-- NSF: Employee 1%, Employer 2.5% (capped at MUR 25,475/month)
-- CSG: Employee 1.5%
+- NSF: Employee 1%, Employer 2.5% (capped at MUR 28,570/month from 1 July 2025)
+- CSG: Employee 1.5% up to MUR 50,000/month, 3% above; Employer 3% / 6%
 - HRDC Levy: Employer 1.5%
-- PRGF: Employer 2.5% (for qualifying employees)
+- PRGF: Employer 4.5% (qualifying employees earning up to MUR 200,000/month)
 - Exempt: < MUR 38,462/month
 - Fair Share Contribution: 15% on income > MUR 12M (July 2025-June 2028)
 - Tax year: July 1 - June 30
@@ -124,7 +124,7 @@ class MauritiusCalculator(BaseCalculator):
         return gross * rate if gross > 0 else 0
 
     def _compute_prgf(self, gross):
-        """PRGF: 2.5% of gross (employer only, for qualifying employees)."""
+        """PRGF: 4.5% of gross (employer only, for qualifying employees)."""
         if not self.settings.get("prgf_applicable"):
             return 0
         rate = flt(self.settings.prgf_rate or 4.5) / 100

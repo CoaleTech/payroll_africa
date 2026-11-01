@@ -794,30 +794,24 @@
     "condition": null,
     "from_amount": 48001.0,
     "percent_deduction": 5.0,
-    "to_amount": 96000.0
+    "to_amount": 84000.0
    },
    {
     "condition": null,
-    "from_amount": 96001.0,
+    "from_amount": 84001.0,
     "percent_deduction": 12.5,
-    "to_amount": 144000.0
+    "to_amount": 120000.0
    },
    {
     "condition": null,
-    "from_amount": 144001.0,
+    "from_amount": 120001.0,
     "percent_deduction": 18.75,
-    "to_amount": 192000.0
+    "to_amount": 156000.0
    },
    {
     "condition": null,
-    "from_amount": 192001.0,
+    "from_amount": 156001.0,
     "percent_deduction": 25.0,
-    "to_amount": 240000.0
-   },
-   {
-    "condition": null,
-    "from_amount": 240001.0,
-    "percent_deduction": 26.5,
     "to_amount": 0.0
    }
   ],

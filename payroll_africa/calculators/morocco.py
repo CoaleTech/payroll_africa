@@ -126,8 +126,8 @@ class MoroccoCalculator(BaseCalculator):
         40,001 - 60,000 : 10%
         60,001 - 80,000 : 20%
         80,001 - 100,000: 30%
-        100,001 - 150,000: 34%
-        Over 150,000    : 37%
+        100,001 - 180,000: 34%
+        Over 180,000    : 37%
         """
         tax = 0
         bands = self.settings.ir_bands or []

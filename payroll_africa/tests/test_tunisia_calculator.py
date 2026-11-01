@@ -21,7 +21,7 @@ from payroll_africa.calculators.tunisia import TunisiaCalculator
 def make_settings():
 	"""Create mock Tunisia Payroll Settings with 2025/2026 rates."""
 	settings = MagicMock()
-	settings.cnss_employee_rate = 9.18
+	settings.cnss_employee_rate = 9.68
 	settings.cnss_employer_rate = 17.07
 	settings.ssc_rate = 0.5
 	settings.professional_deduction_rate = 10
@@ -66,8 +66,8 @@ class TestTunisiaCalculator(unittest.TestCase):
 		slip = make_salary_slip(3000)
 		results = self.calculator.compute(slip)
 
-		# Employee: 9.18% of 3,000 = 275.40
-		self.assertEqual(get_amount(results, "CNSS Employee"), 275.40)
+		# Employee: 9.68% of 3,000 = 290.40 (LF2025/Law 48-2024 rate)
+		self.assertEqual(get_amount(results, "CNSS Employee"), 290.40)
 		# Employer: 17.07% of 3,000 = 512.10
 		self.assertEqual(get_amount(results, "CNSS Employer"), 512.10)
 		self.assertFalse(results["CNSS Employee"]["is_employer_only"])

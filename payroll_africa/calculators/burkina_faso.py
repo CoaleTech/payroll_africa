@@ -1,11 +1,10 @@
 """Burkina Faso statutory deduction calculator.
 
 Reference: CNSS, DGI
-- CNSS Pension: Employee 5.5%, Employer 9.5% (capped at XOF 8x minimum wage)
-- AMO Health: Employee 3%, Employer 5% (capped)
-- PIT (IR): Progressive 0-27.5%
-- Tax-free threshold: XOF 500,000/year
-- Professional deduction: 25% of gross
+- CNSS Pension: Employee 8%, Employer 17.5% (capped at cnss_ceiling, default 800,000 XOF)
+- AMO Health: Employee 2.5%, Employer 2.5% (same ceiling)
+- PIT (IUTS): Progressive 0-25% on monthly taxable income
+- Tax-free threshold: XOF 30,000/month
 """
 
 from frappe.utils import flt

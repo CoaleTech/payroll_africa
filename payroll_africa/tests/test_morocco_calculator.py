@@ -31,7 +31,7 @@ def make_settings():
 	settings.annual_exemption = 40000
 	settings.number_of_dependents = 0
 	settings.max_dependents_for_allowance = 6
-	settings.dependent_allowance = 500
+	settings.dependent_allowance = 600
 	settings.ir_bands = []
 	return settings
 

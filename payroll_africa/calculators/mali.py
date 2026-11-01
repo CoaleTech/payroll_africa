@@ -1,12 +1,10 @@
 """Mali statutory deduction calculator.
 
 Reference: INSS (Institut National de Securite Sociale), DGI
-- INSS Pension: Employee 3.5%, Employer 7.5% (capped)
-- AMO Health Insurance: Employee 2%, Employer 3.5% (capped)
-- PIT (IR): Progressive 0-35%
-- Tax-free threshold: XOF 650,000/year
-- Professional deduction: 15% of gross income
-- Capped at XOF 8x minimum wage
+- INSS Pension: Employee 3.6%, Employer 5.4% (uncapped — contributions on total salary)
+- AMO Health Insurance: Employee 2%, Employer 3.5%
+- PIT (ITS): Progressive 0-40% on monthly taxable income
+- Tax-free threshold: XOF 175,000/month (monthly barème)
 """
 
 from frappe.utils import flt
@@ -60,13 +58,13 @@ class MaliCalculator(BaseCalculator):
         return gross if gross > 0 else 0
 
     def _compute_inss_employee(self, gross):
-        """INSS employee: 3.5% of capped base."""
+        """INSS employee: 3.6% of gross (uncapped)."""
         rate = flt(self.settings.inss_employee_rate or 3.6) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_inss_employer(self, gross):
-        """INSS employer: 8.4% of capped base."""
+        """INSS employer: 5.4% of gross (uncapped)."""
         rate = flt(self.settings.inss_employer_rate or 5.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate

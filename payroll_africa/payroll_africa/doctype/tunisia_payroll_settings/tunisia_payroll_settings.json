@@ -49,7 +49,7 @@
    "fieldname": "cnss_employee_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employee Rate",
-   "default": "9.18",
+   "default": "9.68",
    "description": "Employee CNSS contribution rate on gross salary"
   },
   {

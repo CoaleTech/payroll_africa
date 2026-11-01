@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import flt  # noqa: F401 — kept for potential external callers
 
 from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
 
@@ -28,7 +28,7 @@ def get_data(filters):
 	data = frappe.db.sql(
 		"""
 		SELECT
-			ss.employee, ss.employee_name, ss.basic_pay,
+			ss.employee, ss.employee_name,
 			ss.name as salary_slip
 		FROM `tabSalary Slip` ss
 		WHERE ss.docstatus = 1"""
@@ -41,12 +41,15 @@ def get_data(filters):
 	)
 
 	slip_names = [r.salary_slip for r in data]
-	amounts = fetch_component_amounts(slip_names, ["Pension Employee", "Pension Employer"])
+	basic_amounts = fetch_component_amounts(slip_names, ["Basic Salary"], parentfield="earnings")
+	pension_amounts = fetch_component_amounts(slip_names, ["Pension Employee", "Pension Employer"])
 
 	for row in data:
-		slip_amounts = amounts.get(row.salary_slip, {})
-		emp = slip_amounts.get("Pension Employee", 0)
-		empr = slip_amounts.get("Pension Employer", 0)
+		basic = basic_amounts.get(row.salary_slip, {}) or {}
+		pen = pension_amounts.get(row.salary_slip, {}) or {}
+		row["basic_pay"] = flt(basic.get("Basic Salary", 0))
+		emp = flt(pen.get("Pension Employee", 0))
+		empr = flt(pen.get("Pension Employer", 0))
 		row["pension_employee"] = emp
 		row["pension_employer"] = empr
 		row["total_pension"] = emp + empr

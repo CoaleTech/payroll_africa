@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import flt  # noqa: F401
 
 from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
 
@@ -29,7 +29,7 @@ def get_data(filters):
 	data = frappe.db.sql(
 		"""
 		SELECT
-			ss.employee, ss.employee_name, ss.basic_pay,
+			ss.employee, ss.employee_name,
 			ss.name as salary_slip
 		FROM `tabSalary Slip` ss
 		WHERE ss.docstatus = 1"""
@@ -42,13 +42,16 @@ def get_data(filters):
 	)
 
 	slip_names = [r.salary_slip for r in data]
-	amounts = fetch_component_amounts(slip_names, ["SSNIT Employee", "SSNIT Employer", "Tier 2 Pension Employer"])
+	basic_amounts = fetch_component_amounts(slip_names, ["Basic Salary"], parentfield="earnings")
+	ssnit_amounts = fetch_component_amounts(slip_names, ["SSNIT Employee", "SSNIT Employer", "Tier 2 Pension Employer"])
 
 	for row in data:
-		slip_amounts = amounts.get(row.salary_slip, {})
-		emp = slip_amounts.get("SSNIT Employee", 0)
-		empr = slip_amounts.get("SSNIT Employer", 0)
-		tier2 = slip_amounts.get("Tier 2 Pension Employer", 0)
+		basic = basic_amounts.get(row.salary_slip, {}) or {}
+		ssnit = ssnit_amounts.get(row.salary_slip, {}) or {}
+		row["basic_pay"] = flt(basic.get("Basic Salary", 0))
+		emp = flt(ssnit.get("SSNIT Employee", 0))
+		empr = flt(ssnit.get("SSNIT Employer", 0))
+		tier2 = flt(ssnit.get("Tier 2 Pension Employer", 0))
 		row["ssnit_employee"] = emp
 		row["ssnit_employer"] = empr
 		row["tier2_employer"] = tier2

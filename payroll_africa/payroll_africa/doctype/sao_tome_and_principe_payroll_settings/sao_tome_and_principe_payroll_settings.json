@@ -44,13 +44,13 @@
    "fieldname": "inss_employee_rate",
    "fieldtype": "Percent",
    "label": "INSS Employee Rate",
-   "default": "8"
+   "default": "5"
   },
   {
    "fieldname": "inss_employer_rate",
    "fieldtype": "Percent",
    "label": "INSS Employer Rate",
-   "default": "12"
+   "default": "7"
   },
   {
    "fieldname": "inss_ceiling",

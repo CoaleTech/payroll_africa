@@ -89,12 +89,12 @@ class MoroccoCalculator(BaseCalculator):
         net_after_cnss = gross - cnss_total
 
         # Step 2: Professional expense deduction (20%, capped)
-        prof_deduction_rate = flt(self.settings.professional_deduction_rate or 20) / 100
+        prof_deduction_rate = self._num("professional_deduction_rate", 20) / 100
         prof_deduction_ceiling_monthly = flt(self.settings.professional_deduction_ceiling or 2500)
         prof_deduction = min(net_after_cnss * prof_deduction_rate, prof_deduction_ceiling_monthly)
 
         # Step 3: Annual exemption
-        annual_exemption = flt(self.settings.annual_exemption or 40000)
+        annual_exemption = self._num("annual_exemption", 40000)
         monthly_exemption = annual_exemption / 12
 
         # Taxable base
@@ -108,9 +108,9 @@ class MoroccoCalculator(BaseCalculator):
         tax_annual = self._apply_ir_bands(taxable_annual)
 
         # Step 5: Family allowance
-        num_dependents = flt(self.settings.number_of_dependents or 0)
+        num_dependents = self._num("number_of_dependents", 0)
         max_dependents = flt(self.settings.max_dependents_for_allowance or 6)
-        allowance_per_dependent = flt(self.settings.dependent_allowance or 600)   # PwC 2026 (LF 50-25)
+        allowance_per_dependent = self._num("dependent_allowance", 600)   # PwC 2026 (LF 50-25)
         actual_dependents = min(num_dependents, max_dependents)
         family_allowance = actual_dependents * allowance_per_dependent * 12
 
@@ -126,8 +126,8 @@ class MoroccoCalculator(BaseCalculator):
         40,001 - 60,000 : 10%
         60,001 - 80,000 : 20%
         80,001 - 100,000: 30%
-        100,001 - 150,000: 34%
-        Over 150,000    : 37%
+        100,001 - 180,000: 34%
+        Over 180,000    : 37%
         """
         tax = 0
         bands = self.settings.ir_bands or []

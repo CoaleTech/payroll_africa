@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="payroll_africa/public/icons/africa.svg" alt="Payroll Africa" width="80" />
+  <img src="payroll_africa/public/icons/desktop_icons/solid/payroll_africa.svg" alt="Payroll Africa" width="80" />
 </p>
 
 <h1 align="center">Payroll Africa</h1>
@@ -19,6 +19,14 @@
   <a href="#contributing">Contributing</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/CoaleTech/payroll_africa/actions/workflows/ci.yml"><img src="https://github.com/CoaleTech/payroll_africa/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/tests-347%20passing-brightgreen" alt="Tests" />
+  <img src="https://img.shields.io/badge/countries-54-blue" alt="Countries" />
+  <img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License" />
+  <img src="https://img.shields.io/badge/Frappe-v15%20%7C%20v16-0089FF" alt="Frappe" />
+</p>
+
 ---
 
 ## Overview
@@ -29,7 +37,7 @@ No manual calculation. No spreadsheets. Change a rate in settings, and the next 
 
 ### Key Features
 
-- **Automatic deduction computation** on every Salary Slip save/submit via the HRMS `apply_regional_deductions` regional override
+- **Automatic deduction computation** on every Salary Slip save/submit via a Salary Slip class override implementing HRMS `apply_regional_deductions` (country resolved from the employee/assignment/company, not System Settings)
 - **54 countries** — 54 calculators, 54 Settings DocTypes, 54 tax-band child tables
 - **111 reports** — country-specific PAYE returns, social security remittances, and 5 cross-country reports
 - **Country enable/disable** — toggle active countries in a single settings page; sidebar and component dropdowns update automatically (no restart)
@@ -153,7 +161,7 @@ Employee + Salary Structure
   Salary Slip (save/submit)
         |
         v
-  HRMS regional override → payroll_africa.engine.salary_slip.apply_regional_deductions()
+  Salary Slip override → payroll_africa.engine.salary_slip.apply_regional_deductions()
         |
         v
   registry.py → get_calculator(country)
@@ -390,31 +398,30 @@ payroll_africa/
 │   └── ...               #   one file per country
 ├── engine/
 │   ├── hooks.py          # Employee country resolution helper
-│   ├── salary_slip.py    # HRMS apply_regional_deductions override
+│   ├── salary_slip.py    # Salary Slip override + apply_regional_deductions
 │   ├── utils.py          # Effective Salary Structure Assignment helpers
 │   └── registry.py       # COUNTRY_MAP, SETTINGS_MAP — country → calculator + DocType lookup
 ├── boot.py               # extend_bootinfo: injects enabled countries into frappe.boot
 ├── api.py                # 5 whitelisted API endpoints
 ├── tasks.py              # Yearly scheduler: notify_rate_review
 ├── setup.py              # after_install / before_uninstall lifecycle
-├── hooks.py              # regional_overrides, scheduler_events, fixtures, boot_session, app_include_js/css
+├── hooks.py              # override_doctype_class, scheduler_events, fixtures, boot_session, app_include_js/css
 ├── payroll_africa/
 │   ├── doctype/
 │   │   ├── payroll_africa_settings/    # Single DocType — global toggle + 54 country checkboxes
 │   │   ├── {country}_payroll_settings/ # 54 Single DocTypes — configurable rates per country
 │   │   └── {country}_{tax}_band/       # 56 child table DocTypes — progressive tax brackets
 │   ├── report/                         # 111 reports (5 cross-country + 106 country-specific)
+│   ├── sidebar/payroll_africa/         # Standard Sidebar (139 items); disabled countries hidden client-side
 │   └── workspace/                      # Workspace with shortcuts + links
-├── workspace_sidebar/    # 139-item sidebar — dynamically filtered by enabled countries
 ├── change_log/           # Release notes (v0.0.3)
 ├── fixtures/             # Custom fields + 21 Income Tax Slabs
 ├── public/
 │   ├── js/
 │   │   ├── payroll_africa_change_log.js       # What's New dialog
-│   │   └── payroll_africa_sidebar.js          # Hides disabled countries' sidebar links
+│   │   └── payroll_africa_sidebar.js          # Hides disabled countries' sidebar links and empty regions
 │   └── css/
-│       ├── payroll_africa.css
-│       └── payroll_africa_change_log.css
+│       └── payroll_africa_change_log.css      # Espresso tokens + native .es-badge
 ├── demo/                 # Demo data setup/teardown scripts
 └── tests/                # 347 unit tests — all 54 countries + API + engine + reports
 ```
@@ -464,7 +471,7 @@ Calculators fall back to hardcoded statutory defaults when the settings DocType 
 4. **Register** — add entries to `COUNTRY_MAP` and `SETTINGS_MAP` in `engine/registry.py`
 5. **Boot** — add `"Country Name": "enable_{snake}"` to `COUNTRY_FIELD_MAP` in `boot.py`
 6. **Settings toggle** — add `enable_{snake}` Check field to `payroll_africa_settings.json`
-7. **Sidebar** — add settings link to `workspace_sidebar/payroll_africa.json`
+7. **Sidebar** — add the settings link to `payroll_africa/sidebar/payroll_africa/payroll_africa.json` (a standard `Sidebar`; lucide icon names only)
 8. **Reports** — create tax return and social security remittance reports in `payroll_africa/report/`
 9. **Tests** — add a test class with zero gross, rate spot-check, employer flag, ceiling, and PIT threshold tests
 10. **Migrate** — run a site database migration to install the new DocTypes

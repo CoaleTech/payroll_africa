@@ -1,11 +1,10 @@
 """Benin statutory deduction calculator.
 
 Reference: CNSS, DGI
-- CNSS Pension: Employee 3.6%, Employer 6.4% (capped at XOF 8x minimum wage)
-- AMO Health: Employee 2%, Employer 4% (capped)
-- PIT (IR): Progressive 0-35%
-- Tax-free threshold: XOF 500,000/year
-- Professional deduction: 20% of gross
+- CNSS Pension: Employee 3.6%, Employer 15.4% (ceiling: cnss_ceiling; 0 = uncapped)
+- AMO Health: Employee 0%, Employer 0% (disabled; rates configurable)
+- PIT (ITS): Progressive 0-40% on monthly taxable income (CGI Benin 2026)
+- Tax-free threshold: XOF 60,000/month
 """
 
 from frappe.utils import flt
@@ -62,22 +61,22 @@ class BeninCalculator(BaseCalculator):
         return gross if gross > 0 else 0
 
     def _compute_cnss_employee(self, gross):
-        rate = flt(self.settings.cnss_employee_rate or 3.6) / 100
+        rate = self._num("cnss_employee_rate", 3.6) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_cnss_employer(self, gross):
-        rate = flt(self.settings.cnss_employer_rate or 15.4) / 100
+        rate = self._num("cnss_employer_rate", 15.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employee(self, gross):
-        rate = flt(self.settings.amo_employee_rate or 0) / 100
+        rate = self._num("amo_employee_rate", 0) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employer(self, gross):
-        rate = flt(self.settings.amo_employer_rate or 0) / 100
+        rate = self._num("amo_employer_rate", 0) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
@@ -85,7 +84,7 @@ class BeninCalculator(BaseCalculator):
         """ITS progressive (monthly bands, CGI Benin 2026)."""
         if taxable_income <= 0:
             return 0
-        threshold = flt(self.settings.pit_threshold or 60000)
+        threshold = self._num("pit_threshold", 60000)
         if taxable_income <= threshold:
             return 0
         tax = 0

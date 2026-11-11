@@ -2,11 +2,11 @@ import frappe
 from frappe import _
 from frappe.utils import flt, getdate
 import calendar
+import datetime
 
-MONTHS = [
-	"April", "May", "June", "July", "August", "September",
-	"October", "November", "December", "January", "February", "March",
-]
+# Month iteration is derived at runtime from the selected Fiscal Year document
+# so the report works for any fiscal-year start month (July-June, April-March,
+# January-December, etc.) without hard-coding the calendar order.
 
 
 def execute(filters=None):
@@ -34,20 +34,25 @@ def get_data(filters):
 	year_end = getdate(fiscal_year.year_end_date)
 
 	data = []
-	month_numbers = [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]
+	curr_year = year_start.year
+	curr_month = year_start.month
 
-	for idx, month_name in enumerate(MONTHS):
-		month_num = month_numbers[idx]
-		year = year_start.year if month_num >= 4 else year_start.year + 1
-		last_day = calendar.monthrange(year, month_num)[1]
-		month_start = getdate(f"{year}-{month_num:02d}-01")
-		month_end = getdate(f"{year}-{month_num:02d}-{last_day}")
+	for _i in range(12):  # a fiscal year spans at most 12 calendar months
+		last_day = calendar.monthrange(curr_year, curr_month)[1]
+		month_start = datetime.date(curr_year, curr_month, 1)
+		month_end = datetime.date(curr_year, curr_month, last_day)
 
-		if month_start > year_end or month_end < year_start:
-			continue
+		if month_start > year_end:
+			break
 
+		month_name = calendar.month_name[curr_month]
 		row = get_month_data(filters, month_name, month_start, month_end)
 		data.append(row)
+
+		curr_month += 1
+		if curr_month > 12:
+			curr_month = 1
+			curr_year += 1
 
 	return data
 
@@ -74,21 +79,21 @@ def get_month_data(filters, month_name, month_start, month_end):
 		return row
 
 	slip = salary_slip[0]
-	row["gross_pay"] = flt(slip.gross_pay)
+	row["gross_pay"] = flt(slip["gross_pay"])
 
 	pension = flt(frappe.db.get_value(
 		"Salary Detail",
-		{"parent": slip.name, "salary_component": "Pension Employee MW", "parentfield": "deductions"},
+		{"parent": slip["name"], "salary_component": "Pension Employee MW", "parentfield": "deductions"},
 		"amount",
 	))
 	paye = flt(frappe.db.get_value(
 		"Salary Detail",
-		{"parent": slip.name, "salary_component": "PAYE MW", "parentfield": "deductions"},
+		{"parent": slip["name"], "salary_component": "PAYE MW", "parentfield": "deductions"},
 		"amount",
 	))
 
 	row["pension_deduction"] = pension
-	row["taxable_pay"] = flt(slip.gross_pay) - pension
+	row["taxable_pay"] = flt(slip["gross_pay"]) - pension
 	row["paye"] = paye
 
 	return row

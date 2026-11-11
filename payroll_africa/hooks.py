@@ -1,17 +1,24 @@
 app_name = "payroll_africa"
 app_title = "Payroll Africa"
-app_publisher = "Kimco"
+app_publisher = "CoaleTech"
 app_description = "Statutory payroll deduction automation for African countries"
-app_email = "dev@kimco.co.ke"
+app_email = "support@coale.tech"
 app_license = "gpl-3.0"
 
 required_apps = ["frappe/erpnext", "frappe/hrms"]
 
-# Includes
-app_include_css = [
-	"/assets/payroll_africa/css/payroll_africa.css",
-	"/assets/payroll_africa/css/payroll_africa_change_log.css",
+add_to_apps_screen = [
+	{
+		"name": "payroll_africa",
+		"logo": "/assets/payroll_africa/icons/africa.svg",
+		"title": "Payroll Africa",
+		"route": "/desk/payroll-africa",
+		"sequence_id": 3,
+	}
 ]
+
+# Includes
+app_include_css = ["/assets/payroll_africa/css/payroll_africa_change_log.css"]
 app_include_js = [
 	"/assets/payroll_africa/js/payroll_africa_change_log.js",
 	"/assets/payroll_africa/js/payroll_africa_sidebar.js",
@@ -26,21 +33,24 @@ scheduler_events = {
 	],
 }
 
-# Regional overrides for the HRMS apply_regional_deductions hook.
-from payroll_africa.engine.registry import COUNTRY_MAP
-
-_APPLY_REGIONAL_DEDUCTIONS = "hrms.payroll.doctype.salary_slip.salary_slip.apply_regional_deductions"
-_PAYROLL_AFRICA_DEDUCTIONS = "payroll_africa.engine.salary_slip.apply_regional_deductions"
-
-regional_overrides = {
-	country: {_APPLY_REGIONAL_DEDUCTIONS: _PAYROLL_AFRICA_DEDUCTIONS}
-	for country in COUNTRY_MAP
+# Salary Slip subclass runs the country engine from apply_regional_deductions.
+# (hrms.get_region() ignores the slip's company unless a flag is set, so the
+# regional_overrides hook never fires for non-system-country companies.)
+override_doctype_class = {
+	"Salary Slip": "payroll_africa.engine.salary_slip.PayrollAfricaSalarySlip",
 }
 
 # Installation
 after_install = "payroll_africa.setup.after_install"
 after_migrate = "payroll_africa.setup.after_migrate"
 before_uninstall = "payroll_africa.setup.before_uninstall"
+
+doc_events = {
+	"Company": {
+		"after_insert": "payroll_africa.setup.enable_country_on_company_insert",
+		"on_update": "payroll_africa.setup.ensure_company_component_accounts",
+	},
+}
 
 fixtures = [
 	{

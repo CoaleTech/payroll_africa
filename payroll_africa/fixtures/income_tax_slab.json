@@ -323,7 +323,7 @@
   "company": "",
   "currency": "ZMW",
   "disabled": 0,
-  "docstatus": 0,
+  "docstatus": 1,
   "doctype": "Income Tax Slab",
   "effective_from": "2025-01-01",
   "modified": "2026-03-01 21:50:52.173881",
@@ -334,23 +334,23 @@
     "condition": null,
     "from_amount": 0.0,
     "percent_deduction": 0.0,
-    "to_amount": 5100.0
+    "to_amount": 61200.0
    },
    {
     "condition": null,
-    "from_amount": 5101.0,
+    "from_amount": 61201.0,
     "percent_deduction": 20.0,
-    "to_amount": 7100.0
+    "to_amount": 85200.0
    },
    {
     "condition": null,
-    "from_amount": 7101.0,
+    "from_amount": 85201.0,
     "percent_deduction": 30.0,
-    "to_amount": 9200.0
+    "to_amount": 110400.0
    },
    {
     "condition": null,
-    "from_amount": 9201.0,
+    "from_amount": 110401.0,
     "percent_deduction": 37.0,
     "to_amount": 0.0
    }
@@ -794,30 +794,24 @@
     "condition": null,
     "from_amount": 48001.0,
     "percent_deduction": 5.0,
-    "to_amount": 96000.0
+    "to_amount": 84000.0
    },
    {
     "condition": null,
-    "from_amount": 96001.0,
+    "from_amount": 84001.0,
     "percent_deduction": 12.5,
-    "to_amount": 144000.0
+    "to_amount": 120000.0
    },
    {
     "condition": null,
-    "from_amount": 144001.0,
+    "from_amount": 120001.0,
     "percent_deduction": 18.75,
-    "to_amount": 192000.0
+    "to_amount": 156000.0
    },
    {
     "condition": null,
-    "from_amount": 192001.0,
+    "from_amount": 156001.0,
     "percent_deduction": 25.0,
-    "to_amount": 240000.0
-   },
-   {
-    "condition": null,
-    "from_amount": 240001.0,
-    "percent_deduction": 26.5,
     "to_amount": 0.0
    }
   ],

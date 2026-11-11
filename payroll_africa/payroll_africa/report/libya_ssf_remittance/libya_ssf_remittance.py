@@ -18,7 +18,6 @@ def get_columns():
 		{"fieldname": "gross_pay", "label": _("Gross Pay"), "fieldtype": "Currency", "width": 130},
 		{"fieldname":"ssf_emp", "label":_("SSF Employee"), "fieldtype":"Currency", "width":130},
 		{"fieldname":"ssf_empr", "label":_("SSF Employer"), "fieldtype":"Currency", "width":130},
-		{"fieldname":"jehad", "label":_("Jehad Tax"), "fieldtype":"Currency", "width":130},
 	]
 
 
@@ -41,13 +40,12 @@ def get_data(filters):
 	)
 
 	slip_names = [r.salary_slip for r in data]
-	amounts = fetch_component_amounts(slip_names, ['SSF Employee', 'SSF Employer', 'Jehad Tax'])
+	amounts = fetch_component_amounts(slip_names, ['SSF Employee', 'SSF Employer'])
 
 	for row in data:
 		slip_amounts = amounts.get(row.salary_slip, {})
 		row["ssf_emp"] = slip_amounts.get("SSF Employee", 0)
 		row["ssf_empr"] = slip_amounts.get("SSF Employer", 0)
-		row["jehad"] = slip_amounts.get("Jehad Tax", 0)
 		del row["salary_slip"]
 
 	return data

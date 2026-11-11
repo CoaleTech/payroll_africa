@@ -47,7 +47,7 @@
    "fieldname": "cnss_employee_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employee Rate",
-   "default": "3.6"
+   "default": "5.25"
   },
   {
    "fieldname": "cnss_employer_rate",
@@ -59,7 +59,7 @@
    "fieldname": "cnss_ceiling",
    "fieldtype": "Currency",
    "label": "CNSS Ceiling (XOF)",
-   "default": "500000"
+   "default": "320000"
   },
   {
    "fieldname": "minimum_wage",
@@ -75,13 +75,13 @@
    "fieldname": "amo_employee_rate",
    "fieldtype": "Percent",
    "label": "AMO Employee Rate",
-   "default": "5"
+   "default": "2.5"
   },
   {
    "fieldname": "amo_employer_rate",
    "fieldtype": "Percent",
    "label": "AMO Employer Rate",
-   "default": "5"
+   "default": "4.5"
   },
   {
    "fieldname": "pit_section",
@@ -92,7 +92,7 @@
    "fieldname": "pit_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (XOF)",
-   "default": "0"
+   "default": "25000"
   },
   {
    "fieldname": "pit_bands_section",

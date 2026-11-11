@@ -10,6 +10,7 @@
   "enabled",
   "paye_section",
   "tax_rebate_annual",
+  "tax_rebate_secondary",
   "enpf_section",
   "enpf_rate",
   "enpf_cap_total",
@@ -45,7 +46,14 @@
    "fieldtype": "Currency",
    "label": "Annual Primary Tax Rebate (SZL)",
    "default": "8200",
-   "description": "Annual primary tax rebate (SZL)"
+   "description": "Annual primary tax rebate (SZL). PwC Eswatini Mar 2026."
+  },
+  {
+   "fieldname": "tax_rebate_secondary",
+   "fieldtype": "Currency",
+   "label": "Annual Secondary Tax Rebate — Age 60+ (SZL)",
+   "default": "2700",
+   "description": "Additional annual rebate for employees aged 60 and over (SZL 2,700). Applied when employee date of birth gives age ≥ 60. Total rebate = SZL 10,900/year. Source: PwC Eswatini (Mar 2026); Teamed (Oct 2026)."
   },
   {
    "fieldname": "enpf_section",
@@ -62,8 +70,8 @@
    "fieldname": "enpf_cap_total",
    "fieldtype": "Currency",
    "label": "ENPF Monthly Cap — Total Both Sides (SZL)",
-   "default": "400",
-   "description": "Monthly ENPF cap — total both sides (SZL)"
+   "default": "430",
+   "description": "Monthly ENPF cap — total both sides (SZL). E430 from 1 Jan 2026 (Legal Notice 5 of 2025); scheduled E460 (E230/side) from 2027."
   },
   {
    "fieldname": "col_break_enpf",

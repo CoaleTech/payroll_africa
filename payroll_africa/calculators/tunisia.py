@@ -20,7 +20,7 @@ class TunisiaCalculator(BaseCalculator):
         gross = self.get_gross_pay(salary_slip)
         results = {}
 
-        # 1. CNSS Employee contribution (9.18%)
+        # 1. CNSS Employee contribution (9.68%, LF2025 / Law 48/2024)
         cnss_employee = self._compute_cnss_employee(gross)
         results["CNSS Employee"] = {
             "amount": cnss_employee,
@@ -52,20 +52,20 @@ class TunisiaCalculator(BaseCalculator):
 
     def _compute_cnss_employee(self, gross):
         """CNSS employee: 9.68% of gross salary (LF2025, Law 48/2024)."""
-        rate = flt(self.settings.cnss_employee_rate or 9.68) / 100
+        rate = self._num("cnss_employee_rate", 9.68) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_cnss_employer(self, gross):
         """CNSS employer: 17.07% of gross (or 16.57% for exporting companies)."""
         is_exporting = self.settings.get("is_exporting_company", 0)
-        rate = flt(self.settings.cnss_employer_rate or 17.07) / 100
+        rate = self._num("cnss_employer_rate", 17.07) / 100
         if is_exporting:
-            rate = flt(self.settings.cnss_employer_export_rate or 16.57) / 100
+            rate = self._num("cnss_employer_export_rate", 16.57) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_ssc(self, gross):
         """Social Solidarity Contribution: 0.5% of gross."""
-        rate = flt(self.settings.ssc_rate or 0.5) / 100
+        rate = self._num("ssc_rate", 0.5) / 100
         return gross * rate if gross > 0 else 0
 
     def _compute_irpp(self, gross, cnss_employee):
@@ -93,7 +93,7 @@ class TunisiaCalculator(BaseCalculator):
         net_after_cnss = gross - cnss_employee
 
         # Step 2: Professional expense deduction (10%, capped)
-        prof_deduction_rate = flt(self.settings.professional_deduction_rate or 10) / 100
+        prof_deduction_rate = self._num("professional_deduction_rate", 10) / 100
         prof_deduction_annual_cap = flt(self.settings.professional_deduction_cap or 2000)
         prof_deduction = min(net_after_cnss * prof_deduction_rate, prof_deduction_annual_cap / 12)
 

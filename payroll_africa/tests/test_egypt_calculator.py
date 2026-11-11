@@ -26,7 +26,7 @@ def make_settings():
 	settings.social_insurance_ceiling = 16700
 	settings.health_insurance_employee_rate = 1
 	settings.health_insurance_employer_rate = 3.25
-	settings.personal_exemption = 15000
+	settings.personal_exemption = 20000
 	settings.number_of_dependents = 0
 	settings.max_dependents = 3
 	settings.dependent_deduction = 3000

@@ -7,13 +7,11 @@ Reference: Eswatini Revenue Service (ERS), ENPF
   150,001 - 200,000  : 32,500 + 30% over 150,000
   Over 200,000       : 47,500 + 33% over 200,000
 - ENPF: Employee 5%, Employer 5% (capped)
-  Cap increases annually:
-  2025: E400/month total (E200 each)
-  2026: E430/month total (E215 each)
-  2027: E460/month total (E230 each)
-- Tax rebate: E8,200/year (E683.33/month)
-  Secondary rebate (age 60+): E2,700/year
-- Skills Development Levy: Employer 1%
+  Cap (Legal Notice 5 of 2025): E430/month total (E215 each, from 1 Jan 2026; wage ceiling E4,300)
+  Scheduled 2027: E460/month total (E230 each)
+- Tax rebate: E8,200/year primary; E2,700/year additional for age 60+ (total E10,900)
+  Sources: PwC Eswatini (Mar 2026), Teamed (Oct 2026)
+- Skills Development Levy: Employer rate per settings (default 1 %)
 - Tax year: July 1 - June 30
 - ENPF is deductible before PAYE calculation
 """
@@ -42,14 +40,18 @@ class EswatiniCalculator(BaseCalculator):
         }
 
         # 2. Skills Development Levy - Employer only (1%)
-        sdl = gross * (flt(self.settings.sdl_rate or 1) / 100) if gross > 0 else 0
+        sdl = gross * (self._num("sdl_rate", 1) / 100) if gross > 0 else 0
         results["Skills Development Levy"] = {
             "amount": sdl, "is_employer_only": True,
         }
 
         # 3. PAYE - progressive (after ENPF deduction)
         taxable = max(gross - enpf_emp, 0)
-        paye = self._compute_paye(taxable)
+        age = self.get_employee_age(salary_slip)
+        secondary_rebate = (
+            self._num("tax_rebate_secondary", 2700) if (age is not None and age >= 60) else 0
+        )
+        paye = self._compute_paye(taxable, secondary_rebate)
         if paye > 0:
             results["PAYE"] = {
                 "amount": paye, "is_employer_only": False,
@@ -58,15 +60,14 @@ class EswatiniCalculator(BaseCalculator):
         return results
 
     def _compute_enpf(self, gross):
-        """ENPF: 5% of gross, capped at monthly limit."""
-        rate = flt(self.settings.enpf_rate or 5) / 100
-        # Default cap: E400/month total = E200/month per side (2025)
-        cap_total = flt(self.settings.enpf_cap_total or 400)
+        """ENPF: 5% of gross, capped at monthly limit (default E215/side = E430 total, 2026)."""
+        rate = self._num("enpf_rate", 5) / 100
+        cap_total = flt(self.settings.enpf_cap_total or 430)
         cap_per_side = cap_total / 2
         contribution = gross * rate
         return min(contribution, cap_per_side) if gross > 0 else 0
 
-    def _compute_paye(self, taxable_income):
+    def _compute_paye(self, taxable_income, secondary_rebate=0):
         """Compute PAYE using annual progressive bands.
 
         Annual taxable income bands (SZL):
@@ -80,8 +81,8 @@ class EswatiniCalculator(BaseCalculator):
 
         annual = taxable_income * 12
 
-        # Apply tax rebate
-        rebate = flt(self.settings.tax_rebate_annual or 8200)
+        # Apply primary rebate plus optional secondary rebate (age 60+)
+        rebate = self._num("tax_rebate_annual", 8200) + secondary_rebate
 
         if annual <= 100000:
             tax = annual * 0.20

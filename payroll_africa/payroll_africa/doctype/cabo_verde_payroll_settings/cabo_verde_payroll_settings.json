@@ -45,7 +45,7 @@
    "fieldname": "inps_employee_rate",
    "fieldtype": "Percent",
    "label": "INPS Employee Rate",
-   "default": "8"
+   "default": 8.5
   },
   {
    "fieldname": "inps_employer_rate",
@@ -57,7 +57,7 @@
    "fieldname": "inps_ceiling",
    "fieldtype": "Currency",
    "label": "INPS Ceiling (CVE)",
-   "default": "0"
+   "default": 80000
   },
   {
    "fieldname": "col_break_inps",
@@ -78,7 +78,7 @@
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (CVE)",
-   "default": "0"
+   "default": 220000
   },
   {
    "fieldname": "pit_bands_section",

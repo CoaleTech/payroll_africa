@@ -64,6 +64,72 @@ COUNTRY_FIELD_MAP = {
 }
 
 
+# Maps country name to the ISO-3166-1-alpha-2 code used as a suffix on salary
+# components (e.g. "NSSF Employee UG" for Uganda).  Kenya has no suffix ("")
+# because its components are bare names ("PAYE", "NSSF Employee").  The values
+# here are a subset of VALID_SUFFIXES in engine/registry.py; they must stay in
+# sync with that set.
+COUNTRY_SUFFIX_MAP = {
+	"Kenya": "",
+	"Uganda": "UG",
+	"Tanzania": "TZ",
+	"Rwanda": "RW",
+	"Burundi": "BI",
+	"Zambia": "ZM",
+	"Malawi": "MW",
+	"Congo, The Democratic Republic of the": "CD",
+	"Nigeria": "NG",
+	"Mozambique": "MZ",
+	"Angola": "AO",
+	"Ghana": "GH",
+	"Ethiopia": "ET",
+	"South Africa": "ZA",
+	"Egypt": "EG",
+	"Botswana": "BW",
+	"Morocco": "MA",
+	"Ivory Coast": "CI",
+	"Tunisia": "TN",
+	"Namibia": "NA",
+	"Madagascar": "MG",
+	# Tier 2
+	"Algeria": "DZ",
+	"Senegal": "SN",
+	"Cameroon": "CM",
+	"Mauritius": "MU",
+	"Zimbabwe": "ZW",
+	"Mali": "ML",
+	# Tier 3
+	"Niger": "NE",
+	"Burkina Faso": "BF",
+	"Benin": "BJ",
+	"Gabon": "GA",
+	"Congo": "CG",
+	"Guinea": "GN",
+	"Togo": "TG",
+	"Seychelles": "SC",
+	# Tier 4
+	"Cabo Verde": "CV",
+	"Central African Republic": "CF",
+	"Chad": "TD",
+	"Comoros": "KM",
+	"Djibouti": "DJ",
+	"Equatorial Guinea": "GQ",
+	"Eritrea": "ER",
+	"Eswatini": "SZ",
+	"Gambia": "GM",
+	"Guinea-Bissau": "GW",
+	"Lesotho": "LS",
+	"Liberia": "LR",
+	"Libya": "LY",
+	"Mauritania": "MR",
+	"Sao Tome and Principe": "ST",
+	"Sierra Leone": "SL",
+	"Somalia": "SO",
+	"South Sudan": "SS",
+	"Sudan": "SD",
+}
+
+
 @frappe.whitelist()
 def get_enabled_countries():
 	"""Return list of enabled country names from Payroll Africa Settings."""
@@ -80,9 +146,10 @@ BOOT_CACHE_KEY = "payroll_africa_enabled_countries"
 
 
 def extend_bootinfo(bootinfo):
-	"""Add enabled countries to boot info for client-side filtering."""
+	"""Add enabled countries and suffix map to boot info for client-side filtering."""
 	cached = frappe.cache.get_value(BOOT_CACHE_KEY)
 	if cached is None:
 		cached = get_enabled_countries()
 		frappe.cache.set_value(BOOT_CACHE_KEY, cached, expires_in_sec=3600)
 	bootinfo.payroll_africa_enabled_countries = cached
+	bootinfo.payroll_africa_country_suffix_map = COUNTRY_SUFFIX_MAP

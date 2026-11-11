@@ -121,7 +121,15 @@
 			if (!labelEl) return;
 
 			const labelText = labelEl.textContent;
-			const shouldHide = isDisabledCountryLabel(labelText, disabled);
+			// A region section (e.g. "Southern Africa") goes too when every country under it is
+			// disabled, so the sidebar never shows an empty group.
+			const children = container.classList.contains("section-item")
+				? [...container.querySelectorAll(".nested-container .sidebar-item-label")]
+				: [];
+			const shouldHide =
+				isDisabledCountryLabel(labelText, disabled) ||
+				(children.length > 0 &&
+					children.every((el) => isDisabledCountryLabel(el.textContent, disabled)));
 			const currentlyHidden = container.style.display === "none";
 
 			if (shouldHide && !currentlyHidden) {

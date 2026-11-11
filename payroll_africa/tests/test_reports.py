@@ -39,9 +39,49 @@ from payroll_africa.payroll_africa.report.shif_remittance.shif_remittance import
 )
 from payroll_africa.payroll_africa.report.housing_levy_return.housing_levy_return import (
 	get_columns as hl_columns,
+	get_data as hl_get_data,
 )
 from payroll_africa.payroll_africa.report.p9a_tax_deduction_card.p9a_tax_deduction_card import (
 	get_columns as p9a_columns, get_data as p9a_get_data,
+)
+from payroll_africa.payroll_africa.report.mra_p9_deduction_certificate.mra_p9_deduction_certificate import (
+	get_data as mra_p9_get_data,
+)
+from payroll_africa.payroll_africa.report.niger_cnss_remittance.niger_cnss_remittance import (
+	get_columns as niger_cnss_columns,
+)
+from payroll_africa.payroll_africa.report.niger_pit_return.niger_pit_return import (
+	get_columns as niger_pit_columns,
+)
+from payroll_africa.payroll_africa.report.zimbabwe_paye_return.zimbabwe_paye_return import (
+	get_columns as zw_paye_columns,
+)
+from payroll_africa.payroll_africa.report.zimbabwe_nssa_remittance.zimbabwe_nssa_remittance import (
+	get_columns as zw_nssa_columns,
+)
+from payroll_africa.payroll_africa.report.sudan_nsif_remittance.sudan_nsif_remittance import (
+	get_columns as sudan_nsif_columns,
+)
+from payroll_africa.payroll_africa.report.sudan_pit_return.sudan_pit_return import (
+	get_columns as sudan_pit_columns,
+)
+from payroll_africa.payroll_africa.report.south_africa_paye_remittance.south_africa_paye_remittance import (
+	get_columns as sa_paye_columns,
+)
+from payroll_africa.payroll_africa.report.south_africa_uif_remittance.south_africa_uif_remittance import (
+	get_columns as sa_uif_columns,
+)
+from payroll_africa.payroll_africa.report.togo_cnss_remittance.togo_cnss_remittance import (
+	get_columns as togo_cnss_columns,
+)
+from payroll_africa.payroll_africa.report.togo_pit_return.togo_pit_return import (
+	get_columns as togo_pit_columns,
+)
+from payroll_africa.payroll_africa.report.tunisia_cnss_remittance.tunisia_cnss_remittance import (
+	get_columns as tunisia_cnss_columns,
+)
+from payroll_africa.payroll_africa.report.tunisia_irpp_remittance.tunisia_irpp_remittance import (
+	get_columns as tunisia_irpp_columns,
 )
 
 
@@ -211,6 +251,248 @@ class TestP9AEmptyData(unittest.TestCase):
 	def test_returns_empty_without_fiscal_year(self):
 		result = p9a_get_data({"employee": "EMP-001"})
 		self.assertEqual(result, [])
+
+
+import datetime as _dt_mod
+
+
+class TestMRAP9MonthDerivation(unittest.TestCase):
+	"""MRA P9 Deduction Certificate must iterate months in fiscal-year order.
+
+	Old code had a hard-coded April-March list which made January/February/March
+	invisible when the fiscal year started in January (Malawi's standard config).
+	"""
+
+	def _month_names_for_fy(self, fy_start_str, fy_end_str):
+		"""Return list of month-name strings produced by get_data for a fiscal
+		year bounded by ISO date strings.  frappe.db.sql is stubbed empty."""
+		fy_mock = MagicMock()
+		# getdate = lambda x: x in the mock context: pass real date objects so
+		# year_start.year / .month attributes work, and datetime.date objects
+		# generated inside get_data compare correctly with year_end.
+		fy_mock.year_start_date = _dt_mod.date.fromisoformat(fy_start_str)
+		fy_mock.year_end_date   = _dt_mod.date.fromisoformat(fy_end_str)
+
+		import frappe as _frappe
+		with patch.object(_frappe, "get_doc", return_value=fy_mock), \
+		     patch.object(_frappe.db, "sql", return_value=[]), \
+		     patch.object(_frappe.db, "get_value", return_value=0):
+			rows = mra_p9_get_data({
+				"employee": "EMP-001",
+				"fiscal_year": "TEST",
+				"company": "TestCo",
+			})
+		return [r["month"] for r in rows]
+
+	def test_january_december_fiscal_year_produces_jan_to_dec(self):
+		months = self._month_names_for_fy("2026-01-01", "2026-12-31")
+		self.assertEqual(len(months), 12)
+		self.assertEqual(months[0], "January")
+		self.assertEqual(months[-1], "December")
+		# With the old hard-coded April-March list, April would have been first.
+		self.assertEqual(months[3], "April")
+
+	def test_april_march_fiscal_year_produces_apr_to_mar(self):
+		months = self._month_names_for_fy("2025-04-01", "2026-03-31")
+		self.assertEqual(len(months), 12)
+		self.assertEqual(months[0], "April")
+		self.assertEqual(months[-1], "March")
+
+	def test_july_june_fiscal_year_produces_jul_to_jun(self):
+		months = self._month_names_for_fy("2025-07-01", "2026-06-30")
+		self.assertEqual(len(months), 12)
+		self.assertEqual(months[0], "July")
+		self.assertEqual(months[-1], "June")
+
+	def test_returns_empty_without_employee(self):
+		self.assertEqual(mra_p9_get_data({"fiscal_year": "2026"}), [])
+
+	def test_returns_empty_without_fiscal_year(self):
+		self.assertEqual(mra_p9_get_data({"employee": "EMP-001"}), [])
+
+
+class TestHousingLevyDefensiveColumn(unittest.TestCase):
+	"""Housing Levy Return must degrade gracefully when national_id column absent.
+
+	The national_id custom field is created by a separate setup step.  Before
+	that step runs the report previously raised OperationalError 1054 (unknown
+	column).  The fix uses frappe.db.has_column to choose the SQL fragment at
+	runtime.
+	"""
+
+	_FAKE_ROW = {
+		"employee": "EMP-001",
+		"employee_name": "Test Employee",
+		"gross_pay": 100000,
+		"national_id": "",
+		"salary_slip": "SAL-001",
+	}
+	_AMOUNTS = {"SAL-001": {"Housing Levy": 1500, "Employer Housing Levy": 1500}}
+
+	def _run(self, column_exists):
+		import frappe as _frappe
+		fake_rows = [dict(self._FAKE_ROW)]
+		sql_calls = []
+
+		def _capture_sql(query, *args, **kwargs):
+			sql_calls.append(query)
+			return fake_rows
+
+		with patch.object(_frappe.db, "has_column", return_value=column_exists), \
+		     patch.object(_frappe.db, "sql", side_effect=_capture_sql), \
+		     patch(
+		         "payroll_africa.payroll_africa.report.housing_levy_return"
+		         ".housing_levy_return.fetch_component_amounts",
+		         return_value=self._AMOUNTS,
+		     ):
+			rows = hl_get_data({"company": "TestCo", "from_date": "2026-01-01",
+			                    "to_date": "2026-01-31"})
+		return rows, sql_calls
+
+	def test_returns_data_when_column_absent(self):
+		rows, _ = self._run(column_exists=False)
+		self.assertEqual(len(rows), 1)
+		self.assertEqual(rows[0]["employee"], "EMP-001")
+
+	def test_levy_totals_when_column_absent(self):
+		rows, _ = self._run(column_exists=False)
+		self.assertEqual(rows[0]["employee_levy"], 1500)
+		self.assertEqual(rows[0]["employer_levy"], 1500)
+		self.assertEqual(rows[0]["total_levy"], 3000)
+
+
+class TestFixedReportColumns(unittest.TestCase):
+	"""Column-shape regression tests for reports that received country-filter JS files
+	or Python fixes in this patch set.  All get_columns() are no-arg; none hit the DB."""
+
+	def _assert_valid_columns(self, columns):
+		self.assertIsInstance(columns, list)
+		self.assertGreater(len(columns), 0)
+		for col in columns:
+			self.assertIn("fieldname", col)
+			self.assertIn("label", col)
+			self.assertIn("fieldtype", col)
+			self.assertIn("width", col)
+
+	# --- Niger ---
+	def test_niger_cnss_columns(self):
+		cols = niger_cnss_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("gross_pay", fnames)
+		self.assertIn("cnss_emp", fnames)
+		self.assertIn("cnss_empr", fnames)
+
+	def test_niger_pit_columns(self):
+		cols = niger_pit_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("pit", fnames)
+		self.assertIn("cnss_emp", fnames)
+
+	# --- Zimbabwe ---
+	def test_zimbabwe_paye_columns(self):
+		cols = zw_paye_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("paye", fnames)
+		self.assertIn("aids_levy", fnames)
+
+	def test_zimbabwe_nssa_columns(self):
+		cols = zw_nssa_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("nssa_emp", fnames)
+		self.assertIn("nssa_empr", fnames)
+
+	# --- Sudan ---
+	def test_sudan_nsif_columns(self):
+		cols = sudan_nsif_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("nsif_emp", fnames)
+		self.assertIn("nsif_empr", fnames)
+
+	def test_sudan_pit_columns(self):
+		cols = sudan_pit_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("pit", fnames)
+		self.assertIn("nsif_emp", fnames)
+
+	# --- South Africa ---
+	def test_south_africa_paye_columns(self):
+		cols = sa_paye_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("component", fnames)
+		self.assertIn("amount", fnames)
+
+	def test_south_africa_uif_columns(self):
+		cols = sa_uif_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("component", fnames)
+		self.assertIn("amount", fnames)
+
+	# --- Togo ---
+	def test_togo_cnss_columns(self):
+		cols = togo_cnss_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("cnss_emp", fnames)
+		self.assertIn("cnss_empr", fnames)
+
+	def test_togo_pit_columns(self):
+		cols = togo_pit_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("pit", fnames)
+		self.assertIn("cnss_emp", fnames)
+
+	# --- Tunisia ---
+	def test_tunisia_cnss_columns_dynamic_rate(self):
+		"""Tunisia CNSS column label must reflect cnss_employee_rate from settings or fall back to 9.68."""
+		# Mock returns None so fallback 9.68 is used
+		_mock_frappe.db.get_value.return_value = None
+		cols = tunisia_cnss_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("cnss_employee", fnames)
+		self.assertIn("cnss_employer", fnames)
+		# Column label must contain the fallback rate
+		labels = {c["fieldname"]: c["label"] for c in cols}
+		self.assertIn("9.68", labels["cnss_employee"])
+
+	def test_tunisia_cnss_columns_rate_from_settings(self):
+		"""When settings row exists with cnss_employee_rate, label reflects it."""
+		_mock_frappe.db.get_value.side_effect = lambda dt, name, field: (
+			10.0 if field == "cnss_employee_rate" else 17.07
+		)
+		try:
+			cols = tunisia_cnss_columns()
+			labels = {c["fieldname"]: c["label"] for c in cols}
+			self.assertIn("10.0", labels["cnss_employee"])
+		finally:
+			_mock_frappe.db.get_value.side_effect = None
+
+	def test_tunisia_irpp_columns(self):
+		cols = tunisia_irpp_columns()
+		self._assert_valid_columns(cols)
+		fnames = [c["fieldname"] for c in cols]
+		self.assertIn("employee", fnames)
+		self.assertIn("irpp", fnames)
+		self.assertIn("professional_deduction", fnames)
 
 
 if __name__ == "__main__":

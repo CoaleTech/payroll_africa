@@ -1,16 +1,29 @@
 """Algeria statutory deduction calculator.
 
 Reference: CNAS, DGI
-- CNAS Social Security: Employee 9%, Employer 26%
-  (Health, maternity, work injury, pension, family allowances)
-- PIT (IRG): Progressive 0-35% (6 brackets)
+- CNAS Social Security: Employee 9%, Employer 25%
+  (Health, maternity, work injury, pension, family allowances; source: CLEISS 2024)
+  Breakdown (employer): Social insurance 11.5 % + AT/MP 1.25 % + Retirement 11 %
+    + Early-retirement 0.25 % + Unemployment 1 % = 25 %. The FNPOS 0.5 % is a
+    separate fund (Fonds National de Péréquation des Oeuvres Sociales) charged to
+    the FNPOS column, not to the employer; document-only, not modelled here.
+- PIT (IRG): Progressive 0-35% (6 brackets, LF 2024 and earlier)
   Annual: 0-240k@0%, 240k-480k@23%, 480k-960k@27%, 960k-1920k@30%, 1920k-3840k@33%, 3840k+@35%
-- Professional expense deduction: 40% of gross (capped at DZD 24,000/year)
+  NOTE: LF 2025 may introduce a simplified 4-bracket scale and an abatement — see
+  countries/algeria.md Unverified section.
 - Tax year: January 1 - December 31
 """
 
 from frappe.utils import flt
 from payroll_africa.calculators.base import BaseCalculator
+
+_HARDCODED_PIT_BRACKETS = [
+    (240000, 480000, 0.23),
+    (480000, 960000, 0.27),
+    (960000, 1920000, 0.30),
+    (1920000, 3840000, 0.33),
+    (3840000, 0, 0.35),
+]
 
 
 class AlgeriaCalculator(BaseCalculator):
@@ -21,13 +34,15 @@ class AlgeriaCalculator(BaseCalculator):
         results = {}
 
         # 1. CNAS Employee (9%)
-        cnas_emp = gross * (flt(self.settings.cnas_employee_rate or 9) / 100) if gross > 0 else 0
+        emp_rate = self.settings.cnas_employee_rate
+        cnas_emp = gross * (flt(emp_rate if emp_rate is not None else 9) / 100) if gross > 0 else 0
         results["CNAS Employee"] = {
             "amount": cnas_emp, "is_employer_only": False,
         }
 
-        # CNAS Employer (~25.5%)
-        cnas_empr = gross * (flt(self.settings.cnas_employer_rate or 26) / 100) if gross > 0 else 0
+        # CNAS Employer (25%; CLEISS 2024: 11.5+1.25+11+0.25+1=25%)
+        empr_rate = self.settings.cnas_employer_rate
+        cnas_empr = gross * (flt(empr_rate if empr_rate is not None else 25) / 100) if gross > 0 else 0
         results["CNAS Employer"] = {
             "amount": cnas_empr, "is_employer_only": True,
         }
@@ -45,6 +60,8 @@ class AlgeriaCalculator(BaseCalculator):
     def _compute_pit(self, taxable_income):
         """PIT progressive annual bands.
 
+        Reads from settings.pit_bands if populated; falls back to hardcoded 2025 brackets.
+
         Annual bands (DZD):
         0 - 240,000        : 0%
         240,001 - 480,000  : 23%
@@ -56,18 +73,27 @@ class AlgeriaCalculator(BaseCalculator):
         if taxable_income <= 0:
             return 0
         annual = taxable_income * 12
+
+        bands = getattr(self.settings, 'pit_bands', None)
+        if bands:
+            tax = 0
+            for band in bands:
+                lower = flt(band.from_amount)
+                upper = flt(band.to_amount)
+                rate = flt(band.rate) / 100
+                if annual <= lower:
+                    break
+                top = upper if upper > 0 else annual
+                amount = min(annual, top) - lower
+                if amount > 0:
+                    tax += amount * rate
+            return tax / 12
+
+        # Hardcoded fallback
         if annual <= 240000:
             return 0
-
         tax = 0
-        brackets = [
-            (240000, 480000, 0.23),
-            (480000, 960000, 0.27),
-            (960000, 1920000, 0.30),
-            (1920000, 3840000, 0.33),
-            (3840000, 0, 0.35),
-        ]
-        for lower, upper, rate in brackets:
+        for lower, upper, rate in _HARDCODED_PIT_BRACKETS:
             if annual <= lower:
                 break
             top = upper if upper > 0 else annual

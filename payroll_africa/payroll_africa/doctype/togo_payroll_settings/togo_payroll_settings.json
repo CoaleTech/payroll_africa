@@ -54,19 +54,19 @@
    "fieldname": "cnss_employer_rate",
    "fieldtype": "Percent",
    "label": "CNSS Employer Rate",
-   "default": "16"
+   "default": 17.5
   },
   {
    "fieldname": "cnss_ceiling",
    "fieldtype": "Currency",
    "label": "CNSS Ceiling (XOF)",
-   "default": "0"
+   "default": 0
   },
   {
    "fieldname": "minimum_wage",
    "fieldtype": "Currency",
    "label": "Monthly Minimum Wage (XOF)",
-   "default": "52955"
+   "default": 52500
   },
   {
    "fieldname": "inam_section",
@@ -98,7 +98,7 @@
    "fieldname": "pit_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (XOF)",
-   "default": "0"
+   "default": 900000
   },
   {
    "fieldname": "pit_bands_section",

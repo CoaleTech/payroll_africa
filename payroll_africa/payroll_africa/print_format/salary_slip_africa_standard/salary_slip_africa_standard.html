@@ -290,20 +290,41 @@
 							</tr>
 						</thead>
 						<tbody>
-							{%- for row in doc.deductions %}
-							{%- if row.amount and row.amount > 0 %}
-							<tr>
-								<td>{{ row.salary_component }}</td>
-								<td class="amount">{{ frappe.utils.fmt_money(row.amount, currency=currency) }}</td>
-							</tr>
-							{%- endif %}
-							{%- endfor %}
-							<tr class="subtotal-row">
-								<td>Total Deductions</td>
-								<td class="amount">{{ frappe.utils.fmt_money(doc.total_deduction, currency=currency) }}</td>
-							</tr>
-						</tbody>
-					</table>
+						{%- for row in doc.deductions %}
+						{%- if row.amount and row.amount > 0 and not row.do_not_include_in_total %}
+						<tr>
+							<td>{{ row.salary_component }}</td>
+							<td class="amount">{{ frappe.utils.fmt_money(row.amount, currency=currency) }}</td>
+						</tr>
+						{%- endif %}
+						{%- endfor %}
+						<tr class="subtotal-row">
+							<td>Total Deductions</td>
+							<td class="amount">{{ frappe.utils.fmt_money(doc.total_deduction, currency=currency) }}</td>
+						</tr>
+					</tbody>
+				</table>
+				{%- set employer_rows = doc.deductions | selectattr("do_not_include_in_total") | list %}
+				{%- if employer_rows %}
+				<table style="margin-top:12px;">
+					<thead>
+						<tr>
+							<th>Employer Contributions</th>
+							<th class="amount-col">Amount ({{ currency }})</th>
+						</tr>
+					</thead>
+					<tbody>
+						{%- for row in employer_rows %}
+						{%- if row.amount and row.amount > 0 %}
+						<tr>
+							<td>{{ row.salary_component }}</td>
+							<td class="amount">{{ frappe.utils.fmt_money(row.amount, currency=currency) }}</td>
+						</tr>
+						{%- endif %}
+						{%- endfor %}
+					</tbody>
+				</table>
+				{%- endif %}
 				</td>
 			</tr>
 		</table>

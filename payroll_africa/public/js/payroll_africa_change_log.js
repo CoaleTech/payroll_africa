@@ -88,9 +88,9 @@ function build_payroll_africa_changelog(entries) {
 
 			// Categories
 			const categories = [
-				{ key: "new", label: "New", css: "pa-badge-new" },
-				{ key: "improved", label: "Improved", css: "pa-badge-improved" },
-				{ key: "fixed", label: "Fixed", css: "pa-badge-fixed" },
+				{ key: "new", label: __("New"), theme: "green" },
+				{ key: "improved", label: __("Improved"), theme: "blue" },
+				{ key: "fixed", label: __("Fixed"), theme: "amber" },
 			];
 
 			categories.forEach(function (cat) {
@@ -98,8 +98,8 @@ function build_payroll_africa_changelog(entries) {
 				if (!items || !items.length) return;
 				html += '<div class="pa-changelog-category">';
 				html +=
-					'<span class="pa-changelog-badge ' +
-					cat.css +
+					'<span class="es-badge pa-changelog-badge" data-theme="' +
+					cat.theme +
 					'">' +
 					cat.label +
 					"</span>";

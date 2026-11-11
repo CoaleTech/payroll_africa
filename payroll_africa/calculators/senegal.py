@@ -2,13 +2,11 @@
 
 Reference: IPRES, CSS, DGI
 - IPRES (Pension): Employee 5.6%, Employer 8.4%
-  Capped at 4x minimum wage (SMIG XOF 74,750/month as of 2025)
-  Ceiling = 4 x 74,750 = XOF 299,000/month
-- CSS Health Insurance: Employee ~3%, Employer ~5% (capped)
-- AMO Health: 6% total (3% employee + 3% employer) - for companies with >20 employees
-- PIT (IR): Progressive 0-40% with multiple brackets
-- Tax-free threshold: XOF 630,000/year (XOF 52,500/month)
-- Family deductions: XOF 100,000 per dependent child
+  Capped at ipres_ceiling (default 432,000 XOF = 6 x SMIG 72,000/month)
+- CSS Health Insurance: Employee 0% default (configurable), Employer 7% (configurable); capped at css_ceiling
+- AMO Health: 3% employee + 3% employer — only if amo_applicable = 1 (companies >20 employees)
+- IR (Income Tax): Progressive 0-43% annual bands; tax-free threshold 630,000 XOF/year
+- Family deduction: XOF 100,000 per dependent child (max 6)
 """
 
 from frappe.utils import flt
@@ -76,37 +74,35 @@ class SenegalCalculator(BaseCalculator):
 
         return results
 
-    def _get_ipres_ceiling(self):
-        """Get IPRES ceiling based on minimum wage."""
-        min_wage = flt(self.settings.minimum_wage or 74750)
-        ceiling_multiplier = flt(self.settings.ipres_ceiling_multiplier or 4)
-        return min_wage * ceiling_multiplier
+    # _get_ipres_ceiling removed: ipres_ceiling is stored directly in settings.
+    # compute methods use self.settings.ipres_ceiling (with fallback 432,000).
 
     def _compute_ipres_employee(self, gross):
         """IPRES employee: 5.6% of gross, capped."""
         ceiling = flt(self.settings.ipres_ceiling or 432000)
-        rate = flt(self.settings.ipres_employee_rate or 5.6) / 100
+        rate = self._num("ipres_employee_rate", 5.6) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_ipres_employer(self, gross):
         """IPRES employer: 8.4% of gross, capped."""
         ceiling = flt(self.settings.ipres_ceiling or 432000)
-        rate = flt(self.settings.ipres_employer_rate or 8.4) / 100
+        rate = self._num("ipres_employer_rate", 8.4) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_css_employee(self, gross):
-        """CSS health employee: ~3% of gross, capped."""
+        """CSS health employee: 0% default. Uses is-None check so explicit 0 is honoured."""
         ceiling = flt(self.settings.css_ceiling or 432000)
-        rate = flt(self.settings.css_employee_rate or 3) / 100
+        rate_pct = self.settings.css_employee_rate
+        rate = flt(3 if rate_pct is None else rate_pct) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
     def _compute_css_employer(self, gross):
-        """CSS health employer: ~5% of gross, capped."""
+        """CSS health employer: 7% default (configurable)."""
         ceiling = flt(self.settings.css_ceiling or 432000)
-        rate = flt(self.settings.css_employer_rate or 5) / 100
+        rate = self._num("css_employer_rate", 7) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
@@ -114,8 +110,8 @@ class SenegalCalculator(BaseCalculator):
         """AMO health employee: 3% of gross (if applicable)."""
         if not self.settings.get("amo_applicable"):
             return 0
-        rate = flt(self.settings.amo_employee_rate or 3) / 100
-        ceiling = flt(self.settings.amo_ceiling or 432000)
+        rate = self._num("amo_employee_rate", 3) / 100
+        ceiling = flt(self.settings.amo_ceiling or 250000)
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
@@ -123,8 +119,8 @@ class SenegalCalculator(BaseCalculator):
         """AMO health employer: 3% of gross (if applicable)."""
         if not self.settings.get("amo_applicable"):
             return 0
-        rate = flt(self.settings.amo_employer_rate or 3) / 100
-        ceiling = flt(self.settings.amo_ceiling or 432000)
+        rate = self._num("amo_employer_rate", 3) / 100
+        ceiling = flt(self.settings.amo_ceiling or 250000)
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
@@ -146,7 +142,7 @@ class SenegalCalculator(BaseCalculator):
             return 0
 
         annual_income = taxable_income * 12
-        threshold = flt(self.settings.tax_free_threshold_annual or 630000)
+        threshold = self._num("tax_free_threshold_annual", 630000)
 
         if annual_income <= threshold:
             return 0
@@ -169,9 +165,9 @@ class SenegalCalculator(BaseCalculator):
             tax = self._tax_hardcoded(annual_income, threshold)
 
         # Family deductions
-        num_children = flt(self.settings.number_of_dependent_children or 0)
+        num_children = self._num("number_of_dependent_children", 0)
         max_children = flt(self.settings.max_deductible_children or 6)
-        deduction_per_child = flt(self.settings.child_deduction or 100000)
+        deduction_per_child = self._num("child_deduction", 100000)
         actual_children = min(num_children, max_children)
         tax = max(tax - (actual_children * deduction_per_child), 0)
 

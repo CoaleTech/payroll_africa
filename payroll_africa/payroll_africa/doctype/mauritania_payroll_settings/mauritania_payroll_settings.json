@@ -85,7 +85,7 @@
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (MRU)",
-   "default": "0"
+   "default": 72000
   },
   {
    "fieldname": "pit_bands_section",

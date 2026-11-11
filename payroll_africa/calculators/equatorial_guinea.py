@@ -17,14 +17,14 @@ class EquatorialGuineaCalculator(BaseCalculator):
         ceiling = min_wage * 8
         base = min(gross, ceiling) if gross > 0 else 0
 
-        cnss_emp = base * (flt(self.settings.cnss_employee_rate or 4.5) / 100)
-        cnss_empr = base * (flt(self.settings.cnss_employer_rate or 21.5) / 100)
+        cnss_emp = base * (self._num("cnss_employee_rate", 4.5) / 100)
+        cnss_empr = base * (self._num("cnss_employer_rate", 21.5) / 100)
         results["CNSS Employee"] = {"amount": cnss_emp, "is_employer_only": False}
         results["CNSS Employer"] = {"amount": cnss_empr, "is_employer_only": True}
 
         # Work Protection Fund (WPF) — PwC 2025: employer 1%, employee 0.5%
-        wpf_emp = base * (flt(self.settings.wpf_employee_rate or 0.5) / 100)
-        wpf_empr = base * (flt(self.settings.wpf_employer_rate or 1) / 100)
+        wpf_emp = base * (self._num("wpf_employee_rate", 0.5) / 100)
+        wpf_empr = base * (self._num("wpf_employer_rate", 1) / 100)
         results["WPF Employee"] = {"amount": wpf_emp, "is_employer_only": False}
         results["WPF Employer"] = {"amount": wpf_empr, "is_employer_only": True}
 

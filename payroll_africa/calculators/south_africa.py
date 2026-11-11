@@ -9,7 +9,6 @@ Reference: SARS (South African Revenue Service)
 - Tax thresholds: Under 65: R95,750; 65-74: R148,217; 75+: R165,689
 """
 
-import frappe
 from frappe.utils import flt
 from payroll_africa.calculators.base import BaseCalculator
 
@@ -46,7 +45,7 @@ class SouthAfricaCalculator(BaseCalculator):
         # 3. PAYE - progressive tax after rebates
         # Note: UIF is deductible before PAYE calculation
         taxable_income_annual = (gross - uif_employee) * 12
-        paye_monthly = self._compute_paye(taxable_income_annual)
+        paye_monthly = self._compute_paye(taxable_income_annual, self.get_employee_age(salary_slip))
         results["PAYE"] = {
             "amount": paye_monthly,
             "is_employer_only": False,
@@ -57,7 +56,7 @@ class SouthAfricaCalculator(BaseCalculator):
     def _compute_uif(self, gross):
         """UIF: 1% of gross salary, capped at R17,712/month."""
         ceiling = flt(self.settings.uif_ceiling or 17712)
-        rate = flt(self.settings.uif_rate or 1) / 100
+        rate = self._num("uif_rate", 1) / 100
         base = min(gross, ceiling) if gross > 0 else 0
         return base * rate
 
@@ -65,10 +64,10 @@ class SouthAfricaCalculator(BaseCalculator):
         """SDL: 1% of gross salary (employer only, if payroll > R500k/year)."""
         if not self.settings.get("sdl_applicable"):
             return 0
-        rate = flt(self.settings.sdl_rate or 1) / 100
+        rate = self._num("sdl_rate", 1) / 100
         return gross * rate if gross > 0 else 0
 
-    def _compute_paye(self, taxable_annual):
+    def _compute_paye(self, taxable_annual, age=None):
         """Compute PAYE using SARS progressive annual bands (2024/2025).
 
         Annual taxable income bands (ZAR):
@@ -84,7 +83,7 @@ class SouthAfricaCalculator(BaseCalculator):
             return 0
 
         # Get age-based rebate and threshold
-        age = self._get_employee_age()
+        age = 30 if age is None else age  # no date of birth on file: assume under 65
         threshold, rebate = self._get_threshold_and_rebate(age)
 
         if taxable_annual <= threshold:
@@ -103,10 +102,15 @@ class SouthAfricaCalculator(BaseCalculator):
         return tax / 12  # Monthly PAYE
 
     def _sars_tax_formula(self, annual_income):
-        """SARS tax formula for 2024/2025 tax year."""
+        """SARS tax formula for 2024/2025 tax year.
+
+        Each band carries a ``base_tax`` representing cumulative tax at the
+        bottom of that band.  We find the single matching band and return
+        ``base_tax + (income − lower) × rate``.  We never accumulate across
+        multiple bands.
+        """
         bands = self.settings.paye_bands or []
         if bands:
-            tax = 0
             for band in bands:
                 lower = flt(band.from_amount)
                 upper = flt(band.to_amount)
@@ -114,15 +118,16 @@ class SouthAfricaCalculator(BaseCalculator):
                 rate = flt(band.rate) / 100
 
                 if annual_income <= lower:
-                    break
+                    break  # income is below this band's start (shouldn't happen with sorted bands)
 
-                band_top = upper if upper > 0 else annual_income
-                taxable_in_band = min(annual_income, band_top) - lower
-                if taxable_in_band > 0:
-                    tax += base_tax + taxable_in_band * rate
-                else:
-                    tax += base_tax
-            return tax
+                band_top = upper if upper > 0 else float("inf")
+                if annual_income <= band_top:
+                    # This is the matching band
+                    return base_tax + (annual_income - lower) * rate
+
+            # Exhausted all bands (last band had no upper limit but no match found)
+            return 0
+
 
         # Hardcoded fallback
         if annual_income <= 237100:
@@ -143,35 +148,24 @@ class SouthAfricaCalculator(BaseCalculator):
     def _get_threshold_and_rebate(self, age):
         """Get tax threshold and rebate based on age."""
         if age >= 75:
-            threshold = flt(self.settings.threshold_75_plus or 165689)
-            rebate = flt(self.settings.rebate_primary or 17235)
-            rebate += flt(self.settings.rebate_secondary or 9444)
-            rebate += flt(self.settings.rebate_tertiary or 3145)
+            threshold = self._num("threshold_75_plus", 165689)
+            rebate = self._num("rebate_primary", 17235)
+            rebate += self._num("rebate_secondary", 9444)
+            rebate += self._num("rebate_tertiary", 3145)
         elif age >= 65:
-            threshold = flt(self.settings.threshold_65_74 or 148217)
-            rebate = flt(self.settings.rebate_primary or 17235)
-            rebate += flt(self.settings.rebate_secondary or 9444)
+            threshold = self._num("threshold_65_74", 148217)
+            rebate = self._num("rebate_primary", 17235)
+            rebate += self._num("rebate_secondary", 9444)
         else:
-            threshold = flt(self.settings.threshold_under_65 or 95750)
-            rebate = flt(self.settings.rebate_primary or 17235)
+            threshold = self._num("threshold_under_65", 95750)
+            rebate = self._num("rebate_primary", 17235)
 
         return threshold, rebate
 
-    def _get_employee_age(self):
-        """Get employee age from employee document."""
-        try:
-            dob = frappe.db.get_value("Employee", self.settings.get("employee"), "date_of_birth")
-            if dob:
-                from datetime import date
-                today = date.today()
-                return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-        except Exception:
-            pass
-        return 30  # Default assumption
 
     def _get_medical_tax_credit(self):
         """Get monthly medical tax credit."""
         # R332 for employee and first dependent, R224 for additional
         # This would typically come from employee settings
-        credit = flt(self.settings.medical_tax_credit or 0)
+        credit = self._num("medical_tax_credit", 0)
         return credit * 12  # Annualize

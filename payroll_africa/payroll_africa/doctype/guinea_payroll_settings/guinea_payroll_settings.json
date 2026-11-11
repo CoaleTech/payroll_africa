@@ -12,6 +12,7 @@
   "inss_pension_employee_rate",
   "inss_pension_employer_rate",
   "minimum_wage",
+  "inss_ceiling",
   "col_break_inss",
   "inss_family_rate",
   "work_injury_risk_class",
@@ -49,20 +50,27 @@
    "fieldname": "inss_pension_employee_rate",
    "fieldtype": "Percent",
    "label": "INSS Pension Employee Rate",
-   "default": "2.5"
+   "default": "5"
   },
   {
    "fieldname": "inss_pension_employer_rate",
    "fieldtype": "Percent",
    "label": "INSS Pension Employer Rate",
-   "default": "5"
+   "default": "1.5"
   },
   {
    "fieldname": "minimum_wage",
    "fieldtype": "Currency",
    "label": "Monthly Minimum Wage (GNF)",
-   "default": "440000",
-   "description": "Monthly minimum wage (GNF) — INSS ceiling = 8x this value"
+   "default": "550000",
+   "description": "Monthly SMIG (GNF). Decree D/2022/0270/PRG/SGG, 1 June 2022."
+  },
+  {
+   "fieldname": "inss_ceiling",
+   "fieldtype": "Currency",
+   "label": "INSS Contribution Ceiling (GNF/month)",
+   "default": "2500000",
+   "description": "Fixed statutory INSS ceiling: GNF 2,500,000/month (not 8x minimum wage)."
   },
   {
    "fieldname": "col_break_inss",
@@ -72,14 +80,14 @@
    "fieldname": "inss_family_rate",
    "fieldtype": "Percent",
    "label": "INSS Family Allowances Rate (Employer)",
-   "default": "3"
+   "default": "6"
   },
   {
    "fieldname": "work_injury_risk_class",
    "fieldtype": "Int",
    "label": "Work Injury Risk Class",
    "default": "1",
-   "description": "1=Low (1.5%), 2=Medium (2.5%), 3=High (4%)"
+   "description": "Informational only — work injury is 4% flat for all classes (cnss.gov.gn 2026)."
   },
   {
    "fieldname": "amo_section",
@@ -90,13 +98,13 @@
    "fieldname": "amo_employee_rate",
    "fieldtype": "Percent",
    "label": "AMO Health Employee Rate",
-   "default": "1.5"
+   "default": "0"
   },
   {
    "fieldname": "amo_employer_rate",
    "fieldtype": "Percent",
    "label": "AMO Health Employer Rate",
-   "default": "1.5"
+   "default": "6.5"
   },
   {
    "fieldname": "pit_section",

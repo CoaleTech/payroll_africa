@@ -1,6 +1,5 @@
 import frappe
 from frappe import _
-from frappe.utils import flt
 
 from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
 
@@ -26,12 +25,19 @@ def get_columns():
 def get_data(filters):
 	conditions = standard_slip_conditions(filters)
 
+	# national_id is a custom field created by the app's setup.  Guard against
+	# pre-migration state so the report degrades gracefully instead of raising
+	# OperationalError 1054 (unknown column) when the field is not yet present.
+	nat_id_sel = "e.national_id," if frappe.db.has_column("Employee", "national_id") else "'' AS national_id,"
+
 	data = frappe.db.sql(
 		"""
 		SELECT
 			ss.employee, ss.employee_name, ss.gross_pay,
-			e.national_id,
-			ss.name as salary_slip
+			"""
+		+ nat_id_sel
+		+ """
+			ss.name AS salary_slip
 		FROM `tabSalary Slip` ss
 		LEFT JOIN `tabEmployee` e ON ss.employee = e.name
 		WHERE ss.docstatus = 1"""
@@ -43,11 +49,11 @@ def get_data(filters):
 		as_dict=True,
 	)
 
-	slip_names = [r.salary_slip for r in data]
+	slip_names = [r["salary_slip"] for r in data]
 	amounts = fetch_component_amounts(slip_names, ["Housing Levy", "Employer Housing Levy"])
 
 	for row in data:
-		slip_amounts = amounts.get(row.salary_slip, {})
+		slip_amounts = amounts.get(row["salary_slip"], {})
 		emp_levy = slip_amounts.get("Housing Levy", 0)
 		empr_levy = slip_amounts.get("Employer Housing Levy", 0)
 		row["employee_levy"] = emp_levy

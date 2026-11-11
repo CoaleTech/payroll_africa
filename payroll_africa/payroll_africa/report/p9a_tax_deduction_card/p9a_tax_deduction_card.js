@@ -16,7 +16,7 @@ frappe.query_reports["P9A Tax Deduction Card"] = {
 			label: __("Employee"),
 			fieldtype: "Link",
 			options: "Employee",
-			reqd: 1,
+			reqd: 0,
 			get_query: function () {
 				return {
 					filters: {
@@ -35,22 +35,42 @@ frappe.query_reports["P9A Tax Deduction Card"] = {
 		},
 	],
 	onload: function(report) {
-		frappe.call({
-			method: "frappe.client.get_list",
-			args: {
-				doctype: "Company",
-				filters: { country: "Kenya" },
-				fields: ["name"],
-				limit_page_length: 1,
-			},
-			callback: function(r) {
-				if (r.message && r.message.length) {
-					var company_filter = report.get_filter("company");
-					if (company_filter) {
-						company_filter.set_value(r.message[0].name);
-					}
+		// Prefer the user's own default company when it is already a Kenya entity.
+		// The old behaviour (always pick the first alphabetical Kenya company) caused
+		// the wrong company to be pre-selected for users whose default company differs
+		// from the alphabetically-first Kenya entity.
+		var user_company = frappe.defaults.get_user_default("Company");
+		if (user_company) {
+			frappe.db.get_value("Company", user_company, "country", function(val) {
+				if (val && val.country === "Kenya") {
+					var f = report.get_filter("company");
+					if (f) f.set_value(user_company);
+				} else {
+					_set_first_kenya_company(report);
 				}
-			},
-		});
+			});
+		} else {
+			_set_first_kenya_company(report);
+		}
 	},
 };
+
+function _set_first_kenya_company(report) {
+	frappe.call({
+		method: "frappe.client.get_list",
+		args: {
+			doctype: "Company",
+			filters: { country: "Kenya" },
+			fields: ["name"],
+			limit_page_length: 1,
+		},
+		callback: function(r) {
+			if (r.message && r.message.length) {
+				var f = report.get_filter("company");
+				if (f) f.set_value(r.message[0].name);
+			}
+			// If no Kenya company exists, leave the filter empty so the report
+			// opens without throwing "Filter missing".
+		},
+	});
+}

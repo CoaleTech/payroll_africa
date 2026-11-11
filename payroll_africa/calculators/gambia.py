@@ -1,11 +1,13 @@
 """Gambia statutory deduction calculator.
 
 Reference: SSHFC (Social Security and Housing Finance Corporation)
-- SSHFC: Employee 5%, Employer 10% (capped)
-- PIT: Progressive 0-25%
+- SSHFC: Employee 5%, Employer 10% (ceiling: GMD 25,000/month)
+- PIT: Progressive 0-35%
+  Annual threshold: GMD 7,500
 """
 from frappe.utils import flt
 from payroll_africa.calculators.base import BaseCalculator
+
 
 class GambiaCalculator(BaseCalculator):
     def compute(self, salary_slip):
@@ -14,8 +16,8 @@ class GambiaCalculator(BaseCalculator):
         ceiling = flt(self.settings.sshfc_ceiling or 25000)
         base = min(gross, ceiling) if gross > 0 else 0
 
-        sshfc_emp = base * (flt(self.settings.sshfc_employee_rate or 5) / 100)
-        sshfc_empr = base * (flt(self.settings.sshfc_employer_rate or 10) / 100)
+        sshfc_emp = base * (self._num("sshfc_employee_rate", 5) / 100)
+        sshfc_empr = base * (self._num("sshfc_employer_rate", 10) / 100)
         results["SSHFC Employee"] = {"amount": sshfc_emp, "is_employer_only": False}
         results["SSHFC Employer"] = {"amount": sshfc_empr, "is_employer_only": True}
 
@@ -26,13 +28,39 @@ class GambiaCalculator(BaseCalculator):
         return results
 
     def _compute_pit(self, taxable_income):
-        if taxable_income <= 0: return 0
+        """PIT progressive.
+
+        Annual bands (GMD):
+        0 - 7,500       : 0%
+        7,501 - 17,500  : 10%
+        17,501 - 27,500 : 15%
+        27,501 - 37,500 : 20%
+        37,501 - 47,500 : 25%
+        Over 47,500     : 35%
+        """
+        if taxable_income <= 0:
+            return 0
         annual = taxable_income * 12
-        if annual <= 7500: return 0
+
+        # Read bands from settings if populated; fall back to hardcoded statutory rates.
+        bands = getattr(self.settings, "pit_bands", None) or []
+        if bands:
+            return self._compute_tax_from_bands(annual, bands) / 12
+
+        if annual <= 7500:
+            return 0
         tax = 0
-        for lower, upper, rate in [(7500, 17500, 0.10), (17500, 27500, 0.15),
-                                    (27500, 37500, 0.20), (37500, 47500, 0.25), (47500, 0, 0.35)]:
-            if annual <= lower: break
-            amount = min(annual, upper if upper > 0 else annual) - lower
-            if amount > 0: tax += amount * rate
+        for lower, upper, rate in [
+            (7500, 17500, 0.10),
+            (17500, 27500, 0.15),
+            (27500, 37500, 0.20),
+            (37500, 47500, 0.25),
+            (47500, 0, 0.35),
+        ]:
+            if annual <= lower:
+                break
+            top = upper if upper > 0 else annual
+            amount = min(annual, top) - lower
+            if amount > 0:
+                tax += amount * rate
         return tax / 12

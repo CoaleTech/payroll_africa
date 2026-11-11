@@ -58,26 +58,23 @@ class TestBotswanaCalculator(unittest.TestCase):
 		self.assertFalse(results["PAYE"]["is_employer_only"])
 
 	def test_paye_middle_income(self):
-		"""Gross 15,000/month (180,000/year) - middle income bracket."""
+		"""Gross 15,000/month (180,000/year), BURS resident bands."""
 		slip = make_salary_slip(15000)
 		results = self.calculator.compute(slip)
 
-		# Taxable = 180,000 - 48,000 = 132,000
-		# 36000@5%=1800 + 36000@12.5%=4500 + 36000@18.75%=6750 + 24000@25%=6000
-		# Annual tax = 19,050; Monthly = 1,587.50
-		expected_monthly = 19050 / 12
-		self.assertAlmostEqual(results["PAYE"]["amount"], expected_monthly, places=2)
+		# 48,000-84,000 @ 5% = 1,800; 84,000-120,000 @ 12.5% = 4,500;
+		# 120,000-156,000 @ 18.75% = 6,750; 156,000-180,000 @ 25% = 6,000
+		# Annual = 19,050; Monthly = 1,587.50
+		self.assertAlmostEqual(results["PAYE"]["amount"], 19050 / 12, places=2)
 
 	def test_paye_above_threshold(self):
-		"""Gross 25,000/month (300,000/year) - above threshold."""
+		"""Gross 25,000/month (300,000/year): top bracket is 25%, not 26.5%."""
 		slip = make_salary_slip(25000)
 		results = self.calculator.compute(slip)
 
-		# Taxable = 300,000 - 48,000 = 252,000
-		# 36000@5% + 36000@12.5% + 36000@18.75% + 36000@25% + 108000@26.5%
-		# = 1,800 + 4,500 + 6,750 + 9,000 + 28,620 = 50,670
-		expected_monthly = 50670 / 12
-		self.assertAlmostEqual(results["PAYE"]["amount"], expected_monthly, places=2)
+		# 13,050 on the first 156,000 + (300,000 - 156,000) x 25% = 36,000
+		# Annual = 49,050; Monthly = 4,087.50
+		self.assertAlmostEqual(results["PAYE"]["amount"], 49050 / 12, places=2)
 
 	def test_zero_salary(self):
 		"""PAYE should be 0 when gross is 0."""

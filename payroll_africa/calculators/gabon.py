@@ -36,15 +36,13 @@ class GabonCalculator(BaseCalculator):
         use_2026_reform = self.settings.get("use_2026_reform", 1)
 
         if use_2026_reform:
-            # Post-reform 2026: Total 23%
-            cnss_total_rate = flt(self.settings.cnss_total_rate or 23) / 100
-            employee_share = flt(self.settings.cnss_employee_rate or 5) / 100
-            employer_share = flt(self.settings.cnss_employer_rate or 18) / 100
+            # Post-reform 2026: separate rates (cnss_total_rate is not a DocType field)
+            employee_share = self._num("cnss_employee_rate", 5) / 100
+            employer_share = self._num("cnss_employer_rate", 18) / 100
         else:
-            # Pre-reform: Total 19%
-            cnss_total_rate = flt(self.settings.cnss_total_rate or 19) / 100
-            employee_share = flt(self.settings.cnss_employee_rate or 2.5) / 100
-            employer_share = flt(self.settings.cnss_employer_rate or 16.5) / 100
+            # Pre-reform: separate rates
+            employee_share = self._num("cnss_employee_rate", 2.5) / 100
+            employer_share = self._num("cnss_employer_rate", 16) / 100
 
         ceiling = flt(self.settings.cnss_ceiling or 1500000)
         base = min(gross, ceiling) if gross > 0 else 0
@@ -91,11 +89,27 @@ class GabonCalculator(BaseCalculator):
             return 0
 
         annual_income = taxable_income * 12
-        threshold = flt(self.settings.pit_threshold_annual or 2160000)
+        threshold = self._num("pit_threshold_annual", 2160000)
 
         if annual_income <= threshold:
             return 0
 
+        bands = getattr(self.settings, "pit_bands", None) or []
+        if bands:
+            tax = 0
+            for band in bands:
+                lower = flt(band.from_amount)
+                upper = flt(band.to_amount)
+                rate = flt(band.rate) / 100
+                if annual_income <= lower:
+                    break
+                band_top = upper if upper > 0 else annual_income
+                amount = min(annual_income, band_top) - lower
+                if amount > 0:
+                    tax += amount * rate
+            return tax / 12
+
+        # Hardcoded fallback (annual XAF)
         tax = 0
         brackets = [
             (2160000, 3000000, 0.05),
@@ -106,7 +120,6 @@ class GabonCalculator(BaseCalculator):
             (12000000, 24000000, 0.30),
             (24000000, 0, 0.35),
         ]
-
         for lower, upper, rate in brackets:
             if annual_income <= lower:
                 break
@@ -114,5 +127,4 @@ class GabonCalculator(BaseCalculator):
             amount = min(annual_income, top) - lower
             if amount > 0:
                 tax += amount * rate
-
         return tax / 12

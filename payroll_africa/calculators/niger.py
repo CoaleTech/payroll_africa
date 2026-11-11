@@ -1,12 +1,11 @@
 """Niger statutory deduction calculator.
 
 Reference: CNSS (Caisse Nationale de Securite Sociale), DGI
-- CNSS Pension: Employee 5.25%, Employer 8.5% (capped)
+- CNSS Pension: Employee 5.25%, Employer 16.4% (capped)
 - AMO Health: Employee 2.5%, Employer 4.5% (capped)
-- PIT (IR): Progressive 0-35%
-- Tax-free threshold: XOF 500,000/year
-- Professional deduction: 20% of gross
-- Contribution ceiling: XOF 8x minimum wage
+- PIT (ITS): Progressive 0-35% on monthly taxable income
+- Tax-free threshold: XOF 25,000/month
+- Contribution ceiling: configurable via cnss_ceiling (default 320,000 XOF = 8 × SMIG 40,000)
 """
 
 from frappe.utils import flt
@@ -56,28 +55,27 @@ class NigerCalculator(BaseCalculator):
         return results
 
     def _get_contribution_base(self, gross):
-        """Get capped contribution base."""
-        min_wage = flt(self.settings.minimum_wage or 70000)
-        ceiling = min_wage * 8
+        """Get capped contribution base. Default ceiling = 8 × SMIG (40,000) = 320,000 XOF."""
+        ceiling = flt(self.settings.cnss_ceiling or 320000)
         return min(gross, ceiling) if gross > 0 else 0
 
     def _compute_cnss_employee(self, gross):
-        rate = flt(self.settings.cnss_employee_rate or 5.25) / 100
+        rate = self._num("cnss_employee_rate", 5.25) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_cnss_employer(self, gross):
-        rate = flt(self.settings.cnss_employer_rate or 16.4) / 100
+        rate = self._num("cnss_employer_rate", 16.4) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employee(self, gross):
-        rate = flt(self.settings.amo_employee_rate or 2.5) / 100
+        rate = self._num("amo_employee_rate", 2.5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
     def _compute_amo_employer(self, gross):
-        rate = flt(self.settings.amo_employer_rate or 4.5) / 100
+        rate = self._num("amo_employer_rate", 4.5) / 100
         base = self._get_contribution_base(gross)
         return base * rate
 
@@ -100,7 +98,7 @@ class NigerCalculator(BaseCalculator):
                 if amount > 0:
                     tax += amount * rate
             return tax
-        threshold = flt(self.settings.pit_threshold or 25000)
+        threshold = self._num("pit_threshold", 25000)
         if monthly <= threshold:
             return 0
         tax = 0

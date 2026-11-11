@@ -16,7 +16,7 @@ class UgandaCalculator(BaseCalculator):
 
 		# 2. LST - graduated based on monthly gross income
 		lst_annual = self._compute_lst(gross)
-		lst_monthly = flt(lst_annual / 12, 2)
+		lst_monthly = round(flt(lst_annual / 12), 2)
 		results["LST"] = {"amount": lst_monthly, "is_employer_only": False}
 
 		# 3. PAYE - computed using monthly progressive bands
@@ -47,14 +47,20 @@ class UgandaCalculator(BaseCalculator):
 					return flt(band.rate)
 			return 0
 
-		# Flat annual LST amount (no band breakdown)
-		return flt(self.settings.lst_annual_amount or 0)
+		# Flat annual LST amount (no band breakdown).
+		# Use 'is not None' not 'or' so a legitimate 0 passes through.
+		lst_amount = self.settings.lst_annual_amount
+		return flt(lst_amount) if lst_amount is not None else 0
 
 	def _compute_paye(self, gross, nssf_employee):
 		"""Compute PAYE using monthly progressive bands.
 
 		Uganda PAYE: NSSF employee contribution is deducted before tax.
-		No personal relief in Uganda — the first band (0-235,000) is at 0%.
+		No personal relief — the first band (0-235,000) is at 0%.
+
+		Band boundaries store from_amount = previous to_amount + 1.
+		We adjust the floor to max(from_amount - 1, 0) so income exactly
+		at a boundary is taxed correctly and no shilling of width is lost.
 		"""
 		taxable = gross - nssf_employee
 		if taxable <= 0:
@@ -67,12 +73,13 @@ class UgandaCalculator(BaseCalculator):
 			upper = flt(band.to_amount)
 			rate = flt(band.rate) / 100
 
-			if taxable <= lower:
+			if taxable < lower:
 				break
 
+			floor = max(lower - 1, 0)
 			band_ceiling = upper if upper > 0 else taxable
-			taxable_in_band = min(taxable, band_ceiling) - lower
+			taxable_in_band = min(taxable, band_ceiling) - floor
 			if taxable_in_band > 0:
 				tax += taxable_in_band * rate
 
-		return flt(tax, 2)
+		return round(flt(tax), 2)

@@ -68,8 +68,9 @@
   {
    "fieldname": "nssa_annual_ceiling",
    "fieldtype": "Currency",
-   "label": "NSSA Annual Ceiling (ZiG)",
-   "default": "1914360"
+   "label": "NSSA Annual Ceiling",
+   "description": "In the currency selected in Currency Mode. USD 8,400 (USD 700/month, NSSA 2025); enter the ZiG equivalent when Currency Mode is ZiG.",
+   "default": "8400"
   },
   {
    "fieldname": "col_break_nssa",

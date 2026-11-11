@@ -44,13 +44,13 @@
    "fieldname": "nice_employee_rate",
    "fieldtype": "Percent",
    "label": "NICE Employee Rate",
-   "default": "4"
+   "default": "6"
   },
   {
    "fieldname": "nice_employer_rate",
    "fieldtype": "Percent",
    "label": "NICE Employer Rate",
-   "default": "10"
+   "default": "6"
   },
   {
    "fieldname": "nice_ceiling",
@@ -71,7 +71,7 @@
    "fieldname": "tax_free_threshold",
    "fieldtype": "Currency",
    "label": "Tax-Free Threshold (ERN)",
-   "default": "0"
+   "default": "800"
   },
   {
    "fieldname": "pit_bands_section",

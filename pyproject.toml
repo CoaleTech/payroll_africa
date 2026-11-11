@@ -1,7 +1,7 @@
 [project]
 name = "payroll_africa"
 authors = [
-    { name = "Kimco", email = "dev@kimco.co.ke"}
+    { name = "CoaleTech", email = "support@coale.tech"}
 ]
 description = "Statutory payroll deduction automation for African countries"
 requires-python = ">=3.10"

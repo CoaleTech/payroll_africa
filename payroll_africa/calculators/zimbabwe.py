@@ -39,7 +39,7 @@ class ZimbabweCalculator(BaseCalculator):
         paye = self._compute_paye(taxable_income)
 
         # 3. AIDS Levy - 3% of tax payable
-        aids_levy = paye * (flt(self.settings.aids_levy_rate or 3) / 100)
+        aids_levy = paye * (self._num("aids_levy_rate", 3) / 100)
 
         if paye > 0:
             results["PAYE"] = {
@@ -60,7 +60,7 @@ class ZimbabweCalculator(BaseCalculator):
         """
         ceiling_annual = flt(self.settings.nssa_annual_ceiling or 8400)   # USD 700/mo x 12 (NSSA 2025)
         ceiling_monthly = ceiling_annual / 12
-        rate = flt(self.settings.nssa_rate or 4.5) / 100
+        rate = self._num("nssa_rate", 4.5) / 100
         base = min(gross, ceiling_monthly) if gross > 0 else 0
         return base * rate
 
@@ -79,7 +79,7 @@ class ZimbabweCalculator(BaseCalculator):
             return 0
 
         currency = self.settings.get("currency_mode", "USD")
-        threshold = flt(self.settings.tax_free_threshold or 100)
+        threshold = self._num("tax_free_threshold", 0)
 
         if taxable_income <= threshold:
             return 0

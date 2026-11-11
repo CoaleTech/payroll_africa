@@ -21,7 +21,7 @@ from payroll_africa.calculators.namibia import NamibiaCalculator
 def make_settings():
 	"""Create mock Namibia Payroll Settings with 2025/2026 rates."""
 	settings = MagicMock()
-	settings.ssc_annual_ceiling = 108000
+	settings.ssc_annual_ceiling = 150000
 	settings.ssc_rate = 0.9
 	settings.vet_levy_applicable = 1
 	settings.vet_levy_rate = 1
@@ -54,13 +54,13 @@ class TestNamibiaCalculator(unittest.TestCase):
 		self.calculator = NamibiaCalculator(self.settings)
 
 	def test_ssc_capped(self):
-		"""SSC capped at NAD 108,000/year = NAD 9,000/month."""
+		"""SSC capped at NAD 150,000/year (N$12,500/month, from 1 Sep 2026)."""
 		slip = make_salary_slip(15000)
 		results = self.calculator.compute(slip)
 
-		# 0.9% of 9,000 = 81
-		self.assertEqual(get_amount(results, "Social Security Employee"), 81.0)
-		self.assertEqual(get_amount(results, "Social Security Employer"), 81.0)
+		# 0.9% of 12,500 (monthly cap) = 112.50
+		self.assertEqual(get_amount(results, "Social Security Employee"), 112.50)
+		self.assertEqual(get_amount(results, "Social Security Employer"), 112.50)
 		self.assertFalse(results["Social Security Employee"]["is_employer_only"])
 		self.assertTrue(results["Social Security Employer"]["is_employer_only"])
 
@@ -123,6 +123,40 @@ class TestNamibiaCalculator(unittest.TestCase):
 			"PAYE",
 		}
 		self.assertEqual(set(results.keys()), expected)
+
+	def test_paye_bands_formula(self):
+		"""PAYE with 2025/26 bands: gross 25,000 → annual 300,000 → band 150k-350k@25%,base9k."""
+		from types import SimpleNamespace
+		self.settings.paye_bands = [
+			SimpleNamespace(from_amount=0,       to_amount=100000,  rate=0,  base_tax=0),
+			SimpleNamespace(from_amount=100001,  to_amount=150000,  rate=18, base_tax=0),
+			SimpleNamespace(from_amount=150001,  to_amount=350000,  rate=25, base_tax=9000),
+			SimpleNamespace(from_amount=350001,  to_amount=550000,  rate=28, base_tax=59000),
+			SimpleNamespace(from_amount=550001,  to_amount=850000,  rate=30, base_tax=115000),
+			SimpleNamespace(from_amount=850001,  to_amount=1550000, rate=32, base_tax=205000),
+			SimpleNamespace(from_amount=1550001, to_amount=0,       rate=37, base_tax=429000),
+		]
+		# annual=300,000; band150k-350k: 9,000+(300,000-150,001)*25%=9,000+37,499.75=46,499.75
+		# monthly=46,499.75/12≈3,874.98
+		slip = make_salary_slip(25000)
+		results = self.calculator.compute(slip)
+		self.assertAlmostEqual(results["PAYE"]["amount"], 46499.75 / 12, places=1)
+
+	def test_paye_bands_formula_not_accumulated(self):
+		"""Regression: band formula must NOT accumulate base_tax across all bands."""
+		from types import SimpleNamespace
+		self.settings.paye_bands = [
+			SimpleNamespace(from_amount=0,      to_amount=100000, rate=0,  base_tax=0),
+			SimpleNamespace(from_amount=100001, to_amount=150000, rate=18, base_tax=0),
+			SimpleNamespace(from_amount=150001, to_amount=0,      rate=25, base_tax=9000),
+		]
+		# Gross 25,000 → annual 300,000 → band 150k+: 9,000 + (300,000-150,001)×25%
+		expected_annual = 9000 + (300000 - 150001) * 0.25  # 46,499.75
+		slip = make_salary_slip(25000)
+		results = self.calculator.compute(slip)
+		self.assertAlmostEqual(results["PAYE"]["amount"], expected_annual / 12, places=1)
+		# Accumulation bug would give much more; ensure well below that
+		self.assertLess(results["PAYE"]["amount"], 60000 / 12)
 
 
 if __name__ == "__main__":

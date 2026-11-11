@@ -8,7 +8,9 @@ from payroll_africa.setup import reconcile_countries
 class PayrollAfricaSettings(Document):
 	def on_update(self):
 		before = self.get_doc_before_save()
-		if not self.flags.skip_reconcile and (
+		# During install, init_singles saves this before after_install has created
+		# the currencies; after_install (_run_setup) reconciles once they exist.
+		if not (self.flags.skip_reconcile or frappe.flags.in_install) and (
 			before is None or any(before.get(f) != self.get(f) for f in COUNTRY_FIELD_MAP.values())
 		):
 			reconcile_countries()

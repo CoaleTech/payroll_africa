@@ -1,0 +1,24 @@
+{
+ "app": "payroll_africa",
+ "creation": "2026-11-11 12:00:00",
+ "docstatus": 0,
+ "doctype": "Dock",
+ "idx": 0,
+ "items": [
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "geo-globe-duotone",
+   "link_to": "Payroll Africa",
+   "link_type": "Sidebar",
+   "title": "Payroll Africa"
+  }
+ ],
+ "modified": "2026-11-11 12:00:00.000000",
+ "modified_by": "Administrator",
+ "mount_on": "hrms",
+ "name": "payroll_africa",
+ "owner": "Administrator",
+ "standard": 1,
+ "user": ""
+}

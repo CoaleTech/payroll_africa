@@ -7,16 +7,6 @@ app_license = "gpl-3.0"
 
 required_apps = ["frappe/erpnext", "frappe/hrms"]
 
-add_to_apps_screen = [
-	{
-		"name": "payroll_africa",
-		"logo": "/assets/payroll_africa/icons/africa.svg",
-		"title": "Payroll Africa",
-		"route": "/desk/payroll-africa",
-		"sequence_id": 3,
-	}
-]
-
 # Includes
 app_include_css = ["/assets/payroll_africa/css/payroll_africa_change_log.css"]
 app_include_js = [

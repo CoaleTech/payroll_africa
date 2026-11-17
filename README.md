@@ -198,9 +198,7 @@ Add **Payroll Africa** to your bench from the Frappe Cloud Marketplace. ERPNext 
 On installation, the app provisions:
 - Currency records for all required currencies
 - `Employee.payroll_country` custom Link field
-- Country-specific Salary Components for each deduction type
-- Configurable Settings DocTypes with current statutory tax bands for all **54 countries**
-- Income Tax Slabs and Salary Structure templates for every country with statutory deductions (**44 countries**)
+- Salary Components, Settings (current statutory tax bands), an Income Tax Slab and a Salary Structure template for the country of each existing Company — only those countries (e.g. a Kenya company gets only Kenya). Creating a Company in another country sets that country up then.
 - Workspace sidebar with country sections and reports, plus a Desktop icon under Frappe HR
 
 > Somalia and South Sudan have no mandatory statutory deductions (documented no-ops), and Zimbabwe uses hardcoded PAYE bands — every other country exposes fully configurable rates and tax bands. Enable or disable any country in Payroll Africa Settings.
@@ -415,7 +413,7 @@ payroll_africa/
 │   ├── sidebar/payroll_africa/         # Standard Sidebar (139 items); disabled countries hidden client-side
 │   └── workspace/                      # Workspace with shortcuts + links
 ├── change_log/           # Release notes (v0.0.3)
-├── fixtures/             # Custom fields + 21 Income Tax Slabs
+├── fixtures/             # Custom fields
 ├── public/
 │   ├── js/
 │   │   ├── payroll_africa_change_log.js       # What's New dialog

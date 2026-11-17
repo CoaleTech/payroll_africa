@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `version-15` branch targets Frappe, ERPNext and HRMS v15 (`pyproject.toml` ranges `>=15.0.0,<16.0.0`); CI and linters run on `version-15` against Frappe `version-15` and Node 18.
 - Salary Slip override calls the regional deductions itself, because HRMS v15 has no `apply_regional_deductions` hook (v16 calls it from `calculate_net_pay`).
 - Apps-screen route is `/app/payroll-africa`; v15 has no `/desk`.
+- Install and migrate set up only the countries that have a Company (salary components, Settings, Income Tax Slab, template Salary Structure). A Kenya company gets only Kenya; another country is set up when a Company in it is created. Records already created for other countries are left in place.
+- `setup_sao_tome_and_principe` renamed `setup_sao_tome` so every `enable_<name>` field maps to `setup_<name>`.
+
+### Removed
+- `fixtures/income_tax_slab.json` and the `fixtures` hook: `bench migrate` re-imported all 21 slabs regardless of company and overwrote the corrected Kenya slab. Setup already creates every slab.
 
 ### Fixed
 - Kenya PAYE Income Tax Slab used the monthly KRA bands, but HRMS applies slab bands to annual taxable income, so PAYE was overstated (e.g. 3,165 instead of 0 on a 12,000 taxable month). Bands are now annual and the personal relief is folded into a 0% first band; the dead `flat_amount` relief row (no such field on Income Tax Slab Other Charges) is removed. Sites that already hold the old "Kenya PAYE 2025" slab keep it: setup skips an existing slab.

@@ -253,32 +253,26 @@ def _create_income_tax_slab(slab_name: str, currency: str, bands: list):
 	doc.insert()
 
 
+def _setup_country(field):
+	"""Seed one country's salary components, Income Tax Slab and template structure.
+
+	Setup functions are named after the enable field: ``enable_kenya`` -> ``setup_kenya``.
+	"""
+	globals()["setup_" + field.removeprefix("enable_")]()
+
+
 def _run_setup():
-	"""Shared setup logic for install and migrate."""
+	"""Shared setup logic for install and migrate.
+
+	Seeds only the countries that have a Company; the rest are seeded when a
+	Company of that country is created (``enable_country_on_company_insert``).
+	"""
 	_ensure_currencies()
 	_setup_custom_fields()
-	for setup_fn in (
-		setup_kenya, setup_uganda, setup_tanzania, setup_rwanda,
-		setup_burundi, setup_zambia, setup_malawi, setup_nigeria,
-		setup_drc, setup_angola, setup_mozambique,
-		setup_ethiopia, setup_south_africa, setup_egypt, setup_ghana,
-		setup_botswana, setup_morocco, setup_tunisia, setup_namibia,
-		setup_madagascar, setup_ivory_coast,
-		setup_cameroon, setup_chad, setup_central_african_republic,
-		setup_congo, setup_gabon, setup_equatorial_guinea,
-		setup_sao_tome_and_principe,
-		setup_algeria, setup_libya, setup_sudan, setup_mauritania,
-		setup_zimbabwe,
-		setup_djibouti, setup_eritrea, setup_comoros,
-		setup_sierra_leone, setup_liberia,
-		setup_gambia, setup_cabo_verde, setup_mauritius,
-		setup_senegal, setup_mali, setup_niger,
-		setup_burkina_faso, setup_benin, setup_togo,
-		setup_seychelles, setup_lesotho, setup_eswatini,
-		setup_guinea, setup_guinea_bissau,
-		setup_somalia, setup_south_sudan,
-	):
-		setup_fn()
+	for country in set(frappe.get_all("Company", pluck="country")):
+		field = _enable_field_for_country(country)
+		if field:
+			_setup_country(field)
 	setup_desktop_icon()
 
 
@@ -342,11 +336,12 @@ def auto_enable_from_companies():
 
 
 def enable_country_on_company_insert(doc, method=None):
-	"""Company after_insert hook: auto-enable the new company's country (additive)."""
+	"""Company after_insert hook: set up and auto-enable the new company's country (additive)."""
 	if not frappe.db.exists("DocType", "Payroll Africa Settings"):
 		return
 	field = _enable_field_for_country(getattr(doc, "country", None))
 	if field:
+		_setup_country(field)
 		_apply_enable_fields({field})
 
 
@@ -3041,7 +3036,7 @@ def _create_equatorial_guinea_settings():
 	doc.save()
 
 
-def setup_sao_tome_and_principe():
+def setup_sao_tome():
 	"""Seed Sao Tome and Principe Payroll Settings (rates configurable via DocType)."""
 	_create_sao_tome_and_principe_settings()
 

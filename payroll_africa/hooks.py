@@ -51,10 +51,3 @@ doc_events = {
 		"after_insert": "payroll_africa.setup.enable_country_on_company_insert",
 	},
 }
-
-fixtures = [
-	{
-		"doctype": "Income Tax Slab",
-		"filters": [["name", "in", ["Kenya PAYE 2025", "Uganda PAYE 2025", "Tanzania PAYE 2025", "Rwanda PAYE 2025", "Burundi PAYE 2025", "Malawi PAYE 2025", "Zambia PAYE 2025", "DRC PAYE 2025", "Nigeria PAYE 2025", "Mozambique PAYE 2025", "Angola PAYE 2025", "Ghana PAYE 2025", "Ethiopia PIT 2025", "South Africa PAYE 2025", "Egypt IT 2025", "Botswana PAYE 2025", "Morocco IR 2025", "Ivory Coast ITS 2025", "Tunisia IRPP 2025", "Namibia PAYE 2025", "Madagascar IRSA 2025"]]],
-	},
-]

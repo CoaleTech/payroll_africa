@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `fixtures/income_tax_slab.json` and the `fixtures` hook: `bench migrate` re-imported all 21 slabs regardless of company and overwrote the corrected Kenya slab. Setup already creates every slab.
 
 ### Fixed
-- Kenya PAYE Income Tax Slab used the monthly KRA bands, but HRMS applies slab bands to annual taxable income, so PAYE was overstated (e.g. 3,165 instead of 0 on a 12,000 taxable month). Bands are now annual and the personal relief is folded into a 0% first band; the dead `flat_amount` relief row (no such field on Income Tax Slab Other Charges) is removed. Sites that already hold the old "Kenya PAYE 2025" slab keep it: setup skips an existing slab.
+- Kenya PAYE Income Tax Slab used the monthly KRA bands, but HRMS applies slab bands to annual taxable income, so PAYE was overstated (e.g. 3,165 instead of 0 on a 12,000 taxable month). Bands are now annual and the personal relief is folded into a 0% first band; the dead `flat_amount` relief row (no such field on Income Tax Slab Other Charges) is removed. Existing sites are corrected by the `fix_kenya_paye_annual_slab` patch on migrate.
 
 ## [0.0.4] - 2026-07-24
 

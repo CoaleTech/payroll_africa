@@ -6,3 +6,4 @@
 # Patches added in this section will be executed after doctypes are migrated
 payroll_africa.patches.fix_custom_field_names
 payroll_africa.patches.fix_zambia_paye_annual_slab
+payroll_africa.patches.fix_kenya_paye_annual_slab

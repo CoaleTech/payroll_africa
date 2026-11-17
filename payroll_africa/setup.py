@@ -555,27 +555,24 @@ def _create_kenya_salary_components():
 		_upsert_salary_component(comp_data)
 
 
-def _create_kenya_income_tax_slab():
-	"""Create Kenya PAYE Income Tax Slab for 2025.
+# HRMS applies Income Tax Slab bands to ANNUAL taxable income, so the KRA monthly
+# bands (24,000 / 32,333 / 500,000 / 800,000) are multiplied by 12. Personal
+# relief (KES 2,400 a month, a tax credit) cannot be expressed in an Income Tax
+# Slab; the 10% first band taxes exactly the amount the relief cancels, so it is
+# a 0% band here. Exact for earners above the first band; below it, tax is nil
+# either way.
+KENYA_PAYE_SLAB_BANDS = [
+	{"from_amount": 0, "to_amount": 288000, "rate": 0},
+	{"from_amount": 288001, "to_amount": 387996, "rate": 25},
+	{"from_amount": 387997, "to_amount": 6000000, "rate": 30},
+	{"from_amount": 6000001, "to_amount": 9600000, "rate": 32.5},
+	{"from_amount": 9600001, "to_amount": 0, "rate": 35},
+]
 
-	HRMS applies slab bands to the *annual* taxable income, so the KRA monthly
-	bands (24,000 / 32,333 / 500,000 / 800,000) are multiplied by 12. Personal
-	relief (KES 2,400 a month, a tax credit) cannot be expressed in an Income
-	Tax Slab; the 10% first band taxes exactly the amount the relief cancels, so
-	it is a 0% band here. Exact for earners above the first band; below it, tax
-	is nil either way.
-	"""
-	_create_income_tax_slab(
-		slab_name="Kenya PAYE 2025",
-		currency="KES",
-		bands=[
-			{"from_amount": 0, "to_amount": 288000, "rate": 0},
-			{"from_amount": 288001, "to_amount": 387996, "rate": 25},
-			{"from_amount": 387997, "to_amount": 6000000, "rate": 30},
-			{"from_amount": 6000001, "to_amount": 9600000, "rate": 32.5},
-			{"from_amount": 9600001, "to_amount": 0, "rate": 35},
-		],
-	)
+
+def _create_kenya_income_tax_slab():
+	"""Create Kenya PAYE Income Tax Slab for 2025 (annual bands)."""
+	_create_income_tax_slab(slab_name="Kenya PAYE 2025", currency="KES", bands=KENYA_PAYE_SLAB_BANDS)
 
 
 def setup_uganda():

@@ -12,7 +12,7 @@ add_to_apps_screen = [
 		"name": "payroll_africa",
 		"logo": "/assets/payroll_africa/icons/africa.svg",
 		"title": "Payroll Africa",
-		"route": "/desk/payroll-africa",
+		"route": "/app/payroll-africa",  # v16 redirects /app to /desk; v15 has no /desk
 		"sequence_id": 3,
 	}
 ]

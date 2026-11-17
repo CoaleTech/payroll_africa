@@ -10,6 +10,12 @@ class PayrollAfricaSalarySlip(SalarySlip):
 	def apply_regional_deductions(self):
 		apply_regional_deductions(self)
 
+	if not hasattr(SalarySlip, "apply_regional_deductions"):
+		# hrms v15 has no such hook; v16 calls it right before this step in calculate_net_pay.
+		def set_precision_for_component_amounts(self):
+			self.apply_regional_deductions()
+			super().set_precision_for_component_amounts()
+
 
 def apply_regional_deductions(doc):
 	"""Salary Slip statutory African deductions, called from the Salary Slip override."""

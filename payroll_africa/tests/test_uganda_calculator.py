@@ -30,7 +30,7 @@ class TestUgandaCalculator(unittest.TestCase):
 
 	def test_lst_monthly(self):
 		result = self.calculator.compute(self._make_slip(1000000))
-		self.assertAlmostEqual(result["LST"]["amount"], 100000 / 12)
+		self.assertEqual(result["LST"]["amount"], round(100000 / 12, 2))
 		self.assertFalse(result["LST"]["is_employer_only"])
 
 	def test_zero_gross(self):
@@ -38,7 +38,7 @@ class TestUgandaCalculator(unittest.TestCase):
 		self.assertEqual(result["NSSF Employee UG"]["amount"], 0)
 		self.assertEqual(result["NSSF Employer UG"]["amount"], 0)
 		# LST is still charged even with zero gross (flat tax)
-		self.assertAlmostEqual(result["LST"]["amount"], 100000 / 12)
+		self.assertEqual(result["LST"]["amount"], round(100000 / 12, 2))
 
 	def test_nssf_rates_proportional(self):
 		"""Employer NSSF should be double the employee NSSF (10% vs 5%)."""

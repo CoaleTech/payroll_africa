@@ -230,7 +230,7 @@ def _upsert_salary_component(comp_data: dict):
 	doc.insert()
 
 
-def _create_income_tax_slab(slab_name: str, currency: str, bands: list, personal_relief: float = 0):
+def _create_income_tax_slab(slab_name: str, currency: str, bands: list):
 	"""Create an Income Tax Slab unless one with this name already exists."""
 	if frappe.db.exists("Income Tax Slab", slab_name):
 		return
@@ -247,13 +247,6 @@ def _create_income_tax_slab(slab_name: str, currency: str, bands: list, personal
 			"from_amount": band["from_amount"],
 			"to_amount": band["to_amount"],
 			"percent_deduction": band["rate"],
-		})
-
-	if personal_relief:
-		doc.append("other_taxes_and_charges", {
-			"description": "Personal Relief",
-			"percent": 0,
-			"flat_amount": -personal_relief,
 		})
 
 	doc.flags.ignore_permissions = True
@@ -568,18 +561,25 @@ def _create_kenya_salary_components():
 
 
 def _create_kenya_income_tax_slab():
-	"""Create Kenya PAYE Income Tax Slab for 2025."""
+	"""Create Kenya PAYE Income Tax Slab for 2025.
+
+	HRMS applies slab bands to the *annual* taxable income, so the KRA monthly
+	bands (24,000 / 32,333 / 500,000 / 800,000) are multiplied by 12. Personal
+	relief (KES 2,400 a month, a tax credit) cannot be expressed in an Income
+	Tax Slab; the 10% first band taxes exactly the amount the relief cancels, so
+	it is a 0% band here. Exact for earners above the first band; below it, tax
+	is nil either way.
+	"""
 	_create_income_tax_slab(
 		slab_name="Kenya PAYE 2025",
 		currency="KES",
 		bands=[
-			{"from_amount": 0, "to_amount": 24000, "rate": 10},
-			{"from_amount": 24001, "to_amount": 32333, "rate": 25},
-			{"from_amount": 32334, "to_amount": 500000, "rate": 30},
-			{"from_amount": 500001, "to_amount": 800000, "rate": 32.5},
-			{"from_amount": 800001, "to_amount": 0, "rate": 35},
+			{"from_amount": 0, "to_amount": 288000, "rate": 0},
+			{"from_amount": 288001, "to_amount": 387996, "rate": 25},
+			{"from_amount": 387997, "to_amount": 6000000, "rate": 30},
+			{"from_amount": 6000001, "to_amount": 9600000, "rate": 32.5},
+			{"from_amount": 9600001, "to_amount": 0, "rate": 35},
 		],
-		personal_relief=2400,
 	)
 
 

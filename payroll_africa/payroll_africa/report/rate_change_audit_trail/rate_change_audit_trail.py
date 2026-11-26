@@ -48,28 +48,17 @@ def get_data(filters):
 	doctype_to_country = {v: k for k, v in doctypes.items()}
 	doctype_list = list(doctypes.values())
 
-	conditions = ""
-	query_filters = {"doctypes": doctype_list}
-
+	version_filters = [["ref_doctype", "in", doctype_list]]
 	if filters and filters.get("from_date"):
-		conditions += " AND v.creation >= %(from_date)s"
-		query_filters["from_date"] = filters["from_date"]
+		version_filters.append(["creation", ">=", filters["from_date"]])
 	if filters and filters.get("to_date"):
-		conditions += " AND v.creation <= %(to_date)s"
-		query_filters["to_date"] = filters["to_date"]
+		version_filters.append(["creation", "<=", filters["to_date"]])
 
-	versions = frappe.db.sql(
-		"""
-		SELECT v.ref_doctype, v.data, v.owner, v.creation
-		FROM `tabVersion` v
-		WHERE v.ref_doctype IN %(doctypes)s
-		"""
-		+ conditions
-		+ """
-		ORDER BY v.creation DESC
-		""",
-		query_filters,
-		as_dict=True,
+	versions = frappe.get_all(
+		"Version",
+		filters=version_filters,
+		fields=["ref_doctype", "data", "owner", "creation"],
+		order_by="creation desc",
 	)
 
 	data = []

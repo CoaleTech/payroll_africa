@@ -23,8 +23,6 @@ def execute():
 		)
 		for name in existing:
 			if name != expected_name:
-				frappe.db.sql(
-					"UPDATE `tabCustom Field` SET `name`=%s WHERE `name`=%s",
-					(expected_name, name),
-				)
+				cf = frappe.qb.DocType("Custom Field")
+				frappe.qb.update(cf).set(cf.name, expected_name).where(cf.name == name).run()
 		frappe.db.commit()  # nosemgrep: frappe-manual-commit

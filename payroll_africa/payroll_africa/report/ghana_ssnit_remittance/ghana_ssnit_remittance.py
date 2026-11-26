@@ -1,8 +1,6 @@
-import frappe
 from frappe import _
-from frappe.utils import flt
 
-from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
+from payroll_africa.payroll_africa.report.utils import add_basic_pay, fetch_component_amounts, slip_rows
 
 
 def execute(filters=None):
@@ -24,22 +22,8 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = standard_slip_conditions(filters)
-
-	data = frappe.db.sql(
-		"""
-		SELECT
-			ss.employee, ss.employee_name, ss.basic_pay,
-			ss.name as salary_slip
-		FROM `tabSalary Slip` ss
-		WHERE ss.docstatus = 1"""
-		+ conditions
-		+ """
-		ORDER BY ss.employee
-		""",
-		filters,
-		as_dict=True,
-	)
+	data = slip_rows(filters, ("employee", "employee_name", "gross_pay"))
+	add_basic_pay(data)
 
 	slip_names = [r.salary_slip for r in data]
 	amounts = fetch_component_amounts(slip_names, ["SSNIT Employee", "SSNIT Employer", "Tier 2 Pension Employer"])

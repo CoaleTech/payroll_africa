@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Payroll Entry > Employees grid shows Gross Pay, PAYE, NSSF, SHA, NITA (Employer), Other Deductions and Net Pay per employee, read from the entry's Salary Slips on every load (blank until slips are created). NSSF holds the employee pension / social-security deduction of any country (NSSF, INSS, NAPSA, Pension) and SHA the health deduction (SHA, SHIF, CBHI, NHIMA, NHIS, Health Insurance); everything else employee-borne is Other Deductions. NITA is employer-borne and is not part of the gross-to-net arithmetic. Migrate adds seven read-only custom fields on Payroll Employee Detail and lists only the employee name (not ID, department or designation) in the grid to make room.
 
 ### Changed
+- Raw SQL replaced with Frappe Query Builder / ORM: all report queries (shared helpers `slip_rows`, `component_lines`, `deduction_details` in `report/utils.py`; `standard_slip_conditions` and the per-report `get_conditions` SQL-string builders are removed), the Salary Component link query in `api.py`, and the `fix_custom_field_names` patch. Report output is unchanged.
 - `version-15` branch targets Frappe, ERPNext and HRMS v15 (`pyproject.toml` ranges `>=15.0.0,<16.0.0`); CI and linters run on `version-15` against Frappe `version-15` and Node 18.
 - Salary Slip override calls the regional deductions itself, because HRMS v15 has no `apply_regional_deductions` hook (v16 calls it from `calculate_net_pay`).
 - Apps-screen route is `/app/payroll-africa`; v15 has no `/desk`.
@@ -19,9 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - `fixtures/income_tax_slab.json` and the `fixtures` hook: `bench migrate` re-imported all 21 slabs regardless of company and overwrote the corrected Kenya slab. Setup already creates every slab.
+- `payroll_africa/report/`: a duplicate, older copy of 19 reports outside the module path, never loaded by Frappe.
 
 ### Fixed
 - Kenya PAYE Income Tax Slab used the monthly KRA bands, but HRMS applies slab bands to annual taxable income, so PAYE was overstated (e.g. 3,165 instead of 0 on a 12,000 taxable month). Bands are now annual and the personal relief is folded into a 0% first band; the dead `flat_amount` relief row (no such field on Income Tax Slab Other Charges) is removed. Existing sites are corrected by the `fix_kenya_paye_annual_slab` patch on migrate.
+- Ethiopia Pension Remittance and Ghana SSNIT Remittance crashed (`Unknown column basic_pay`, Salary Slip has none). Basic Pay is now the slip's Basic Salary earning, falling back to gross pay like the calculators.
+- Botswana BPF Remittance sat in the unloaded `payroll_africa/report/` folder, so the sidebar link had no Report behind it. It now lives with the other reports.
 
 ## [0.0.4] - 2026-07-24
 

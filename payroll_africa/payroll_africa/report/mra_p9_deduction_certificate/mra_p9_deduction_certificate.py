@@ -55,19 +55,17 @@ def get_data(filters):
 def get_month_data(filters, month_name, month_start, month_end):
 	row = {"month": month_name}
 
-	salary_slip = frappe.db.sql(
-		"""
-		SELECT name, gross_pay
-		FROM `tabSalary Slip`
-		WHERE docstatus = 1
-			AND employee = %(employee)s
-			AND start_date >= %(month_start)s
-			AND end_date <= %(month_end)s
-			AND company = %(company)s
-		LIMIT 1
-		""",
-		{"employee": filters["employee"], "month_start": month_start, "month_end": month_end, "company": filters["company"]},
-		as_dict=True,
+	salary_slip = frappe.get_all(
+		"Salary Slip",
+		filters={
+			"docstatus": 1,
+			"employee": filters["employee"],
+			"start_date": (">=", month_start),
+			"end_date": ("<=", month_end),
+			"company": filters["company"],
+		},
+		fields=["name", "gross_pay"],
+		limit=1,
 	)
 
 	if not salary_slip:

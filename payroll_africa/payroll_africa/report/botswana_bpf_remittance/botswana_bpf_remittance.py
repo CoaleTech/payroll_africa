@@ -1,8 +1,7 @@
-import frappe
 from frappe import _
-from frappe.utils import flt, formatdate
+from frappe.utils import formatdate
 
-from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, standard_slip_conditions
+from payroll_africa.payroll_africa.report.utils import fetch_component_amounts, slip_rows
 
 
 def execute(filters=None):
@@ -17,34 +16,22 @@ def get_columns():
 		{"fieldname": "employee_name", "label": _("Employee Name"), "fieldtype": "Data", "width": 180},
 		{"fieldname": "month", "label": _("Month"), "fieldtype": "Data", "width": 100},
 		{"fieldname": "gross_pay", "label": _("Gross Pay"), "fieldtype": "Currency", "width": 130},
-		{"fieldname": "ir", "label": _("IR"), "fieldtype": "Currency", "width": 120},
+		{"fieldname": "bpf_employee", "label": _("BPF Employee"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "bpf_employer", "label": _("BPF Employer"), "fieldtype": "Currency", "width": 140},
 	]
 
 
 def get_data(filters):
-	conditions = standard_slip_conditions(filters)
-
-	data = frappe.db.sql(
-		"""
-		SELECT
-			ss.employee, ss.employee_name, ss.gross_pay, ss.start_date,
-			ss.name as salary_slip
-		FROM `tabSalary Slip` ss
-		WHERE ss.docstatus = 1"""
-		+ conditions
-		+ """
-		ORDER BY ss.employee, ss.start_date
-		""",
-		filters,
-		as_dict=True,
-	)
+	data = slip_rows(filters, ("employee", "employee_name", "gross_pay", "start_date"))
+	data.sort(key=lambda r: (r.employee, r.start_date))
 
 	slip_names = [r.salary_slip for r in data]
-	amounts = fetch_component_amounts(slip_names, ["IR"])
+	amounts = fetch_component_amounts(slip_names, ["BPF Employee", "BPF Employer"])
 
 	for row in data:
 		slip_amounts = amounts.get(row.salary_slip, {})
-		row["ir"] = slip_amounts.get("IR", 0)
+		row["bpf_employee"] = slip_amounts.get("BPF Employee", 0)
+		row["bpf_employer"] = slip_amounts.get("BPF Employer", 0)
 		row["month"] = formatdate(row.start_date, "MMM-YYYY")
 		del row["salary_slip"]
 		del row["start_date"]

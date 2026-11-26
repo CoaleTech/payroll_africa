@@ -11,9 +11,6 @@ _mock_frappe.utils.getdate = lambda x: x
 sys.modules.setdefault("frappe", _mock_frappe)
 sys.modules.setdefault("frappe.utils", _mock_frappe.utils)
 
-# Reports that use standard_slip_conditions from utils
-from payroll_africa.payroll_africa.report.utils import standard_slip_conditions
-
 # Reports with variable-signature get_columns (require component_names arg)
 from payroll_africa.payroll_africa.report.statutory_deductions_summary.statutory_deductions_summary import (
 	get_columns as sds_columns,
@@ -22,15 +19,15 @@ from payroll_africa.payroll_africa.report.employer_contributions.employer_contri
 	get_columns as ec_columns,
 )
 
-# Reports with own get_conditions and fixed get_columns
+# Reports with fixed get_columns
 from payroll_africa.payroll_africa.report.cost_to_company.cost_to_company import (
-	get_columns as ctc_columns, get_conditions as ctc_conditions,
+	get_columns as ctc_columns,
 )
 from payroll_africa.payroll_africa.report.p10_monthly_tax_return.p10_monthly_tax_return import (
-	get_columns as p10_columns, get_conditions as p10_conditions,
+	get_columns as p10_columns,
 )
 
-# Reports with no-arg get_columns that use standard_slip_conditions
+# Reports with no-arg get_columns
 from payroll_africa.payroll_africa.report.nssf_remittance.nssf_remittance import (
 	get_columns as nssf_columns,
 )
@@ -133,72 +130,6 @@ class TestReportColumns(unittest.TestCase):
 		self.assertIn("employee", fieldnames)
 		self.assertIn("basic_salary", fieldnames)
 		self.assertIn("paye_tax", fieldnames)
-
-
-class TestStandardSlipConditions(unittest.TestCase):
-	"""standard_slip_conditions is shared by sds, ec, nssf, shif, hl reports."""
-
-	def test_no_filters_returns_empty(self):
-		self.assertEqual(standard_slip_conditions({}), "")
-
-	def test_company_filter(self):
-		cond = standard_slip_conditions({"company": "X"})
-		self.assertIn("company", cond)
-
-	def test_date_filters(self):
-		cond = standard_slip_conditions({"from_date": "2025-01-01", "to_date": "2025-12-31"})
-		self.assertIn("start_date", cond)
-		self.assertIn("end_date", cond)
-
-	def test_from_date_only(self):
-		cond = standard_slip_conditions({"from_date": "2025-01-01"})
-		self.assertIn("start_date", cond)
-		self.assertNotIn("end_date", cond)
-
-	def test_all_filters(self):
-		cond = standard_slip_conditions({"company": "X", "from_date": "2025-01-01", "to_date": "2025-12-31"})
-		self.assertIn("company", cond)
-		self.assertIn("start_date", cond)
-		self.assertIn("end_date", cond)
-
-
-class TestCostToCompanyConditions(unittest.TestCase):
-	"""cost_to_company has its own get_conditions with extra filters."""
-
-	def test_no_filters(self):
-		self.assertEqual(ctc_conditions({}), "")
-
-	def test_all_filters(self):
-		cond = ctc_conditions({
-			"company": "X", "employee": "EMP-001",
-			"department": "HR", "from_date": "2025-01-01", "to_date": "2025-12-31",
-		})
-		self.assertIn("company", cond)
-		self.assertIn("employee", cond)
-		self.assertIn("department", cond)
-		self.assertIn("start_date", cond)
-		self.assertIn("end_date", cond)
-
-	def test_partial_filters(self):
-		cond = ctc_conditions({"company": "X", "department": "HR"})
-		self.assertIn("company", cond)
-		self.assertIn("department", cond)
-		self.assertNotIn("start_date", cond)
-
-
-class TestP10Conditions(unittest.TestCase):
-	"""p10 has its own get_conditions with posting_date logic."""
-
-	def test_employee_filter(self):
-		cond = p10_conditions({"employee": "EMP-001"})
-		self.assertIn("employee", cond)
-
-	def test_date_filters(self):
-		cond = p10_conditions({"from_date": "2025-01-01", "to_date": "2025-12-31"})
-		self.assertIn("posting_date", cond)
-
-	def test_no_filters(self):
-		self.assertEqual(p10_conditions({}), "")
 
 
 class TestP9AEmptyData(unittest.TestCase):

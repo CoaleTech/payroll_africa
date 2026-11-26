@@ -76,6 +76,52 @@ def _ensure_currencies():
 		doc.insert(ignore_if_duplicate=True)
 
 
+# Payroll Entry > Employees grid: salary slip figures (filled on load by engine.payroll_entry).
+_GRID_LABELS = (
+	("pa_gross_pay", "Gross Pay"),
+	("pa_paye", "PAYE"),
+	("pa_nssf", "NSSF"),
+	("pa_sha", "SHA"),
+	("pa_nita", "NITA (Employer)"),
+	("pa_other_deductions", "Other Deductions"),
+	("pa_net_pay", "Net Pay"),
+)
+
+
+def _payroll_grid_fields():
+	prev = "is_salary_withheld"
+	fields = []
+	for fieldname, label in _GRID_LABELS:
+		fields.append({
+			"fieldname": fieldname,
+			"fieldtype": "Currency",
+			"label": label,
+			"options": "currency",
+			"insert_after": prev,
+			"read_only": 1,
+			"no_copy": 1,
+			"in_list_view": 1,
+			"columns": 1,
+			"module": "Payroll Africa",
+		})
+		prev = fieldname
+	return fields
+
+
+def _set_payroll_grid_columns():
+	"""Grid fits 10 width units: free room for the 7 amount columns by listing only the employee name."""
+	for fieldname in ("employee", "department", "designation"):
+		frappe.make_property_setter({
+			"doctype": "Payroll Employee Detail", "fieldname": fieldname,
+			"property": "in_list_view", "value": "0", "property_type": "Check",
+		}, is_system_generated=False)
+	frappe.make_property_setter({
+		"doctype": "Payroll Employee Detail", "fieldname": "is_salary_withheld",
+		"property": "columns", "value": "1", "property_type": "Int",
+	}, is_system_generated=False)
+	frappe.clear_cache(doctype="Payroll Employee Detail")
+
+
 def _setup_custom_fields():
 	"""Create or update custom fields added by this app."""
 	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
@@ -219,6 +265,7 @@ def _setup_custom_fields():
 				"module": "Payroll Africa",
 			},
 		],
+		"Payroll Employee Detail": _payroll_grid_fields(),
 	})
 
 	# Stock HRMS Salary Component ships only Earning/Deduction; this app models
@@ -233,6 +280,8 @@ def _setup_custom_fields():
 			"property_type": "Text",
 		}, is_system_generated=False)
 		frappe.clear_cache(doctype="Salary Component")
+
+	_set_payroll_grid_columns()
 
 
 def _upsert_salary_component(comp_data: dict):

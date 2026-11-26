@@ -41,6 +41,9 @@ doc_events = {
 		"after_insert": "payroll_africa.setup.enable_country_on_company_insert",
 		"on_update": "payroll_africa.setup.ensure_company_component_accounts",
 	},
+	"Payroll Entry": {
+		"onload": "payroll_africa.engine.payroll_entry.add_slip_amounts",
+	},
 }
 
 fixtures = [

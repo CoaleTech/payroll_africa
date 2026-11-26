@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Payroll Entry > Employees grid shows Gross Pay, PAYE, NSSF, SHA, NITA (Employer), Other Deductions and Net Pay per employee, read from the entry's Salary Slips on every load (blank until slips are created). NSSF holds the employee pension / social-security deduction of any country (NSSF, INSS, NAPSA, Pension) and SHA the health deduction (SHA, SHIF, CBHI, NHIMA, NHIS, Health Insurance); everything else employee-borne is Other Deductions. NITA is employer-borne and is not part of the gross-to-net arithmetic. Migrate adds seven read-only custom fields on Payroll Employee Detail and lists only the employee name (not ID, department or designation) in the grid to make room.
+
 ### Changed
 - `version-15` branch targets Frappe, ERPNext and HRMS v15 (`pyproject.toml` ranges `>=15.0.0,<16.0.0`); CI and linters run on `version-15` against Frappe `version-15` and Node 18.
 - Salary Slip override calls the regional deductions itself, because HRMS v15 has no `apply_regional_deductions` hook (v16 calls it from `calculate_net_pay`).

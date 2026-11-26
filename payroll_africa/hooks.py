@@ -50,4 +50,7 @@ doc_events = {
 	"Company": {
 		"after_insert": "payroll_africa.setup.enable_country_on_company_insert",
 	},
+	"Payroll Entry": {
+		"onload": "payroll_africa.engine.payroll_entry.add_slip_amounts",
+	},
 }

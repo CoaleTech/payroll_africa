@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Payroll Entry > Employees grid shows Gross Pay, PAYE, NSSF, SHA, NITA (Employer), Other Deductions and Net Pay per employee, read from the entry's Salary Slips on every load (blank until slips are created). NSSF holds the employee pension / social-security deduction of any country (NSSF, INSS, NAPSA, Pension) and SHA the health deduction (SHA, SHIF, CBHI, NHIMA, NHIS, Health Insurance); everything else employee-borne is Other Deductions. NITA is employer-borne and is not part of the gross-to-net arithmetic. Migrate adds seven read-only custom fields on Payroll Employee Detail and lists only the employee name (not ID, department or designation) in the grid to make room.
+
 ## [0.0.4] - 2026-07-24
 
 Automatic country setup, complete documentation, and a demo video.

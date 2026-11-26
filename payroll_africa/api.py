@@ -147,53 +147,23 @@ def get_filtered_salary_components(doctype: str, txt: str, searchfield: str, sta
 	Country suffixes: UG, TZ, RW, BI, ZM, MW, CD, NG, MZ, AO
 	Kenya components have no suffix (e.g. "PAYE", "NSSF Employee").
 	"""
-	disabled_suffixes = [s for s in filters.get("disabled_suffixes", []) if s in VALID_SUFFIXES]
+	# Kenya components have no suffix, so only non-empty suffixes exclude by name
+	non_empty_suffixes = [s for s in filters.get("disabled_suffixes", []) if s and s in VALID_SUFFIXES]
 
-	# Remove empty string — Kenya filtering is handled separately below
-	non_empty_suffixes = [s for s in disabled_suffixes if s]
-
-	if not non_empty_suffixes and "" not in disabled_suffixes:
-		# All countries enabled — return all components matching txt
-		return frappe.db.sql(
-			"""
-			SELECT name
-			FROM `tabSalary Component`
-			WHERE (name LIKE %(txt)s OR salary_component_abbr LIKE %(txt)s)
-			ORDER BY name
-			LIMIT %(start)s, %(page_len)s
-			""",
-			{"txt": f"%{txt}%", "start": start, "page_len": page_len},
-		)
-
-	# Build exclusion conditions for non-empty suffixes
+	sc = frappe.qb.DocType("Salary Component")
+	like = f"%{txt}%"
+	query = (
+		frappe.qb.from_(sc)
+		.select(sc.name)
+		.where(sc.name.like(like) | sc.salary_component_abbr.like(like))
+		.orderby(sc.name)
+		.limit(page_len)
+		.offset(start)
+	)
 	# Exclude components whose name ends with " <SUFFIX>"
-	suffix_conditions = " AND ".join(
-		[f"name NOT LIKE %(suffix_{i}s)s" for i, _ in enumerate(non_empty_suffixes)]
-	)
-
-	suffix_params = {
-		f"suffix_{i}s": f"% {s}" for i, s in enumerate(non_empty_suffixes)
-	}
-	suffix_params["txt"] = f"%{txt}%"
-	suffix_params["start"] = start
-	suffix_params["page_len"] = page_len
-
-	where_clause = "(name LIKE %(txt)s OR salary_component_abbr LIKE %(txt)s)"
-	if suffix_conditions:
-		where_clause += f" AND ({suffix_conditions})"
-
-	return frappe.db.sql(
-		"""
-		SELECT name
-		FROM `tabSalary Component`
-		WHERE """
-		+ where_clause
-		+ """
-		ORDER BY name
-		LIMIT %(start)s, %(page_len)s
-		""",
-		suffix_params,
-	)
+	for suffix in non_empty_suffixes:
+		query = query.where(sc.name.not_like(f"% {suffix}"))
+	return query.run()
 
 
 @frappe.whitelist()

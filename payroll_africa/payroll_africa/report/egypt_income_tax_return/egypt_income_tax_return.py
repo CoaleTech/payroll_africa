@@ -1,6 +1,6 @@
-import frappe
 from frappe import _
-from frappe.utils import flt
+
+from payroll_africa.payroll_africa.report.utils import component_lines
 
 
 def execute(filters=None):
@@ -20,42 +20,4 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
-
-	data = frappe.db.sql(
-		"""
-		SELECT
-			ss.employee,
-			ss.employee_name,
-			sd.salary_component AS component,
-			sd.amount,
-			DATE_FORMAT(ss.end_date, '%%Y-%%m') AS month
-		FROM `tabSalary Slip` ss
-		INNER JOIN `tabSalary Detail` sd ON sd.parent = ss.name
-		WHERE ss.docstatus = 1
-			AND sd.parentfield = 'deductions'
-			AND sd.salary_component = 'Income Tax'
-		"""
-		+ conditions
-		+ """
-		ORDER BY ss.end_date, ss.employee
-		""",
-		filters,
-		as_dict=True,
-	)
-
-	for row in data:
-		row["amount"] = flt(row.amount)
-
-	return data
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.end_date <= %(to_date)s"
-	return conditions
+	return component_lines(filters, ("Income Tax",))

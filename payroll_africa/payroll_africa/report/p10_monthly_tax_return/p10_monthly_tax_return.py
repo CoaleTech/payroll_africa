@@ -64,32 +64,34 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
-
-	# Get all salary slips matching filters, with p10a-tagged component amounts
-	data = frappe.db.sql(
-		"""
-		SELECT
-			e.tax_id,
-			ss.employee,
-			ss.employee_name,
-			sc.p10a_tax_deduction_card_type AS p10a_tag,
-			COALESCE(sd.amount, 0) AS amount
-		FROM `tabSalary Slip` ss
-		INNER JOIN `tabEmployee` e ON e.name = ss.employee
-		INNER JOIN `tabSalary Detail` sd ON sd.parent = ss.name
-		INNER JOIN `tabSalary Component` sc ON sc.name = sd.salary_component
-		WHERE ss.docstatus = 1
-			AND sc.p10a_tax_deduction_card_type IS NOT NULL
-			AND sc.p10a_tax_deduction_card_type != ''
-			"""
-		+ conditions
-		+ """
-		ORDER BY ss.employee
-		""",
-		filters,
-		as_dict=True,
+	ss = frappe.qb.DocType("Salary Slip")
+	emp = frappe.qb.DocType("Employee")
+	sd = frappe.qb.DocType("Salary Detail")
+	sc = frappe.qb.DocType("Salary Component")
+	# All matching salary slips, with p10a-tagged component amounts
+	query = (
+		frappe.qb.from_(ss)
+		.inner_join(emp)
+		.on(emp.name == ss.employee)
+		.inner_join(sd)
+		.on(sd.parent == ss.name)
+		.inner_join(sc)
+		.on(sc.name == sd.salary_component)
+		.select(emp.tax_id, ss.employee, ss.employee_name, sc.p10a_tax_deduction_card_type.as_("p10a_tag"), sd.amount)
+		.where(ss.docstatus == 1)
+		.where(sc.p10a_tax_deduction_card_type.isnotnull())
+		.where(sc.p10a_tax_deduction_card_type != "")
+		.orderby(ss.employee)
 	)
+	if filters.get("company"):
+		query = query.where(ss.company == filters["company"])
+	if filters.get("employee"):
+		query = query.where(ss.employee == filters["employee"])
+	if filters.get("from_date"):
+		query = query.where(ss.posting_date >= filters["from_date"])
+	if filters.get("to_date"):
+		query = query.where(ss.posting_date <= filters["to_date"])
+	data = query.run(as_dict=True)
 
 	# Pivot: one row per employee with p10a tags as columns
 	employee_data = {}
@@ -108,16 +110,3 @@ def get_data(filters):
 			employee_data[key][fieldname] = flt(employee_data[key].get(fieldname, 0)) + flt(row.amount)
 
 	return list(employee_data.values())
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("employee"):
-		conditions += " AND ss.employee = %(employee)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.posting_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.posting_date <= %(to_date)s"
-	return conditions

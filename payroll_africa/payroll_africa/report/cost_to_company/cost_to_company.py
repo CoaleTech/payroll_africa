@@ -1,6 +1,7 @@
-import frappe
 from frappe import _
 from frappe.utils import flt
+
+from payroll_africa.payroll_africa.report.utils import deduction_details, slip_rows
 
 
 def execute(filters=None):
@@ -38,22 +39,10 @@ def get_columns(component_names):
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
-
-	salary_slips = frappe.db.sql(
-		"""
-		SELECT
-			ss.employee, ss.employee_name, ss.department, ss.designation,
-			ss.gross_pay, ss.total_deduction, ss.net_pay,
-			ss.name as salary_slip
-		FROM `tabSalary Slip` ss
-		WHERE ss.docstatus = 1"""
-		+ conditions
-		+ """
-		ORDER BY ss.employee
-		""",
+	salary_slips = slip_rows(
 		filters,
-		as_dict=True,
+		("employee", "employee_name", "department", "designation", "gross_pay", "total_deduction", "net_pay"),
+		extra={"employee": filters.get("employee"), "department": filters.get("department")},
 	)
 
 	if not salary_slips:
@@ -61,16 +50,7 @@ def get_data(filters):
 
 	slip_names = [s.salary_slip for s in salary_slips]
 
-	# Get all deduction details in one query
-	details = frappe.db.sql(
-		"""
-		SELECT parent, salary_component, amount, statistical_component
-		FROM `tabSalary Detail`
-		WHERE parent IN %s AND parentfield = 'deductions'
-		""",
-		(slip_names,),
-		as_dict=True,
-	)
+	details = deduction_details(slip_names)
 
 	# Group by parent
 	employer_component_names = set()
@@ -98,18 +78,3 @@ def get_data(filters):
 		del slip["salary_slip"]
 
 	return salary_slips, employer_component_names
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("employee"):
-		conditions += " AND ss.employee = %(employee)s"
-	if filters.get("department"):
-		conditions += " AND ss.department = %(department)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.end_date <= %(to_date)s"
-	return conditions

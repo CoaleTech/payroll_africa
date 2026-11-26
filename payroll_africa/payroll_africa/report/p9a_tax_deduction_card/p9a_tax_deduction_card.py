@@ -69,24 +69,17 @@ def get_month_data(filters, month_name, month_start, month_end):
 	row = {"month": month_name}
 
 	# Get salary slip for this employee/month
-	salary_slip = frappe.db.sql(
-		"""
-		SELECT name, gross_pay
-		FROM `tabSalary Slip`
-		WHERE docstatus = 1
-			AND employee = %(employee)s
-			AND start_date >= %(month_start)s
-			AND end_date <= %(month_end)s
-			AND company = %(company)s
-		LIMIT 1
-		""",
-		{
+	salary_slip = frappe.get_all(
+		"Salary Slip",
+		filters={
+			"docstatus": 1,
 			"employee": filters["employee"],
-			"month_start": month_start,
-			"month_end": month_end,
+			"start_date": (">=", month_start),
+			"end_date": ("<=", month_end),
 			"company": filters["company"],
 		},
-		as_dict=True,
+		fields=["name", "gross_pay"],
+		limit=1,
 	)
 
 	if not salary_slip:
@@ -164,18 +157,17 @@ def get_month_data(filters, month_name, month_start, month_end):
 
 def get_p9a_amounts(salary_slip_name):
 	"""Get all p9a-tagged component amounts for a salary slip."""
-	details = frappe.db.sql(
-		"""
-		SELECT sc.p9a_tax_deduction_card_type AS p9a_tag, sd.amount
-		FROM `tabSalary Detail` sd
-		INNER JOIN `tabSalary Component` sc ON sc.name = sd.salary_component
-		WHERE sd.parent = %s
-			AND sc.p9a_tax_deduction_card_type IS NOT NULL
-			AND sc.p9a_tax_deduction_card_type != ''
-		""",
-		salary_slip_name,
-		as_dict=True,
-	)
+	sd = frappe.qb.DocType("Salary Detail")
+	sc = frappe.qb.DocType("Salary Component")
+	details = (
+		frappe.qb.from_(sd)
+		.inner_join(sc)
+		.on(sc.name == sd.salary_component)
+		.select(sc.p9a_tax_deduction_card_type.as_("p9a_tag"), sd.amount)
+		.where(sd.parent == salary_slip_name)
+		.where(sc.p9a_tax_deduction_card_type.isnotnull())
+		.where(sc.p9a_tax_deduction_card_type != "")
+	).run(as_dict=True)
 
 	amounts = {}
 	for d in details:

@@ -1,8 +1,7 @@
-import frappe
 from frappe import _
 from frappe.utils import flt
 
-from payroll_africa.payroll_africa.report.utils import standard_slip_conditions
+from payroll_africa.payroll_africa.report.utils import deduction_details, slip_rows
 
 
 def execute(filters=None):
@@ -35,39 +34,14 @@ def get_columns(component_names):
 
 
 def get_data(filters):
-	conditions = standard_slip_conditions(filters)
-
-	salary_slips = frappe.db.sql(
-		"""
-		SELECT
-			ss.employee, ss.employee_name, ss.gross_pay,
-			ss.name as salary_slip
-		FROM `tabSalary Slip` ss
-		WHERE ss.docstatus = 1"""
-		+ conditions
-		+ """
-		ORDER BY ss.employee
-		""",
-		filters,
-		as_dict=True,
-	)
+	salary_slips = slip_rows(filters, ("employee", "employee_name", "gross_pay"))
 
 	if not salary_slips:
 		return [], set()
 
 	slip_names = [s.salary_slip for s in salary_slips]
 
-	details = frappe.db.sql(
-		"""
-		SELECT parent, salary_component, amount
-		FROM `tabSalary Detail`
-		WHERE parent IN %s
-			AND parentfield = 'deductions'
-			AND statistical_component = 1
-		""",
-		(slip_names,),
-		as_dict=True,
-	)
+	details = deduction_details(slip_names, statistical=True)
 
 	component_names = set()
 	slip_details = {}

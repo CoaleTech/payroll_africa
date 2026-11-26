@@ -1,6 +1,9 @@
 import frappe
 from frappe import _
+from frappe.query_builder.functions import Coalesce
 from frappe.utils import flt
+
+from payroll_africa.payroll_africa.report.utils import deduction_details
 
 
 def execute(filters=None):
@@ -22,45 +25,39 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
-
-	# Get salary slips with employee's payroll country
-	salary_slips = frappe.db.sql(
-		"""
-		SELECT
-			ss.name as salary_slip,
-			COALESCE(e.payroll_country, c.country) as country,
-			ss.gross_pay, ss.net_pay
-		FROM `tabSalary Slip` ss
-		LEFT JOIN `tabEmployee` e ON ss.employee = e.name
-		LEFT JOIN `tabCompany` c ON ss.company = c.name
-		WHERE ss.docstatus = 1"""
-		+ conditions
-		+ """
-		""",
-		filters,
-		as_dict=True,
+	ss = frappe.qb.DocType("Salary Slip")
+	emp = frappe.qb.DocType("Employee")
+	company = frappe.qb.DocType("Company")
+	# Salary slips with the employee's payroll country, falling back to the company's
+	query = (
+		frappe.qb.from_(ss)
+		.left_join(emp)
+		.on(ss.employee == emp.name)
+		.left_join(company)
+		.on(ss.company == company.name)
+		.select(ss.name.as_("salary_slip"), Coalesce(emp.payroll_country, company.country).as_("country"), ss.gross_pay, ss.net_pay)
+		.where(ss.docstatus == 1)
 	)
+	if filters.get("company_group"):
+		lft, rgt = frappe.db.get_value("Company", filters["company_group"], ["lft", "rgt"])
+		companies = frappe.get_all("Company", filters=[["lft", ">=", lft], ["rgt", "<=", rgt]], pluck="name")
+		if companies:
+			query = query.where(ss.company.isin(companies))
+	elif filters.get("company"):
+		query = query.where(ss.company == filters["company"])
+	if filters.get("from_date"):
+		query = query.where(ss.start_date >= filters["from_date"])
+	if filters.get("to_date"):
+		query = query.where(ss.end_date <= filters["to_date"])
+	salary_slips = query.run(as_dict=True)
 
 	if not salary_slips:
 		return []
 
 	slip_names = [s.salary_slip for s in salary_slips]
 
-	# Get deduction details for all slips
-	details = frappe.db.sql(
-		"""
-		SELECT parent, amount, statistical_component
-		FROM `tabSalary Detail`
-		WHERE parent IN %s AND parentfield = 'deductions'
-		""",
-		(slip_names,),
-		as_dict=True,
-	)
-
-	# Index details by parent
 	slip_details = {}
-	for d in details:
+	for d in deduction_details(slip_names):
 		slip_details.setdefault(d.parent, []).append(d)
 
 	# Aggregate by country
@@ -96,24 +93,3 @@ def get_data(filters):
 		data.append(row)
 
 	return data
-
-
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("company_group"):
-		lft, rgt = frappe.db.get_value("Company", filters["company_group"], ["lft", "rgt"])
-		companies = frappe.get_all(
-			"Company",
-			filters=[["lft", ">=", lft], ["rgt", "<=", rgt]],
-			pluck="name",
-		)
-		if companies:
-			filters["_companies"] = companies
-			conditions += " AND ss.company IN %(_companies)s"
-	elif filters.get("company"):
-		conditions += " AND ss.company = %(company)s"
-	if filters.get("from_date"):
-		conditions += " AND ss.start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND ss.end_date <= %(to_date)s"
-	return conditions

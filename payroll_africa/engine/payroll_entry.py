@@ -3,7 +3,9 @@ import re
 import frappe
 from frappe.utils import flt
 
-from payroll_africa.engine.registry import VALID_SUFFIXES
+from payroll_africa.boot import COUNTRY_SUFFIX_MAP
+
+_SUFFIXES = {s for s in COUNTRY_SUFFIX_MAP.values() if s}  # Kenya's "" suffix means no suffix
 
 # Column buckets for employee-borne deductions across countries and apps (csf_ke: "Employee NSSF"/"SHA";
 # payroll_africa: "NSSF Employee TZ", "Pension Employee MW", "INSS Employee BI", "NAPSA Employee ZM", "SHIF", "CBHI RW", ...).
@@ -73,4 +75,4 @@ def summarise(slips, details):
 def _base(component):
 	"""'PAYE TZ' -> 'PAYE': drop a trailing country suffix."""
 	head, _sep, tail = component.rpartition(" ")
-	return head if head and tail in VALID_SUFFIXES else component
+	return head if head and tail in _SUFFIXES else component
